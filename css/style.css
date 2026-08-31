@@ -408,7 +408,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.38);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: inherit;
   pointer-events: none;
   z-index: 0;
@@ -426,7 +426,7 @@ body {
 .bookmark-inner.has-image .bookmark-name,
 .bookmark-inner.has-image .bookmark-count {
   color: #fff;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65), 0 0 2px rgba(0, 0, 0, 0.5);
 }
 
 .bookmark-mini.has-image {
@@ -441,7 +441,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.38);
+  background: rgba(0, 0, 0, 0.12);
   pointer-events: none;
 }
 
@@ -457,7 +457,7 @@ body {
 .bookmark-mini.has-image .bookmark-mini-name,
 .bookmark-mini.has-image .bookmark-mini-count {
   color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.65), 0 0 2px rgba(0, 0, 0, 0.5);
 }
 
 .folder-image-preview-wrap {
