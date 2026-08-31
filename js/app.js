@@ -314,7 +314,7 @@ function getFolderById(id) {
 
 function getFolderLabel(id) {
   if (id === UNCategorized_ID) return '未分类';
-  return getFolderById(id)?.name || '便签';
+  return getFolderById(id)?.name || '分类';
 }
 
 function updatePapersPanelVisibility() {
@@ -362,7 +362,7 @@ function renderFolders() {
   ];
 
   if (items.length === 0) {
-    container.innerHTML = '<p class="bookmark-empty">暂无便签，站主可点击「新建便签」创建领域分类</p>';
+    container.innerHTML = '<p class="bookmark-empty">暂无分类，站主可点击「新建分类」创建论文分类</p>';
     return;
   }
 
@@ -424,7 +424,7 @@ function renderFolders() {
 function openFolderModal(mode, id = null) {
   folderModalMode = mode;
   folderEditingId = id;
-  document.getElementById('folder-modal-title').textContent = mode === 'create' ? '新建便签' : '重命名便签';
+  document.getElementById('folder-modal-title').textContent = mode === 'create' ? '新建分类' : '重命名分类';
   document.getElementById('folder-name-input').value = mode === 'rename' ? (getFolderById(id)?.name || '') : '';
   document.getElementById('folder-modal').showModal();
   setTimeout(() => document.getElementById('folder-name-input').focus(), 50);
@@ -475,7 +475,7 @@ function deleteFolder(id) {
   if (!isAdmin) return;
   const folder = getFolderById(id);
   if (!folder) return;
-  if (!confirm(`确定删除便签「${folder.name}」？其中的论文将变为未分类。`)) return;
+  if (!confirm(`确定删除分类「${folder.name}」？其中的论文将变为未分类。`)) return;
 
   papers.forEach(p => {
     if (p.folderId === id) p.folderId = null;

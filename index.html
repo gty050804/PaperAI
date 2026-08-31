@@ -35,17 +35,17 @@
       <div class="bookmark-section">
         <div class="bookmark-header">
           <div>
-            <h2 class="bookmark-title">领域便签</h2>
-            <p class="bookmark-subtitle">点击便签查看该领域的论文</p>
+            <h2 class="bookmark-title">论文分类</h2>
+            <p class="bookmark-subtitle">点击分类浏览其中的论文</p>
           </div>
-          <button type="button" class="btn btn-primary btn-sm admin-only hidden" id="btn-new-folder">+ 新建便签</button>
+          <button type="button" class="btn btn-primary btn-sm admin-only hidden" id="btn-new-folder">+ 新建分类</button>
         </div>
         <div id="folder-list" class="folder-bookmarks"></div>
       </div>
 
       <div id="papers-panel" class="papers-panel hidden">
         <div class="papers-panel-header">
-          <button type="button" class="btn btn-ghost btn-sm" id="btn-back-folders">← 返回便签墙</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-back-folders">← 返回分类</button>
           <h3 id="current-folder-title"></h3>
         </div>
         <div class="toolbar">
@@ -268,10 +268,10 @@
   <dialog id="folder-modal" class="modal">
     <div class="modal-content modal-sm">
       <button class="modal-close" data-close="folder-modal" aria-label="关闭">&times;</button>
-      <h2 class="modal-title" id="folder-modal-title">新建便签</h2>
+      <h2 class="modal-title" id="folder-modal-title">新建分类</h2>
       <form id="folder-form">
         <div class="form-group">
-          <label for="folder-name-input">便签名称（领域）</label>
+          <label for="folder-name-input">分类名称</label>
           <input type="text" id="folder-name-input" required placeholder="例如：自然语言处理">
         </div>
         <div class="form-actions">
