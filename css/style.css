@@ -395,8 +395,9 @@ body {
 }
 
 .bookmark-inner.has-image {
-  background: #f4f4f5;
+  background: transparent;
   border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .bookmark-photo {
@@ -434,8 +435,9 @@ body {
   min-width: 140px;
   max-width: 280px;
   min-height: 80px;
-  background: #f4f4f5;
+  background: transparent;
   overflow: hidden;
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 .bookmark-mini-photo {

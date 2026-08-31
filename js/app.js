@@ -128,15 +128,31 @@ async function applyFolderImageToInner(inner, folder) {
   if (!inner || !folder) return;
   const url = await resolveFolderImageUrl(folder);
   let photo = inner.querySelector('.bookmark-photo');
+  const tab = inner.querySelector('.bookmark-tab');
+  const nameEl = inner.querySelector('.bookmark-name');
+  const countEl = inner.querySelector('.bookmark-count');
+  const textColor = inner.style.getPropertyValue('--bookmark-text').trim()
+    || getComputedStyle(inner).getPropertyValue('--bookmark-text').trim()
+    || '#713f12';
 
   if (!url) {
     inner.classList.remove('has-image');
     photo?.remove();
-    inner.style.backgroundImage = '';
+    inner.style.background = '';
+    inner.style.borderColor = '';
+    if (tab) tab.style.display = '';
+    if (nameEl) nameEl.style.color = textColor;
+    if (countEl) {
+      countEl.style.color = textColor;
+      countEl.style.opacity = '';
+    }
     return;
   }
 
   inner.classList.add('has-image');
+  inner.style.background = 'transparent';
+  inner.style.borderColor = 'rgba(0, 0, 0, 0.08)';
+  if (tab) tab.style.display = 'none';
   if (!photo) {
     photo = document.createElement('img');
     photo.className = 'bookmark-photo';
@@ -144,6 +160,11 @@ async function applyFolderImageToInner(inner, folder) {
     inner.insertBefore(photo, inner.firstChild);
   }
   photo.src = url;
+  if (nameEl) nameEl.style.color = '#fff';
+  if (countEl) {
+    countEl.style.color = '#fff';
+    countEl.style.opacity = '0.92';
+  }
 }
 
 async function applyFolderImages(container) {
