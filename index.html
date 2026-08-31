@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PaperAI — 论文阅读笔记</title>
   <meta name="description" content="记录与管理学术论文阅读笔记">
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=7">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -280,15 +280,15 @@
           <input type="text" id="folder-name-input" required placeholder="例如：自然语言处理">
         </div>
         <div class="form-group admin-only">
-          <label for="folder-image-prompt">便签背景提示词</label>
-          <textarea id="folder-image-prompt" rows="3" placeholder="例如：蓝色科技风，电路纹理边框，中心留白"></textarea>
-          <p class="hint">AI 将根据提示词生成便签背景，中间区域留空用于显示分类名称和论文数量。</p>
+          <label for="folder-image-prompt">便签图片提示词</label>
+          <textarea id="folder-image-prompt" rows="3" placeholder="例如：蓝色科技风抽象背景，柔和光晕"></textarea>
+          <p class="hint">根据提示词生成完整图片；展示时会加半透明蒙版，并在上方显示分类名称与论文数量。</p>
         </div>
         <div class="folder-image-preview-wrap admin-only hidden" id="folder-image-preview-wrap">
           <img id="folder-image-preview" class="folder-image-preview" alt="便签预览">
         </div>
         <div class="form-actions folder-form-actions">
-          <button type="button" class="btn btn-secondary admin-only" id="btn-generate-folder-image">生成便签背景</button>
+          <button type="button" class="btn btn-secondary admin-only" id="btn-generate-folder-image">生成便签图片</button>
           <button type="button" class="btn btn-ghost" data-close="folder-modal">取消</button>
           <button type="submit" class="btn btn-primary">确定</button>
         </div>
@@ -326,10 +326,10 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="js/config.js?v=6"></script>
-  <script src="js/pdf-store.js?v=6"></script>
-  <script src="js/folder-image-store.js?v=6"></script>
-  <script src="js/ai.js?v=6"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/config.js?v=7"></script>
+  <script src="js/pdf-store.js?v=7"></script>
+  <script src="js/folder-image-store.js?v=7"></script>
+  <script src="js/ai.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>

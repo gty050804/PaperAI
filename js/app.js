@@ -128,15 +128,19 @@ async function applyFolderImageToInner(inner, folder) {
   if (!inner || !folder) return;
   const url = await resolveFolderImageUrl(folder);
   const content = inner.querySelector('.bookmark-content');
+  const nameEl = inner.querySelector('.bookmark-name');
+  const countEl = inner.querySelector('.bookmark-count');
   if (!url) {
     inner.classList.remove('has-image');
     inner.style.backgroundImage = '';
-    content?.classList.remove('has-image-text');
+    content?.classList.remove('on-overlay');
     return;
   }
   inner.classList.add('has-image');
   inner.style.backgroundImage = `url("${url}")`;
-  content?.classList.add('has-image-text');
+  content?.classList.add('on-overlay');
+  if (nameEl) nameEl.style.color = '';
+  if (countEl) countEl.style.color = '';
 }
 
 async function applyFolderImages(container) {
@@ -430,21 +434,16 @@ async function renderCurrentFolderBookmark() {
   const count = countPapersInFolder(currentFolderId);
   const imageUrl = await resolveFolderImageUrl(folder);
   const imageClass = imageUrl ? ' has-image' : '';
-  const contentClass = imageUrl ? ' has-image-text' : '';
   const surfaceStyle = imageUrl
     ? `background-image:url("${imageUrl}"); border-color:${colors.border};`
     : `background:${colors.bg}; border-color:${colors.border};`;
 
   titleEl.innerHTML = `
-    <div class="bookmark-mini${imageClass}" style="
-      --bookmark-bg: ${colors.bg};
-      --bookmark-text: ${colors.text};
-      ${surfaceStyle}
-    ">
+    <div class="bookmark-mini${imageClass}" style="${surfaceStyle}">
       ${imageUrl ? '' : `<div class="bookmark-mini-tab" style="background:${colors.tab}"></div>`}
-      <div class="bookmark-mini-content${contentClass}">
-        <span class="bookmark-mini-name" style="color:${colors.text}">${escapeHtml(folder.name)}</span>
-        <span class="bookmark-mini-count" style="color:${colors.text}">${count} 篇论文</span>
+      <div class="bookmark-mini-content on-overlay">
+        <span class="bookmark-mini-name">${escapeHtml(folder.name)}</span>
+        <span class="bookmark-mini-count">${count} 篇论文</span>
       </div>
     </div>
   `;
@@ -601,14 +600,13 @@ async function updateFolderImagePreviewInModal(folderId) {
 async function generateFolderImage() {
   if (!requireAdmin()) return;
 
-  const name = document.getElementById('folder-name-input').value.trim();
-  if (!name) {
-    alert('请先填写分类名称');
+  const userPrompt = document.getElementById('folder-image-prompt')?.value.trim() || '';
+  if (!userPrompt) {
+    alert('请先填写图片提示词');
     return;
   }
 
   const folderId = folderModalMode === 'create' ? folderDraftId : folderEditingId;
-  const userPrompt = document.getElementById('folder-image-prompt')?.value.trim() || '';
   const btn = document.getElementById('btn-generate-folder-image');
 
   btn.disabled = true;
@@ -616,7 +614,7 @@ async function generateFolderImage() {
   btn.textContent = '生成中…';
 
   try {
-    const blob = await window.PaperAI.generateBookmarkImage(userPrompt, name);
+    const blob = await window.PaperAI.generateBookmarkImage(userPrompt);
     await storeFolderImageBlob(folderId, blob);
 
     const folder = getFolderById(folderId);
@@ -629,7 +627,7 @@ async function generateFolderImage() {
     await updateFolderImagePreviewInModal(folderId);
     renderFolders();
     if (currentFolderId === folderId) updatePapersPanelVisibility();
-    alert('便签背景已生成，记得点击「发布到网站」保存');
+    alert('便签图片已生成，记得点击「发布到网站」保存');
   } catch (err) {
     alert(`生成失败：${err.message}`);
   } finally {

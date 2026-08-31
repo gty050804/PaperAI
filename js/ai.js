@@ -196,26 +196,20 @@ async function downloadImageBlob(url) {
   });
 }
 
-function buildBookmarkImagePrompt(userPrompt, folderName) {
-  const theme = userPrompt.trim() || 'soft pastel academic style, gentle watercolor paper texture';
-  return [
-    `Decorative sticky note bookmark background for academic category "${folderName}".`,
-    `Theme and mood: ${theme}.`,
-    'Vertical rectangular note card with ornamental border and subtle decorative patterns only on edges and corners.',
-    'CRITICAL: keep the central middle area (about 65% of the card) completely blank — plain light cream or white smooth empty space for text overlay.',
-    'No text, no letters, no numbers, no words, no watermark, no logo.',
-    'Flat illustration, uniform soft lighting, high quality.',
-  ].join(' ');
+function buildBookmarkImagePrompt(userPrompt) {
+  const prompt = userPrompt.trim();
+  if (!prompt) throw new Error('请填写图片提示词');
+  return prompt;
 }
 
-async function generateBookmarkImage(userPrompt, folderName) {
+async function generateBookmarkImage(userPrompt) {
   const apiKey = getSiliconFlowApiKey();
   if (!apiKey) throw new Error('请先在「统计 → 站主设置」中配置硅基流动 API Key');
 
   const { baseUrl } = getSiliconFlowConfig();
   const model = getSiliconFlowImageModel();
   const imageSize = getBookmarkImageSize(model);
-  const prompt = buildBookmarkImagePrompt(userPrompt, folderName || '论文分类');
+  const prompt = buildBookmarkImagePrompt(userPrompt);
 
   let res;
   try {
