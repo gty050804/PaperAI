@@ -310,41 +310,78 @@ function requireAdmin() {
 
 const PAPERS_DRAFT_KEY = 'paperai-papers-draft';
 const FOLDERS_DRAFT_KEY = 'paperai-folders-draft';
+const PAPERS_DRAFT_FLAG_KEY = 'paperai-papers-draft-active';
+const PAPERS_REMOTE_CACHE_KEY = 'paperai-papers-remote-cache';
+const FOLDERS_REMOTE_CACHE_KEY = 'paperai-folders-remote-cache';
 
 function saveLocalDraft() {
   if (!isAdmin) return;
   localStorage.setItem(PAPERS_DRAFT_KEY, JSON.stringify(papers));
   localStorage.setItem(FOLDERS_DRAFT_KEY, JSON.stringify(folders));
+  localStorage.setItem(PAPERS_DRAFT_FLAG_KEY, '1');
 }
 
 function clearLocalDraft() {
   localStorage.removeItem(PAPERS_DRAFT_KEY);
   localStorage.removeItem(FOLDERS_DRAFT_KEY);
+  localStorage.removeItem(PAPERS_DRAFT_FLAG_KEY);
 }
 
-async function loadFolders() {
-  let remote = [];
+function readCachedJson(key) {
   try {
-    const res = await fetch(`${FOLDERS_URL}?t=${Date.now()}`);
-    if (res.ok) {
-      remote = await res.json();
-      if (!Array.isArray(remote)) remote = [];
-    }
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : null;
   } catch {
-    console.warn('无法加载 data/folders.json');
+    localStorage.removeItem(key);
+    return null;
   }
+}
 
+function writeRemoteCache(key, data) {
   try {
-    const draftRaw = localStorage.getItem(FOLDERS_DRAFT_KEY);
-    if (draftRaw && isAdmin) {
-      const draft = JSON.parse(draftRaw);
-      if (Array.isArray(draft)) {
-        folders = draft;
-        return;
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // ignore quota errors
+  }
+}
+
+async function fetchJsonArray(url, cacheKey) {
+  try {
+    const res = await fetch(`${url}?t=${Date.now()}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        writeRemoteCache(cacheKey, data);
+        return { data, fromCache: false };
       }
     }
   } catch {
-    localStorage.removeItem(FOLDERS_DRAFT_KEY);
+    console.warn(`无法加载 ${url}`);
+  }
+
+  const cached = readCachedJson(cacheKey);
+  if (cached) return { data: cached, fromCache: true };
+  return { data: [], fromCache: false };
+}
+
+async function loadFolders() {
+  const { data: remote } = await fetchJsonArray(FOLDERS_URL, FOLDERS_REMOTE_CACHE_KEY);
+
+  if (isAdmin && localStorage.getItem(PAPERS_DRAFT_FLAG_KEY)) {
+    try {
+      const draftRaw = localStorage.getItem(FOLDERS_DRAFT_KEY);
+      if (draftRaw) {
+        const draft = JSON.parse(draftRaw);
+        if (Array.isArray(draft)) {
+          folders = draft;
+          return;
+        }
+      }
+    } catch {
+      localStorage.removeItem(FOLDERS_DRAFT_KEY);
+    }
   }
 
   folders = remote;
@@ -356,33 +393,34 @@ async function loadData() {
 }
 
 async function loadPapers() {
-  let remote = [];
-  try {
-    const res = await fetch(`${DATA_URL}?t=${Date.now()}`);
-    if (res.ok) {
-      remote = await res.json();
-      if (!Array.isArray(remote)) remote = [];
-    }
-  } catch {
-    console.warn('无法加载 data/papers.json');
-  }
+  const { data: remote, fromCache } = await fetchJsonArray(DATA_URL, PAPERS_REMOTE_CACHE_KEY);
 
-  try {
-    const draftRaw = localStorage.getItem(PAPERS_DRAFT_KEY);
-    if (draftRaw) {
-      const draft = JSON.parse(draftRaw);
-      if (Array.isArray(draft) && draft.length > 0) {
-        papers = draft;
-        hasUnpublishedChanges = true;
-        return;
+  if (isAdmin && localStorage.getItem(PAPERS_DRAFT_FLAG_KEY)) {
+    try {
+      const draftRaw = localStorage.getItem(PAPERS_DRAFT_KEY);
+      if (draftRaw) {
+        const draft = JSON.parse(draftRaw);
+        if (Array.isArray(draft)) {
+          papers = draft;
+          hasUnpublishedChanges = true;
+          if (fromCache && remote.length === 0 && draft.length > 0) {
+            console.warn('网络异常，已恢复本地未发布草稿');
+          }
+          return;
+        }
       }
+    } catch {
+      localStorage.removeItem(PAPERS_DRAFT_KEY);
+      localStorage.removeItem(PAPERS_DRAFT_FLAG_KEY);
     }
-  } catch {
-    localStorage.removeItem(PAPERS_DRAFT_KEY);
   }
 
   papers = remote;
   hasUnpublishedChanges = false;
+
+  if (fromCache && remote.length > 0) {
+    console.warn('网络异常，已使用上次成功加载的论文数据');
+  }
 }
 
 function markDirty() {
@@ -1591,6 +1629,11 @@ async function handleLogin(e) {
 
   document.getElementById('login-modal').close();
   errorEl.classList.add('hidden');
+  await loadData();
+  renderFolders();
+  updatePapersPanelVisibility();
+  if (currentFolderId != null) renderList();
+  renderStats();
 }
 
 function escapeHtml(str) {
@@ -1686,6 +1729,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       folders = [];
       currentFolderId = null;
       hasUnpublishedChanges = false;
+      writeRemoteCache(PAPERS_REMOTE_CACHE_KEY, []);
+      writeRemoteCache(FOLDERS_REMOTE_CACHE_KEY, []);
       renderStats();
       renderFolders();
       updatePapersPanelVisibility();
