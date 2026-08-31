@@ -443,45 +443,15 @@ function updatePapersPanelVisibility() {
     return;
   }
 
-  void renderCurrentFolderBookmark();
+  renderCurrentFolderTitle();
 }
 
-async function renderCurrentFolderBookmark() {
+function renderCurrentFolderTitle() {
   const titleEl = document.getElementById('current-folder-title');
   if (!titleEl || currentFolderId == null) return;
 
   const folder = getFolderById(currentFolderId);
-  if (!folder) {
-    titleEl.innerHTML = '';
-    return;
-  }
-
-  const colors = getFolderColors(currentFolderId);
-  const count = countPapersInFolder(currentFolderId);
-  const imageUrl = await resolveFolderImageUrl(folder);
-
-  if (imageUrl) {
-    titleEl.innerHTML = `
-      <div class="bookmark-mini has-image">
-        <img class="bookmark-mini-photo" src="${imageUrl.replace(/"/g, '&quot;')}" alt="">
-        <div class="bookmark-mini-content">
-          <span class="bookmark-mini-name">${escapeHtml(folder.name)}</span>
-          <span class="bookmark-mini-count">${count} 篇论文</span>
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  titleEl.innerHTML = `
-    <div class="bookmark-mini" style="background:${colors.bg}; border-color:${colors.border};">
-      <div class="bookmark-mini-tab" style="background:${colors.tab}"></div>
-      <div class="bookmark-mini-content">
-        <span class="bookmark-mini-name" style="color:${colors.text}">${escapeHtml(folder.name)}</span>
-        <span class="bookmark-mini-count" style="color:${colors.text}">${count} 篇论文</span>
-      </div>
-    </div>
-  `;
+  titleEl.textContent = folder?.name || '';
 }
 
 function openFolder(id) {
