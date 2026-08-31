@@ -14,7 +14,18 @@ const STATUS_LABELS = {
 
 let papers = [];
 let folders = [];
-let currentFolderId = '';
+let currentFolderId = null;
+let folderModalMode = 'create';
+let folderEditingId = null;
+
+const BOOKMARK_COLORS = [
+  { bg: '#fef9c3', tab: '#fde047', border: '#facc15', text: '#713f12' },
+  { bg: '#dbeafe', tab: '#93c5fd', border: '#60a5fa', text: '#1e3a8a' },
+  { bg: '#dcfce7', tab: '#86efac', border: '#4ade80', text: '#14532d' },
+  { bg: '#fce7f3', tab: '#f9a8d4', border: '#f472b6', text: '#831843' },
+  { bg: '#ffedd5', tab: '#fdba74', border: '#fb923c', text: '#7c2d12' },
+  { bg: '#ede9fe', tab: '#c4b5fd', border: '#a78bfa', text: '#4c1d95' },
+];
 let editingId = null;
 let currentReaderId = null;
 let isAdmin = false;
@@ -283,8 +294,9 @@ function switchView(viewName) {
   document.querySelector('.main.container').classList.toggle('main-reader', viewName === 'reader');
 
   if (viewName === 'list') {
+    updatePapersPanelVisibility();
     renderFolders();
-    renderList();
+    if (currentFolderId != null) renderList();
   }
   if (viewName === 'add') {
     updateFolderSelect();
@@ -299,8 +311,34 @@ function getFolderById(id) {
   return folders.find(f => f.id === id);
 }
 
+function getFolderLabel(id) {
+  if (id === UNCategorized_ID) return '未分类';
+  return getFolderById(id)?.name || '便签';
+}
+
+function updatePapersPanelVisibility() {
+  const panel = document.getElementById('papers-panel');
+  if (!panel) return;
+  const open = currentFolderId != null;
+  panel.classList.toggle('hidden', !open);
+  const titleEl = document.getElementById('current-folder-title');
+  if (titleEl && open) titleEl.textContent = getFolderLabel(currentFolderId);
+}
+
+function openFolder(id) {
+  currentFolderId = id;
+  updatePapersPanelVisibility();
+  renderFolders();
+  renderList();
+}
+
+function closeFolderView() {
+  currentFolderId = null;
+  updatePapersPanelVisibility();
+  renderFolders();
+}
+
 function countPapersInFolder(folderId) {
-  if (folderId === '') return papers.length;
   if (folderId === UNCategorized_ID) return papers.filter(p => !p.folderId).length;
   return papers.filter(p => p.folderId === folderId).length;
 }
@@ -309,37 +347,55 @@ function renderFolders() {
   const container = document.getElementById('folder-list');
   if (!container) return;
 
-  const chips = [
-    { id: '', label: '全部', count: countPapersInFolder('') },
-    { id: UNCategorized_ID, label: '未分类', count: countPapersInFolder(UNCategorized_ID) },
-    ...folders.map(f => ({ id: f.id, label: f.name, count: countPapersInFolder(f.id) })),
+  const items = [
+    { id: UNCategorized_ID, label: '未分类', count: countPapersInFolder(UNCategorized_ID), colorIndex: 0 },
+    ...folders.map((f, i) => ({
+      id: f.id,
+      label: f.name,
+      count: countPapersInFolder(f.id),
+      colorIndex: (i + 1) % BOOKMARK_COLORS.length,
+    })),
   ];
 
-  container.innerHTML = chips.map(chip => `
-    <div class="folder-chip-wrap">
-      <button type="button" class="folder-chip${currentFolderId === chip.id ? ' active' : ''}" data-folder-id="${escapeHtml(chip.id)}">
-        ${escapeHtml(chip.label)}
-        <span class="folder-count">${chip.count}</span>
-      </button>
-      ${chip.id && chip.id !== UNCategorized_ID && isAdmin ? `
-        <span class="folder-actions admin-only">
-          <button type="button" class="folder-action" data-action="rename" data-folder-id="${escapeHtml(chip.id)}" title="重命名">✎</button>
-          <button type="button" class="folder-action danger" data-action="delete" data-folder-id="${escapeHtml(chip.id)}" title="删除">×</button>
-        </span>
-      ` : ''}
-    </div>
-  `).join('');
+  if (items.length === 0) {
+    container.innerHTML = '<p class="bookmark-empty">暂无便签，站主可点击「新建便签」创建领域分类</p>';
+    return;
+  }
 
-  container.querySelectorAll('.folder-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      currentFolderId = btn.dataset.folderId;
-      renderFolders();
-      renderList();
-    });
+  container.innerHTML = items.map((item, index) => {
+    const colors = BOOKMARK_COLORS[item.colorIndex ?? index % BOOKMARK_COLORS.length];
+    const rotation = ((index % 5) - 2) * 1.5;
+    const isUserFolder = item.id !== UNCategorized_ID;
+    return `
+      <div class="bookmark-card${currentFolderId === item.id ? ' active' : ''}" style="transform: rotate(${rotation}deg)">
+        <button type="button" class="bookmark-open" data-folder-id="${escapeHtml(item.id)}" style="
+          --bookmark-bg: ${colors.bg};
+          --bookmark-tab: ${colors.tab};
+          --bookmark-border: ${colors.border};
+          --bookmark-text: ${colors.text};
+        ">
+          <div class="bookmark-inner">
+            ${isUserFolder && isAdmin ? `
+              <span class="bookmark-actions admin-only">
+                <button type="button" class="bookmark-action" data-action="rename" data-folder-id="${escapeHtml(item.id)}" title="重命名">✎</button>
+                <button type="button" class="bookmark-action danger" data-action="delete" data-folder-id="${escapeHtml(item.id)}" title="删除">×</button>
+              </span>
+            ` : ''}
+            <h3 class="bookmark-name">${escapeHtml(item.label)}</h3>
+            <p class="bookmark-count">${item.count} 篇论文</p>
+          </div>
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.bookmark-open').forEach(btn => {
+    btn.addEventListener('click', () => openFolder(btn.dataset.folderId));
   });
 
-  container.querySelectorAll('.folder-action').forEach(btn => {
+  container.querySelectorAll('.bookmark-action').forEach(btn => {
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
       const id = btn.dataset.folderId;
       if (btn.dataset.action === 'rename') renameFolder(id);
@@ -348,45 +404,70 @@ function renderFolders() {
   });
 }
 
+function openFolderModal(mode, id = null) {
+  folderModalMode = mode;
+  folderEditingId = id;
+  document.getElementById('folder-modal-title').textContent = mode === 'create' ? '新建便签' : '重命名便签';
+  document.getElementById('folder-name-input').value = mode === 'rename' ? (getFolderById(id)?.name || '') : '';
+  document.getElementById('folder-modal').showModal();
+  setTimeout(() => document.getElementById('folder-name-input').focus(), 50);
+}
+
 function createFolder() {
-  if (!requireAdmin()) return;
-  const name = prompt('请输入文件夹名称（领域）：');
-  if (!name?.trim()) return;
-  folders.push({
-    id: crypto.randomUUID(),
-    name: name.trim(),
-    createdAt: new Date().toISOString(),
-  });
+  if (!isAdmin) {
+    alert('无权限执行此操作。');
+    if (!isLoggedIn) openLoginModal();
+    return;
+  }
+  openFolderModal('create');
+}
+
+function handleFolderFormSubmit(e) {
+  e.preventDefault();
+  if (!isAdmin) return;
+
+  const name = document.getElementById('folder-name-input').value.trim();
+  if (!name) return;
+
+  if (folderModalMode === 'create') {
+    folders.push({
+      id: crypto.randomUUID(),
+      name,
+      createdAt: new Date().toISOString(),
+    });
+  } else if (folderEditingId) {
+    const folder = getFolderById(folderEditingId);
+    if (folder) folder.name = name;
+  }
+
   markDirty();
+  document.getElementById('folder-modal').close();
   renderFolders();
+  updateFolderSelect();
+  if (currentFolderId != null) {
+    document.getElementById('current-folder-title').textContent = getFolderLabel(currentFolderId);
+  }
 }
 
 function renameFolder(id) {
-  if (!requireAdmin()) return;
-  const folder = getFolderById(id);
-  if (!folder) return;
-  const name = prompt('重命名文件夹：', folder.name);
-  if (!name?.trim() || name.trim() === folder.name) return;
-  folder.name = name.trim();
-  markDirty();
-  renderFolders();
-  updateFolderSelect();
+  if (!isAdmin) return;
+  openFolderModal('rename', id);
 }
 
 function deleteFolder(id) {
-  if (!requireAdmin()) return;
+  if (!isAdmin) return;
   const folder = getFolderById(id);
   if (!folder) return;
-  if (!confirm(`确定删除文件夹「${folder.name}」？其中的论文将变为未分类。`)) return;
+  if (!confirm(`确定删除便签「${folder.name}」？其中的论文将变为未分类。`)) return;
 
   papers.forEach(p => {
     if (p.folderId === id) p.folderId = null;
   });
   folders = folders.filter(f => f.id !== id);
-  if (currentFolderId === id) currentFolderId = '';
+  if (currentFolderId === id) closeFolderView();
   markDirty();
   renderFolders();
-  renderList();
+  if (currentFolderId != null) renderList();
   updateFolderSelect();
 }
 
@@ -426,14 +507,16 @@ function getFilteredPapers() {
 }
 
 function getFolderPapers() {
+  if (currentFolderId == null) return [];
   return papers.filter(p => {
     if (currentFolderId === UNCategorized_ID) return !p.folderId;
-    if (currentFolderId) return p.folderId === currentFolderId;
-    return true;
+    return p.folderId === currentFolderId;
   });
 }
 
 function renderList() {
+  if (currentFolderId == null) return;
+
   const list = document.getElementById('paper-list');
   const empty = document.getElementById('empty-state');
   const filtered = getFilteredPapers();
@@ -905,6 +988,7 @@ async function submitPaperForm() {
 
   markDirty();
   resetForm();
+  currentFolderId = data.folderId || UNCategorized_ID;
   switchView('list');
 }
 
@@ -1131,7 +1215,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   applySession(getSession());
   await loadData();
 
-  document.getElementById('btn-new-folder').addEventListener('click', createFolder);
+  document.getElementById('btn-new-folder').addEventListener('click', (e) => {
+    e.preventDefault();
+    createFolder();
+  });
+
+  document.getElementById('btn-back-folders').addEventListener('click', closeFolderView);
+
+  document.getElementById('folder-form').addEventListener('submit', handleFolderFormSubmit);
 
   document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
@@ -1198,7 +1289,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       clearLocalDraft();
       papers = [];
       folders = [];
-      currentFolderId = '';
+      currentFolderId = null;
       hasUnpublishedChanges = false;
       renderStats();
       renderList();
@@ -1219,7 +1310,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   renderFolders();
-  renderList();
+  updatePapersPanelVisibility();
 });
 
 window.switchView = switchView;

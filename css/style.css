@@ -147,88 +147,165 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Toolbar */
-/* Folder bar */
-.folder-bar {
+/* Bookmark folders */
+.bookmark-section {
+  margin-bottom: 2rem;
+}
+
+.bookmark-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.folder-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  flex: 1;
+.bookmark-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
 }
 
-.folder-chip-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.125rem;
-  max-width: 100%;
-}
-
-.folder-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.45rem 0.875rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.folder-chip:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.folder-chip.active {
-  background: var(--primary-light);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.folder-count {
-  font-size: 0.75rem;
-  opacity: 0.8;
-}
-
-.folder-actions {
-  display: inline-flex;
-  gap: 0.125rem;
-}
-
-.folder-action {
-  width: 1.75rem;
-  height: 1.75rem;
-  border: none;
-  border-radius: 50%;
-  background: var(--bg);
-  color: var(--text-muted);
+.bookmark-subtitle {
   font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.folder-bookmarks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.25rem;
+}
+
+.bookmark-card {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  font-family: inherit;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.bookmark-open {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.bookmark-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  padding: 2rem 1rem;
+}
+
+.bookmark-card:hover {
+  transform: translateY(-4px) rotate(0deg) !important;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.12));
+  z-index: 2;
+}
+
+.bookmark-card.active {
+  transform: translateY(-2px) scale(1.02) !important;
+  z-index: 3;
+}
+
+.bookmark-inner {
+  position: relative;
+  min-height: 120px;
+  padding: 1.25rem 1rem 1rem;
+  border-radius: 2px 2px 8px 8px;
+  background: var(--bookmark-bg, #fef9c3);
+  border: 1px solid var(--bookmark-border, #fde047);
+  box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.bookmark-inner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: var(--bookmark-tab, #fde047);
+  border-radius: 2px 2px 0 0;
+  opacity: 0.85;
+}
+
+.bookmark-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--bookmark-text, #713f12);
+  margin: 0.75rem 0 0.375rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.bookmark-count {
+  font-size: 0.8125rem;
+  color: var(--bookmark-text, #713f12);
+  opacity: 0.75;
+}
+
+.bookmark-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.375rem;
+  display: flex;
+  gap: 0.125rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.bookmark-card:hover .bookmark-actions,
+.bookmark-card:focus-within .bookmark-actions {
+  opacity: 1;
+}
+
+.bookmark-action {
+  width: 1.625rem;
+  height: 1.625rem;
+  border: none;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--bookmark-text, #713f12);
+  font-size: 0.8125rem;
   cursor: pointer;
   line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.folder-action:hover {
-  background: var(--surface-hover);
-  color: var(--text);
+.bookmark-action:hover {
+  background: white;
 }
 
-.folder-action.danger:hover {
-  background: var(--danger-light);
+.bookmark-action.danger:hover {
   color: var(--danger);
+}
+
+.papers-panel {
+  animation: fadeIn 0.25s ease;
+}
+
+.papers-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.papers-panel-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 
 .toolbar {

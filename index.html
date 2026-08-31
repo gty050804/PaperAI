@@ -32,11 +32,23 @@
   <main class="main container">
     <!-- 阅读列表视图 -->
     <section id="view-list" class="view active">
-      <div class="folder-bar">
-        <div id="folder-list" class="folder-list"></div>
-        <button type="button" class="btn btn-secondary btn-sm admin-only hidden" id="btn-new-folder">+ 新建文件夹</button>
+      <div class="bookmark-section">
+        <div class="bookmark-header">
+          <div>
+            <h2 class="bookmark-title">领域便签</h2>
+            <p class="bookmark-subtitle">点击便签查看该领域的论文</p>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm admin-only hidden" id="btn-new-folder">+ 新建便签</button>
+        </div>
+        <div id="folder-list" class="folder-bookmarks"></div>
       </div>
-      <div class="toolbar">
+
+      <div id="papers-panel" class="papers-panel hidden">
+        <div class="papers-panel-header">
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-back-folders">← 返回便签墙</button>
+          <h3 id="current-folder-title"></h3>
+        </div>
+        <div class="toolbar">
         <div class="search-box">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
@@ -60,6 +72,7 @@
         <div class="empty-icon">📚</div>
         <h3>还没有论文记录</h3>
         <p>暂无论文记录</p>
+      </div>
       </div>
     </section>
 
@@ -250,6 +263,24 @@
       </div>
     </section>
   </main>
+
+  <!-- 文件夹对话框 -->
+  <dialog id="folder-modal" class="modal">
+    <div class="modal-content modal-sm">
+      <button class="modal-close" data-close="folder-modal" aria-label="关闭">&times;</button>
+      <h2 class="modal-title" id="folder-modal-title">新建便签</h2>
+      <form id="folder-form">
+        <div class="form-group">
+          <label for="folder-name-input">便签名称（领域）</label>
+          <input type="text" id="folder-name-input" required placeholder="例如：自然语言处理">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" data-close="folder-modal">取消</button>
+          <button type="submit" class="btn btn-primary">确定</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
 
   <!-- 登录 -->
   <dialog id="login-modal" class="modal">
