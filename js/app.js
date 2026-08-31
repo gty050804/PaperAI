@@ -1,4 +1,6 @@
 const DATA_URL = 'data/papers.json';
+const FOLDERS_URL = 'data/folders.json';
+const UNCategorized_ID = '__uncategorized__';
 const ADMIN_USERNAME = 'Phier';
 const USER_SESSION_KEY = 'paperai-user-session';
 const GITHUB_TOKEN_KEY = 'paperai-github-token';
@@ -11,6 +13,8 @@ const STATUS_LABELS = {
 };
 
 let papers = [];
+let folders = [];
+let currentFolderId = '';
 let editingId = null;
 let currentReaderId = null;
 let isAdmin = false;
@@ -169,6 +173,10 @@ function updateUserUI() {
 
   const usernameEl = document.getElementById('current-username');
   if (usernameEl) usernameEl.textContent = currentUsername;
+
+  if (document.getElementById('view-list')?.classList.contains('active')) {
+    renderFolders();
+  }
 }
 
 function requireAdmin() {
@@ -179,15 +187,50 @@ function requireAdmin() {
 }
 
 const PAPERS_DRAFT_KEY = 'paperai-papers-draft';
+const FOLDERS_DRAFT_KEY = 'paperai-folders-draft';
 
 function saveLocalDraft() {
-  if (isAdmin && papers.length >= 0) {
-    localStorage.setItem(PAPERS_DRAFT_KEY, JSON.stringify(papers));
-  }
+  if (!isAdmin) return;
+  localStorage.setItem(PAPERS_DRAFT_KEY, JSON.stringify(papers));
+  localStorage.setItem(FOLDERS_DRAFT_KEY, JSON.stringify(folders));
 }
 
 function clearLocalDraft() {
   localStorage.removeItem(PAPERS_DRAFT_KEY);
+  localStorage.removeItem(FOLDERS_DRAFT_KEY);
+}
+
+async function loadFolders() {
+  let remote = [];
+  try {
+    const res = await fetch(`${FOLDERS_URL}?t=${Date.now()}`);
+    if (res.ok) {
+      remote = await res.json();
+      if (!Array.isArray(remote)) remote = [];
+    }
+  } catch {
+    console.warn('无法加载 data/folders.json');
+  }
+
+  try {
+    const draftRaw = localStorage.getItem(FOLDERS_DRAFT_KEY);
+    if (draftRaw && isAdmin) {
+      const draft = JSON.parse(draftRaw);
+      if (Array.isArray(draft)) {
+        folders = draft;
+        return;
+      }
+    }
+  } catch {
+    localStorage.removeItem(FOLDERS_DRAFT_KEY);
+  }
+
+  folders = remote;
+}
+
+async function loadData() {
+  await loadFolders();
+  await loadPapers();
 }
 
 async function loadPapers() {
@@ -239,8 +282,123 @@ function switchView(viewName) {
 
   document.querySelector('.main.container').classList.toggle('main-reader', viewName === 'reader');
 
-  if (viewName === 'list') renderList();
+  if (viewName === 'list') {
+    renderFolders();
+    renderList();
+  }
+  if (viewName === 'add') {
+    updateFolderSelect();
+    if (!editingId && currentFolderId && currentFolderId !== UNCategorized_ID && getFolderById(currentFolderId)) {
+      document.getElementById('paper-folder').value = currentFolderId;
+    }
+  }
   if (viewName === 'stats') renderStats();
+}
+
+function getFolderById(id) {
+  return folders.find(f => f.id === id);
+}
+
+function countPapersInFolder(folderId) {
+  if (folderId === '') return papers.length;
+  if (folderId === UNCategorized_ID) return papers.filter(p => !p.folderId).length;
+  return papers.filter(p => p.folderId === folderId).length;
+}
+
+function renderFolders() {
+  const container = document.getElementById('folder-list');
+  if (!container) return;
+
+  const chips = [
+    { id: '', label: '全部', count: countPapersInFolder('') },
+    { id: UNCategorized_ID, label: '未分类', count: countPapersInFolder(UNCategorized_ID) },
+    ...folders.map(f => ({ id: f.id, label: f.name, count: countPapersInFolder(f.id) })),
+  ];
+
+  container.innerHTML = chips.map(chip => `
+    <div class="folder-chip-wrap">
+      <button type="button" class="folder-chip${currentFolderId === chip.id ? ' active' : ''}" data-folder-id="${escapeHtml(chip.id)}">
+        ${escapeHtml(chip.label)}
+        <span class="folder-count">${chip.count}</span>
+      </button>
+      ${chip.id && chip.id !== UNCategorized_ID && isAdmin ? `
+        <span class="folder-actions admin-only">
+          <button type="button" class="folder-action" data-action="rename" data-folder-id="${escapeHtml(chip.id)}" title="重命名">✎</button>
+          <button type="button" class="folder-action danger" data-action="delete" data-folder-id="${escapeHtml(chip.id)}" title="删除">×</button>
+        </span>
+      ` : ''}
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.folder-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentFolderId = btn.dataset.folderId;
+      renderFolders();
+      renderList();
+    });
+  });
+
+  container.querySelectorAll('.folder-action').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.folderId;
+      if (btn.dataset.action === 'rename') renameFolder(id);
+      if (btn.dataset.action === 'delete') deleteFolder(id);
+    });
+  });
+}
+
+function createFolder() {
+  if (!requireAdmin()) return;
+  const name = prompt('请输入文件夹名称（领域）：');
+  if (!name?.trim()) return;
+  folders.push({
+    id: crypto.randomUUID(),
+    name: name.trim(),
+    createdAt: new Date().toISOString(),
+  });
+  markDirty();
+  renderFolders();
+}
+
+function renameFolder(id) {
+  if (!requireAdmin()) return;
+  const folder = getFolderById(id);
+  if (!folder) return;
+  const name = prompt('重命名文件夹：', folder.name);
+  if (!name?.trim() || name.trim() === folder.name) return;
+  folder.name = name.trim();
+  markDirty();
+  renderFolders();
+  updateFolderSelect();
+}
+
+function deleteFolder(id) {
+  if (!requireAdmin()) return;
+  const folder = getFolderById(id);
+  if (!folder) return;
+  if (!confirm(`确定删除文件夹「${folder.name}」？其中的论文将变为未分类。`)) return;
+
+  papers.forEach(p => {
+    if (p.folderId === id) p.folderId = null;
+  });
+  folders = folders.filter(f => f.id !== id);
+  if (currentFolderId === id) currentFolderId = '';
+  markDirty();
+  renderFolders();
+  renderList();
+  updateFolderSelect();
+}
+
+function updateFolderSelect() {
+  const select = document.getElementById('paper-folder');
+  if (!select) return;
+  const current = select.value;
+  select.innerHTML = '<option value="">未分类</option>' +
+    folders.map(f => `<option value="${escapeHtml(f.id)}">${escapeHtml(f.name)}</option>`).join('');
+  if ([...select.options].some(o => o.value === current)) {
+    select.value = current;
+  }
 }
 
 function getFilteredPapers() {
@@ -249,6 +407,11 @@ function getFilteredPapers() {
   const tag = document.getElementById('filter-tag').value;
 
   return papers.filter(p => {
+    if (currentFolderId === UNCategorized_ID) {
+      if (p.folderId) return false;
+    } else if (currentFolderId) {
+      if (p.folderId !== currentFolderId) return false;
+    }
     if (status && p.status !== status) return false;
     if (tag && !(p.tags || []).includes(tag)) return false;
     if (search) {
@@ -262,6 +425,14 @@ function getFilteredPapers() {
   }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
+function getFolderPapers() {
+  return papers.filter(p => {
+    if (currentFolderId === UNCategorized_ID) return !p.folderId;
+    if (currentFolderId) return p.folderId === currentFolderId;
+    return true;
+  });
+}
+
 function renderList() {
   const list = document.getElementById('paper-list');
   const empty = document.getElementById('empty-state');
@@ -272,15 +443,27 @@ function renderList() {
   if (papers.length === 0) {
     list.innerHTML = '';
     empty.classList.remove('hidden');
+    empty.querySelector('h3').textContent = '还没有论文记录';
+    empty.querySelector('p').textContent = '暂无论文记录';
+    return;
+  }
+
+  const folderPapers = getFolderPapers();
+  if (folderPapers.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    empty.querySelector('h3').textContent = '该文件夹暂无论文';
+    empty.querySelector('p').textContent = '切换文件夹或添加新论文';
+    return;
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">没有匹配的论文</p>';
+    empty.classList.add('hidden');
     return;
   }
 
   empty.classList.add('hidden');
-
-  if (filtered.length === 0) {
-    list.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">没有匹配的论文</p>';
-    return;
-  }
 
   list.innerHTML = filtered.map(p => `
     <article class="paper-card" data-id="${p.id}">
@@ -602,6 +785,7 @@ function editPaper(id) {
   document.getElementById('venue').value = p.venue || '';
   document.getElementById('url').value = p.url || '';
   document.getElementById('source-code-url').value = p.sourceCodeUrl || '';
+  document.getElementById('paper-folder').value = p.folderId || '';
   document.getElementById('status').value = p.status;
   document.getElementById('read-date').value = p.readDate || '';
   document.getElementById('tags').value = (p.tags || []).join(', ');
@@ -663,6 +847,7 @@ async function submitPaperForm() {
     venue: document.getElementById('venue').value.trim(),
     url: document.getElementById('url').value.trim(),
     sourceCodeUrl: document.getElementById('source-code-url').value.trim(),
+    folderId: document.getElementById('paper-folder').value || null,
     status: document.getElementById('status').value,
     readDate: document.getElementById('read-date').value,
     tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean),
@@ -747,6 +932,10 @@ function renderStats() {
   ).join('');
 }
 
+function getFoldersJson() {
+  return JSON.stringify(folders, null, 2) + '\n';
+}
+
 function getPapersJson() {
   return JSON.stringify(papers, null, 2) + '\n';
 }
@@ -807,7 +996,7 @@ async function publishToGithub() {
   if (!requireAdmin()) return;
 
   const config = getConfig().github || {};
-  const { owner, repo, branch = 'main', dataPath = 'data/papers.json' } = config;
+  const { owner, repo, branch = 'main', dataPath = 'data/papers.json', foldersPath = 'data/folders.json' } = config;
   const token = getGithubToken();
 
   if (!owner || !repo || !token) {
@@ -836,6 +1025,12 @@ async function publishToGithub() {
         `Upload PDF: ${paper.pdfName || paper.id}`
       );
     }
+
+    const foldersBase64 = btoa(unescape(encodeURIComponent(getFoldersJson())));
+    await uploadGithubFile(
+      owner, repo, foldersPath, branch, token, foldersBase64,
+      'Update folders via PaperAI'
+    );
 
     const jsonBase64 = btoa(unescape(encodeURIComponent(getPapersJson())));
     await uploadGithubFile(
@@ -934,7 +1129,9 @@ function escapeHtml(str) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   applySession(getSession());
-  await loadPapers();
+  await loadData();
+
+  document.getElementById('btn-new-folder').addEventListener('click', createFolder);
 
   document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
@@ -1000,6 +1197,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       await window.PdfStore.clearPdfStore();
       clearLocalDraft();
       papers = [];
+      folders = [];
+      currentFolderId = '';
       hasUnpublishedChanges = false;
       renderStats();
       renderList();
@@ -1019,6 +1218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
+  renderFolders();
   renderList();
 });
 

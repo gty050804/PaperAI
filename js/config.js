@@ -7,6 +7,7 @@ window.PaperAIConfig = {
     repo: 'PaperAI',
     branch: 'main',
     dataPath: 'data/papers.json',
+    foldersPath: 'data/folders.json',
     pdfsPath: 'data/pdfs',
   },
 

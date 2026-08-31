@@ -32,6 +32,10 @@
   <main class="main container">
     <!-- 阅读列表视图 -->
     <section id="view-list" class="view active">
+      <div class="folder-bar">
+        <div id="folder-list" class="folder-list"></div>
+        <button type="button" class="btn btn-secondary btn-sm admin-only hidden" id="btn-new-folder">+ 新建文件夹</button>
+      </div>
       <div class="toolbar">
         <div class="search-box">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -116,6 +120,12 @@
             </div>
           </div>
           <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="paper-folder">所属文件夹</label>
+              <select id="paper-folder">
+                <option value="">未分类</option>
+              </select>
+            </div>
             <div class="form-group">
               <label for="read-date">阅读日期</label>
               <input type="date" id="read-date">
@@ -236,7 +246,7 @@
           </label>
           <button class="btn btn-danger" id="btn-clear">清空所有数据</button>
         </div>
-        <p class="hint">修改后点击「发布到网站」更新数据与 PDF 文件。</p>
+        <p class="hint">修改后点击「发布到网站」更新论文、文件夹与 PDF 文件。</p>
       </div>
     </section>
   </main>

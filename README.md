@@ -67,6 +67,7 @@ PaperAI/
 ├── index.html
 ├── data/
 │   ├── papers.json     # 论文与笔记数据
+│   ├── folders.json    # 领域文件夹
 │   └── pdfs/           # PDF 文件目录├── css/style.css
 ├── js/
 │   ├── config.js       # 站主密码哈希 & GitHub 配置
