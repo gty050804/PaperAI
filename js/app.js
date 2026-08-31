@@ -17,6 +17,7 @@ let folders = [];
 let currentFolderId = null;
 let folderModalMode = 'create';
 let folderEditingId = null;
+let lastCreatedFolderId = null;
 
 const BOOKMARK_COLORS = [
   { bg: '#fef9c3', tab: '#fde047', border: '#facc15', text: '#713f12' },
@@ -318,9 +319,12 @@ function getFolderLabel(id) {
 
 function updatePapersPanelVisibility() {
   const panel = document.getElementById('papers-panel');
-  if (!panel) return;
+  const section = document.querySelector('.bookmark-section');
   const open = currentFolderId != null;
-  panel.classList.toggle('hidden', !open);
+
+  if (panel) panel.classList.toggle('hidden', !open);
+  if (section) section.classList.toggle('hidden', open);
+
   const titleEl = document.getElementById('current-folder-title');
   if (titleEl && open) titleEl.textContent = getFolderLabel(currentFolderId);
 }
@@ -364,30 +368,43 @@ function renderFolders() {
 
   container.innerHTML = items.map((item, index) => {
     const colors = BOOKMARK_COLORS[item.colorIndex ?? index % BOOKMARK_COLORS.length];
-    const rotation = ((index % 5) - 2) * 1.5;
+    const rotation = ((index % 5) - 2) * 2.5;
     const isUserFolder = item.id !== UNCategorized_ID;
+    const isNew = item.id === lastCreatedFolderId;
     return `
-      <div class="bookmark-card${currentFolderId === item.id ? ' active' : ''}" style="transform: rotate(${rotation}deg)">
-        <button type="button" class="bookmark-open" data-folder-id="${escapeHtml(item.id)}" style="
-          --bookmark-bg: ${colors.bg};
-          --bookmark-tab: ${colors.tab};
-          --bookmark-border: ${colors.border};
-          --bookmark-text: ${colors.text};
-        ">
-          <div class="bookmark-inner">
+      <div class="bookmark-card${currentFolderId === item.id ? ' active' : ''}${isNew ? ' is-new' : ''}"
+           style="transform: rotate(${rotation}deg); --bookmark-rotate: ${rotation}deg;">
+        <button type="button" class="bookmark-open" data-folder-id="${escapeHtml(item.id)}">
+          <div class="bookmark-inner" style="
+            --bookmark-bg: ${colors.bg};
+            --bookmark-tab: ${colors.tab};
+            --bookmark-border: ${colors.border};
+            --bookmark-text: ${colors.text};
+            background: ${colors.bg};
+            border-color: ${colors.border};
+            color: ${colors.text};
+          ">
             ${isUserFolder && isAdmin ? `
               <span class="bookmark-actions admin-only">
                 <button type="button" class="bookmark-action" data-action="rename" data-folder-id="${escapeHtml(item.id)}" title="重命名">✎</button>
                 <button type="button" class="bookmark-action danger" data-action="delete" data-folder-id="${escapeHtml(item.id)}" title="删除">×</button>
               </span>
             ` : ''}
-            <h3 class="bookmark-name">${escapeHtml(item.label)}</h3>
-            <p class="bookmark-count">${item.count} 篇论文</p>
+            <h3 class="bookmark-name" style="color:${colors.text}">${escapeHtml(item.label)}</h3>
+            <p class="bookmark-count" style="color:${colors.text}">${item.count} 篇论文</p>
           </div>
         </button>
       </div>
     `;
   }).join('');
+
+  if (lastCreatedFolderId) {
+    setTimeout(() => {
+      const el = container.querySelector(`[data-folder-id="${lastCreatedFolderId}"]`)?.closest('.bookmark-card');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      lastCreatedFolderId = null;
+    }, 100);
+  }
 
   container.querySelectorAll('.bookmark-open').forEach(btn => {
     btn.addEventListener('click', () => openFolder(btn.dataset.folderId));
@@ -430,11 +447,13 @@ function handleFolderFormSubmit(e) {
   if (!name) return;
 
   if (folderModalMode === 'create') {
-    folders.push({
+    const newFolder = {
       id: crypto.randomUUID(),
       name,
       createdAt: new Date().toISOString(),
-    });
+    };
+    folders.push(newFolder);
+    lastCreatedFolderId = newFolder.id;
   } else if (folderEditingId) {
     const folder = getFolderById(folderEditingId);
     if (folder) folder.name = name;
@@ -442,11 +461,9 @@ function handleFolderFormSubmit(e) {
 
   markDirty();
   document.getElementById('folder-modal').close();
+  closeFolderView();
   renderFolders();
   updateFolderSelect();
-  if (currentFolderId != null) {
-    document.getElementById('current-folder-title').textContent = getFolderLabel(currentFolderId);
-  }
 }
 
 function renameFolder(id) {
