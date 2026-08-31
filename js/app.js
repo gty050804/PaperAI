@@ -1,6 +1,5 @@
 const DATA_URL = 'data/papers.json';
 const FOLDERS_URL = 'data/folders.json';
-const UNCategorized_ID = '__uncategorized__';
 const ADMIN_USERNAME = 'Phier';
 const USER_SESSION_KEY = 'paperai-user-session';
 const GITHUB_TOKEN_KEY = 'paperai-github-token';
@@ -301,7 +300,7 @@ function switchView(viewName) {
   }
   if (viewName === 'add') {
     updateFolderSelect();
-    if (!editingId && currentFolderId && currentFolderId !== UNCategorized_ID && getFolderById(currentFolderId)) {
+    if (!editingId && currentFolderId && getFolderById(currentFolderId)) {
       document.getElementById('paper-folder').value = currentFolderId;
     }
   }
@@ -312,9 +311,9 @@ function getFolderById(id) {
   return folders.find(f => f.id === id);
 }
 
-function getFolderLabel(id) {
-  if (id === UNCategorized_ID) return '未分类';
-  return getFolderById(id)?.name || '分类';
+function getFolderColors(folderId) {
+  const index = folders.findIndex(f => f.id === folderId);
+  return BOOKMARK_COLORS[index >= 0 ? index % BOOKMARK_COLORS.length : 0];
 }
 
 function updatePapersPanelVisibility() {
@@ -326,7 +325,38 @@ function updatePapersPanelVisibility() {
   if (section) section.classList.toggle('hidden', open);
 
   const titleEl = document.getElementById('current-folder-title');
-  if (titleEl && open) titleEl.textContent = getFolderLabel(currentFolderId);
+  if (!titleEl) return;
+
+  if (!open) {
+    titleEl.innerHTML = '';
+    return;
+  }
+
+  const folder = getFolderById(currentFolderId);
+  if (!folder) {
+    titleEl.innerHTML = '';
+    return;
+  }
+
+  const colors = getFolderColors(currentFolderId);
+  const count = countPapersInFolder(currentFolderId);
+  titleEl.innerHTML = `
+    <div class="bookmark-mini" style="
+      --bookmark-bg: ${colors.bg};
+      --bookmark-tab: ${colors.tab};
+      --bookmark-border: ${colors.border};
+      --bookmark-text: ${colors.text};
+      background: ${colors.bg};
+      border-color: ${colors.border};
+      color: ${colors.text};
+    ">
+      <div class="bookmark-mini-tab" style="background:${colors.tab}"></div>
+      <div class="bookmark-mini-content">
+        <span class="bookmark-mini-name">${escapeHtml(folder.name)}</span>
+        <span class="bookmark-mini-count">${count} 篇论文</span>
+      </div>
+    </div>
+  `;
 }
 
 function openFolder(id) {
@@ -343,7 +373,6 @@ function closeFolderView() {
 }
 
 function countPapersInFolder(folderId) {
-  if (folderId === UNCategorized_ID) return papers.filter(p => !p.folderId).length;
   return papers.filter(p => p.folderId === folderId).length;
 }
 
@@ -351,15 +380,12 @@ function renderFolders() {
   const container = document.getElementById('folder-list');
   if (!container) return;
 
-  const items = [
-    { id: UNCategorized_ID, label: '未分类', count: countPapersInFolder(UNCategorized_ID), colorIndex: 0 },
-    ...folders.map((f, i) => ({
-      id: f.id,
-      label: f.name,
-      count: countPapersInFolder(f.id),
-      colorIndex: (i + 1) % BOOKMARK_COLORS.length,
-    })),
-  ];
+  const items = folders.map((f, i) => ({
+    id: f.id,
+    label: f.name,
+    count: countPapersInFolder(f.id),
+    colorIndex: i % BOOKMARK_COLORS.length,
+  }));
 
   if (items.length === 0) {
     container.innerHTML = '<p class="bookmark-empty">暂无分类，站主可点击「新建分类」创建论文分类</p>';
@@ -369,7 +395,6 @@ function renderFolders() {
   container.innerHTML = items.map((item, index) => {
     const colors = BOOKMARK_COLORS[item.colorIndex ?? index % BOOKMARK_COLORS.length];
     const rotation = ((index % 5) - 2) * 2.5;
-    const isUserFolder = item.id !== UNCategorized_ID;
     const isNew = item.id === lastCreatedFolderId;
     return `
       <div class="bookmark-card${currentFolderId === item.id ? ' active' : ''}${isNew ? ' is-new' : ''}"
@@ -384,14 +409,16 @@ function renderFolders() {
             border-color: ${colors.border};
             color: ${colors.text};
           ">
-            ${isUserFolder && isAdmin ? `
+            ${isAdmin ? `
               <span class="bookmark-actions admin-only">
                 <button type="button" class="bookmark-action" data-action="rename" data-folder-id="${escapeHtml(item.id)}" title="重命名">✎</button>
                 <button type="button" class="bookmark-action danger" data-action="delete" data-folder-id="${escapeHtml(item.id)}" title="删除">×</button>
               </span>
             ` : ''}
-            <h3 class="bookmark-name" style="color:${colors.text}">${escapeHtml(item.label)}</h3>
-            <p class="bookmark-count" style="color:${colors.text}">${item.count} 篇论文</p>
+            <div class="bookmark-content">
+              <h3 class="bookmark-name" style="color:${colors.text}">${escapeHtml(item.label)}</h3>
+              <p class="bookmark-count" style="color:${colors.text}">${item.count} 篇论文</p>
+            </div>
           </div>
         </button>
       </div>
@@ -505,11 +532,7 @@ function getFilteredPapers() {
   const tag = document.getElementById('filter-tag').value;
 
   return papers.filter(p => {
-    if (currentFolderId === UNCategorized_ID) {
-      if (p.folderId) return false;
-    } else if (currentFolderId) {
-      if (p.folderId !== currentFolderId) return false;
-    }
+    if (currentFolderId && p.folderId !== currentFolderId) return false;
     if (status && p.status !== status) return false;
     if (tag && !(p.tags || []).includes(tag)) return false;
     if (search) {
@@ -525,10 +548,7 @@ function getFilteredPapers() {
 
 function getFolderPapers() {
   if (currentFolderId == null) return [];
-  return papers.filter(p => {
-    if (currentFolderId === UNCategorized_ID) return !p.folderId;
-    return p.folderId === currentFolderId;
-  });
+  return papers.filter(p => p.folderId === currentFolderId);
 }
 
 function renderList() {
@@ -1005,7 +1025,7 @@ async function submitPaperForm() {
 
   markDirty();
   resetForm();
-  currentFolderId = data.folderId || UNCategorized_ID;
+  currentFolderId = data.folderId || null;
   switchView('list');
 }
 
