@@ -907,13 +907,15 @@ body {
 }
 
 .reader-layout {
-  display: grid;
-  grid-template-columns: 1fr 320px 300px;
-  gap: 1rem;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: stretch;
 }
 
 .reader-panel {
+  width: 100%;
+}
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -952,8 +954,8 @@ body {
 
 .pdf-viewer-wrap {
   position: relative;
-  height: calc(100vh - 220px);
-  min-height: 480px;
+  height: min(82vh, 920px);
+  min-height: 560px;
   background: #525659;
 }
 
@@ -984,18 +986,10 @@ body {
   margin-bottom: 0.75rem;
 }
 
-.reader-notes-content {
-  padding: 1rem 1.25rem 1.5rem;
-  max-height: calc(100vh - 220px);
-  min-height: 480px;
-  overflow-y: auto;
-}
-
+.reader-notes-content,
 .reader-knowledge-content {
   padding: 1rem 1.25rem 1.5rem;
-  max-height: calc(100vh - 220px);
-  min-height: 480px;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .knowledge-point-card {
@@ -1091,16 +1085,12 @@ body {
 
 @media (max-width: 1200px) {
   .reader-layout {
-    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
   }
 
-  .reader-knowledge-panel {
-    grid-column: 1 / -1;
-  }
-
-  .reader-knowledge-content {
-    max-height: 40vh;
-    min-height: 200px;
+  .pdf-viewer-wrap {
+    height: min(75vh, 780px);
+    min-height: 420px;
   }
 }
 
@@ -1134,14 +1124,9 @@ body {
 }
 
 @media (max-width: 960px) {
-  .reader-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .pdf-viewer-wrap,
-  .reader-notes-content {
+  .pdf-viewer-wrap {
     min-height: 360px;
-    max-height: 60vh;
+    height: 60vh;
   }
 }
 
