@@ -14,13 +14,58 @@ function getSiliconFlowApiKey() {
   return localStorage.getItem(SF_KEY_STORAGE) || '';
 }
 
-function getSiliconFlowImageModel() {
-  const cfg = window.PaperAIConfig?.siliconflow || {};
-  return localStorage.getItem(SF_IMAGE_MODEL_STORAGE) || cfg.imageModel || 'black-forest-labs/FLUX.1-schnell';
+const DEPRECATED_IMAGE_MODELS = new Set([
+  'black-forest-labs/FLUX.1-schnell',
+  'Pro/black-forest-labs/FLUX.1-schnell',
+  'black-forest-labs/FLUX.1-dev',
+  'black-forest-labs/FLUX.1-pro',
+  'stabilityai/stable-diffusion-xl-base-1.0',
+  'stabilityai/stable-diffusion-3-5-large',
+  'stabilityai/stable-diffusion-3-5-large-turbo',
+  'stabilityai/stable-diffusion-2-1',
+]);
+
+function getDefaultImageModel() {
+  return window.PaperAIConfig?.siliconflow?.imageModel || 'Tongyi-MAI/Z-Image-Turbo';
 }
 
-function getBookmarkImageSize() {
-  return window.PaperAIConfig?.siliconflow?.bookmarkImageSize || '768x512';
+function getSiliconFlowImageModel() {
+  const stored = localStorage.getItem(SF_IMAGE_MODEL_STORAGE);
+  if (stored && DEPRECATED_IMAGE_MODELS.has(stored)) {
+    localStorage.removeItem(SF_IMAGE_MODEL_STORAGE);
+  } else if (stored) {
+    return stored;
+  }
+  return getDefaultImageModel();
+}
+
+function getBookmarkImageSize(model = getSiliconFlowImageModel()) {
+  const cfgSize = window.PaperAIConfig?.siliconflow?.bookmarkImageSize;
+  if (cfgSize) return cfgSize;
+  if (model.includes('Z-Image')) return '1024x576';
+  if (model.includes('Qwen-Image')) return '1472x1140';
+  if (model.includes('FLUX.2')) return '1024x1024';
+  if (model.includes('FLUX.1-Kontext')) return '1024x1024';
+  return '1024x576';
+}
+
+function buildImageGenerationBody(model, prompt, imageSize) {
+  const body = { model, prompt, image_size: imageSize };
+  if (model.includes('FLUX')) {
+    body.prompt_enhancement = false;
+  }
+  if (model.includes('Qwen-Image') && !model.includes('Edit')) {
+    body.negative_prompt = 'text, letters, numbers, words, watermark, logo, signature';
+  }
+  return body;
+}
+
+function formatImageApiError(message, status) {
+  const msg = message || `图像 API 错误 (${status})`;
+  if (/disabled|not found|not authorized|unavailable/i.test(msg)) {
+    return `${msg}。FLUX.1-schnell 等旧模型已下线，请在「统计 → 站主设置」将图像模型改为 Tongyi-MAI/Z-Image-Turbo 或 Qwen/Qwen-Image`;
+  }
+  return msg;
 }
 
 function saveSiliconFlowSettings(apiKey, model, imageModel) {
@@ -169,7 +214,7 @@ async function generateBookmarkImage(userPrompt, folderName) {
 
   const { baseUrl } = getSiliconFlowConfig();
   const model = getSiliconFlowImageModel();
-  const imageSize = getBookmarkImageSize();
+  const imageSize = getBookmarkImageSize(model);
   const prompt = buildBookmarkImagePrompt(userPrompt, folderName || '论文分类');
 
   let res;
@@ -180,12 +225,7 @@ async function generateBookmarkImage(userPrompt, folderName) {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model,
-        prompt,
-        image_size: imageSize,
-        prompt_enhancement: false,
-      }),
+      body: JSON.stringify(buildImageGenerationBody(model, prompt, imageSize)),
     });
   } catch {
     throw new Error('无法连接硅基流动 API，请检查网络或 API 地址');
@@ -193,7 +233,7 @@ async function generateBookmarkImage(userPrompt, folderName) {
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(data.message || data.error?.message || `图像 API 错误 (${res.status})`);
+    throw new Error(formatImageApiError(data.message || data.error?.message, res.status));
   }
 
   const url = data.images?.[0]?.url;
