@@ -138,7 +138,6 @@ async function applyFolderImageToInner(inner, folder) {
   }
   inner.classList.add('has-image');
   inner.style.backgroundImage = `url("${url}")`;
-  content?.classList.add('on-overlay');
   if (nameEl) nameEl.style.color = '';
   if (countEl) countEl.style.color = '';
 }
@@ -441,7 +440,7 @@ async function renderCurrentFolderBookmark() {
   titleEl.innerHTML = `
     <div class="bookmark-mini${imageClass}" style="${surfaceStyle}">
       ${imageUrl ? '' : `<div class="bookmark-mini-tab" style="background:${colors.tab}"></div>`}
-      <div class="bookmark-mini-content on-overlay">
+      <div class="bookmark-mini-content">
         <span class="bookmark-mini-name">${escapeHtml(folder.name)}</span>
         <span class="bookmark-mini-count">${count} 篇论文</span>
       </div>
