@@ -16,6 +16,6 @@ window.PaperAIConfig = {
     baseUrl: 'https://api.siliconflow.cn/v1',
     model: 'deepseek-ai/DeepSeek-V3',
     imageModel: 'Tongyi-MAI/Z-Image-Turbo',
-    bookmarkImageSize: '1024x576',
+    bookmarkImageSize: '512x512',
   },
 };

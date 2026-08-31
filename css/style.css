@@ -395,13 +395,20 @@ body {
 }
 
 .bookmark-inner.has-image {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: #f4f4f5;
   border-color: rgba(0, 0, 0, 0.08);
-  box-shadow:
-    3px 4px 0 rgba(0, 0, 0, 0.07),
-    0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.bookmark-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .bookmark-inner.has-image .bookmark-tab {
@@ -411,20 +418,35 @@ body {
 .bookmark-inner.has-image .bookmark-content {
   position: relative;
   z-index: 1;
+  pointer-events: none;
 }
 
 .bookmark-inner.has-image .bookmark-name,
 .bookmark-inner.has-image .bookmark-count {
   color: #fff;
-  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.75), 0 0 3px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
 .bookmark-mini.has-image {
   position: relative;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 140px;
+  max-width: 280px;
+  min-height: 80px;
+  background: #f4f4f5;
   overflow: hidden;
+}
+
+.bookmark-mini-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .bookmark-mini.has-image .bookmark-mini-tab {
@@ -434,12 +456,14 @@ body {
 .bookmark-mini.has-image .bookmark-mini-content {
   position: relative;
   z-index: 1;
+  flex: 1;
+  pointer-events: none;
 }
 
 .bookmark-mini.has-image .bookmark-mini-name,
 .bookmark-mini.has-image .bookmark-mini-count {
   color: #fff;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75), 0 0 3px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
 .folder-image-preview-wrap {
@@ -450,10 +474,10 @@ body {
 .folder-image-preview {
   width: 200px;
   height: 180px;
-  object-fit: cover;
+  object-fit: contain;
+  background: #f4f4f5;
   border-radius: 3px 3px 10px 10px;
   border: 1px solid var(--border);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .folder-form-actions {

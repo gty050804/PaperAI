@@ -42,7 +42,7 @@ function getSiliconFlowImageModel() {
 function getBookmarkImageSize(model = getSiliconFlowImageModel()) {
   const cfgSize = window.PaperAIConfig?.siliconflow?.bookmarkImageSize;
   if (cfgSize) return cfgSize;
-  if (model.includes('Z-Image')) return '1024x576';
+  if (model.includes('Z-Image')) return '512x512';
   if (model.includes('Qwen-Image')) return '1472x1140';
   if (model.includes('FLUX.2')) return '1024x1024';
   if (model.includes('FLUX.1-Kontext')) return '1024x1024';

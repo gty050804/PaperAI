@@ -127,19 +127,23 @@ async function storeFolderImageBlob(folderId, blob) {
 async function applyFolderImageToInner(inner, folder) {
   if (!inner || !folder) return;
   const url = await resolveFolderImageUrl(folder);
-  const content = inner.querySelector('.bookmark-content');
-  const nameEl = inner.querySelector('.bookmark-name');
-  const countEl = inner.querySelector('.bookmark-count');
+  let photo = inner.querySelector('.bookmark-photo');
+
   if (!url) {
     inner.classList.remove('has-image');
+    photo?.remove();
     inner.style.backgroundImage = '';
-    content?.classList.remove('on-overlay');
     return;
   }
+
   inner.classList.add('has-image');
-  inner.style.backgroundImage = `url("${url}")`;
-  if (nameEl) nameEl.style.color = '';
-  if (countEl) countEl.style.color = '';
+  if (!photo) {
+    photo = document.createElement('img');
+    photo.className = 'bookmark-photo';
+    photo.alt = '';
+    inner.insertBefore(photo, inner.firstChild);
+  }
+  photo.src = url;
 }
 
 async function applyFolderImages(container) {
@@ -432,17 +436,26 @@ async function renderCurrentFolderBookmark() {
   const colors = getFolderColors(currentFolderId);
   const count = countPapersInFolder(currentFolderId);
   const imageUrl = await resolveFolderImageUrl(folder);
-  const imageClass = imageUrl ? ' has-image' : '';
-  const surfaceStyle = imageUrl
-    ? `background-image:url("${imageUrl}"); border-color:${colors.border};`
-    : `background:${colors.bg}; border-color:${colors.border};`;
+
+  if (imageUrl) {
+    titleEl.innerHTML = `
+      <div class="bookmark-mini has-image">
+        <img class="bookmark-mini-photo" src="${imageUrl.replace(/"/g, '&quot;')}" alt="">
+        <div class="bookmark-mini-content">
+          <span class="bookmark-mini-name">${escapeHtml(folder.name)}</span>
+          <span class="bookmark-mini-count">${count} 篇论文</span>
+        </div>
+      </div>
+    `;
+    return;
+  }
 
   titleEl.innerHTML = `
-    <div class="bookmark-mini${imageClass}" style="${surfaceStyle}">
-      ${imageUrl ? '' : `<div class="bookmark-mini-tab" style="background:${colors.tab}"></div>`}
+    <div class="bookmark-mini" style="background:${colors.bg}; border-color:${colors.border};">
+      <div class="bookmark-mini-tab" style="background:${colors.tab}"></div>
       <div class="bookmark-mini-content">
-        <span class="bookmark-mini-name">${escapeHtml(folder.name)}</span>
-        <span class="bookmark-mini-count">${count} 篇论文</span>
+        <span class="bookmark-mini-name" style="color:${colors.text}">${escapeHtml(folder.name)}</span>
+        <span class="bookmark-mini-count" style="color:${colors.text}">${count} 篇论文</span>
       </div>
     </div>
   `;
