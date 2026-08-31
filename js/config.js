@@ -8,11 +8,14 @@ window.PaperAIConfig = {
     branch: 'main',
     dataPath: 'data/papers.json',
     foldersPath: 'data/folders.json',
+    folderImagesPath: 'data/folder-images',
     pdfsPath: 'data/pdfs',
   },
 
   siliconflow: {
     baseUrl: 'https://api.siliconflow.cn/v1',
     model: 'deepseek-ai/DeepSeek-V3',
+    imageModel: 'black-forest-labs/FLUX.1-schnell',
+    bookmarkImageSize: '768x512',
   },
 };

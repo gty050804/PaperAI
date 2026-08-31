@@ -1,5 +1,6 @@
 const SF_KEY_STORAGE = 'paperai-siliconflow-key';
 const SF_MODEL_STORAGE = 'paperai-siliconflow-model';
+const SF_IMAGE_MODEL_STORAGE = 'paperai-siliconflow-image-model';
 
 function getSiliconFlowConfig() {
   const cfg = window.PaperAIConfig?.siliconflow || {};
@@ -13,21 +14,37 @@ function getSiliconFlowApiKey() {
   return localStorage.getItem(SF_KEY_STORAGE) || '';
 }
 
-function saveSiliconFlowSettings(apiKey, model) {
+function getSiliconFlowImageModel() {
+  const cfg = window.PaperAIConfig?.siliconflow || {};
+  return localStorage.getItem(SF_IMAGE_MODEL_STORAGE) || cfg.imageModel || 'black-forest-labs/FLUX.1-schnell';
+}
+
+function getBookmarkImageSize() {
+  return window.PaperAIConfig?.siliconflow?.bookmarkImageSize || '768x512';
+}
+
+function saveSiliconFlowSettings(apiKey, model, imageModel) {
   if (apiKey) localStorage.setItem(SF_KEY_STORAGE, apiKey);
   else localStorage.removeItem(SF_KEY_STORAGE);
 
   if (model) localStorage.setItem(SF_MODEL_STORAGE, model);
   else localStorage.removeItem(SF_MODEL_STORAGE);
+
+  if (imageModel !== undefined) {
+    if (imageModel) localStorage.setItem(SF_IMAGE_MODEL_STORAGE, imageModel);
+    else localStorage.removeItem(SF_IMAGE_MODEL_STORAGE);
+  }
 }
 
 function loadSiliconFlowSettingsIntoForm() {
   const keyEl = document.getElementById('sf-api-key');
   const modelEl = document.getElementById('sf-model');
+  const imageModelEl = document.getElementById('sf-image-model');
   if (!keyEl || !modelEl) return;
 
   keyEl.value = getSiliconFlowApiKey();
   modelEl.value = getSiliconFlowConfig().model;
+  if (imageModelEl) imageModelEl.value = getSiliconFlowImageModel();
 }
 
 function ensurePdfJsReady() {
@@ -108,6 +125,82 @@ async function callSiliconFlow(messages) {
   return content;
 }
 
+async function downloadImageBlob(url) {
+  try {
+    const res = await fetch(url);
+    if (res.ok) return await res.blob();
+  } catch {
+    // fall through to canvas approach
+  }
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      canvas.toBlob(
+        blob => (blob ? resolve(blob) : reject(new Error('无法保存生成的图片'))),
+        'image/png'
+      );
+    };
+    img.onerror = () => reject(new Error('无法下载生成的图片，请稍后重试'));
+    img.src = url;
+  });
+}
+
+function buildBookmarkImagePrompt(userPrompt, folderName) {
+  const theme = userPrompt.trim() || 'soft pastel academic style, gentle watercolor paper texture';
+  return [
+    `Decorative sticky note bookmark background for academic category "${folderName}".`,
+    `Theme and mood: ${theme}.`,
+    'Vertical rectangular note card with ornamental border and subtle decorative patterns only on edges and corners.',
+    'CRITICAL: keep the central middle area (about 65% of the card) completely blank — plain light cream or white smooth empty space for text overlay.',
+    'No text, no letters, no numbers, no words, no watermark, no logo.',
+    'Flat illustration, uniform soft lighting, high quality.',
+  ].join(' ');
+}
+
+async function generateBookmarkImage(userPrompt, folderName) {
+  const apiKey = getSiliconFlowApiKey();
+  if (!apiKey) throw new Error('请先在「统计 → 站主设置」中配置硅基流动 API Key');
+
+  const { baseUrl } = getSiliconFlowConfig();
+  const model = getSiliconFlowImageModel();
+  const imageSize = getBookmarkImageSize();
+  const prompt = buildBookmarkImagePrompt(userPrompt, folderName || '论文分类');
+
+  let res;
+  try {
+    res = await fetch(`${baseUrl}/images/generations`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        prompt,
+        image_size: imageSize,
+        prompt_enhancement: false,
+      }),
+    });
+  } catch {
+    throw new Error('无法连接硅基流动 API，请检查网络或 API 地址');
+  }
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.message || data.error?.message || `图像 API 错误 (${res.status})`);
+  }
+
+  const url = data.images?.[0]?.url;
+  if (!url) throw new Error('API 未返回图片 URL');
+  return downloadImageBlob(url);
+}
+
 async function extractPaperMetadataFromPdf(file) {
   const pdfText = await extractPdfText(file);
 
@@ -149,7 +242,10 @@ ${pdfText}`;
 
 window.PaperAI = {
   getSiliconFlowApiKey,
+  getSiliconFlowImageModel,
   saveSiliconFlowSettings,
   loadSiliconFlowSettingsIntoForm,
   extractPaperMetadataFromPdf,
+  generateBookmarkImage,
+  buildBookmarkImagePrompt,
 };
