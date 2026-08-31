@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PaperAI — 论文阅读笔记</title>
   <meta name="description" content="记录与管理学术论文阅读笔记">
-  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/style.css?v=14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -152,6 +152,18 @@
             <label for="summary">摘要 / 核心观点</label>
             <textarea id="summary" rows="3" placeholder="上传 PDF 后自动识别，也可手动填写"></textarea>
           </div>
+          <div class="form-group" id="knowledge-points-section">
+            <div class="form-group-header">
+              <label>知识点</label>
+              <div class="kp-form-actions">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-add-knowledge-point">+ 添加名词</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-explain-knowledge-points">AI 解释</button>
+              </div>
+            </div>
+            <p class="hint">输入论文涉及的名词，可附带讲解链接；点击「AI 解释」自动生成 200 字以内解释。</p>
+            <div id="knowledge-points-list" class="knowledge-points-list"></div>
+            <p id="kp-explain-status" class="file-hint"></p>
+          </div>
           <div class="form-group">
             <label for="notes">详细笔记</label>
             <textarea id="notes" rows="8" placeholder="方法细节、实验结果、个人思考…"></textarea>
@@ -195,6 +207,10 @@
         <div class="reader-panel reader-notes-panel">
           <div class="panel-header"><h3>笔记</h3></div>
           <div id="reader-notes" class="reader-notes-content"></div>
+        </div>
+        <div class="reader-panel reader-knowledge-panel">
+          <div class="panel-header"><h3>知识点</h3></div>
+          <div id="reader-knowledge" class="reader-knowledge-content"></div>
         </div>
       </div>
     </section>
@@ -326,10 +342,10 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="js/config.js?v=10"></script>
-  <script src="js/pdf-store.js?v=10"></script>
-  <script src="js/folder-image-store.js?v=10"></script>
-  <script src="js/ai.js?v=10"></script>
-  <script src="js/app.js?v=13"></script>
+  <script src="js/config.js?v=14"></script>
+  <script src="js/pdf-store.js?v=14"></script>
+  <script src="js/folder-image-store.js?v=14"></script>
+  <script src="js/ai.js?v=14"></script>
+  <script src="js/app.js?v=14"></script>
 </body>
 </html>

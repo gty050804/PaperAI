@@ -740,6 +740,7 @@ function getFilteredPapers() {
       const haystack = [
         p.title, p.authors, p.summary, p.notes, p.pdfName, p.sourceCodeUrl,
         ...(p.tags || []),
+        ...(p.knowledgePoints || []).flatMap(kp => [kp.term, kp.explanation, kp.link]),
       ].join(' ').toLowerCase();
       if (!haystack.includes(search)) return false;
     }
@@ -909,6 +910,7 @@ async function openReader(id) {
   }
 
   const notesEl = document.getElementById('reader-notes');
+  const knowledgeEl = document.getElementById('reader-knowledge');
   const tagsHtml = (p.tags || []).length
     ? `<div class="paper-tags" style="margin-bottom:1rem">${p.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`
     : '';
@@ -928,6 +930,10 @@ async function openReader(id) {
     ${renderNoteBlock('详细笔记', p.notes)}
     ${!p.summary && !p.notes && !p.url && !p.sourceCodeUrl ? '<p class="note-empty">暂无笔记</p>' : ''}
   `;
+
+  if (knowledgeEl) {
+    knowledgeEl.innerHTML = renderKnowledgePointsHtml(p.knowledgePoints);
+  }
 }
 
 function updatePdfFormHints(paper = null) {
@@ -1077,6 +1083,131 @@ function saveAdminSettings() {
   alert('设置已保存');
 }
 
+function setKpExplainStatus(msg, type = '') {
+  const el = document.getElementById('kp-explain-status');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.className = 'file-hint' + (type ? ` ai-status-${type}` : '');
+}
+
+function createKnowledgePointRow(data = {}) {
+  const row = document.createElement('div');
+  row.className = 'knowledge-point-row';
+  row.innerHTML = `
+    <input type="text" class="kp-row-term" placeholder="名词，例如：注意力机制">
+    <input type="text" class="kp-row-link" placeholder="讲解链接（可选）">
+    <textarea class="kp-row-explanation" rows="3" placeholder="AI 自动生成解释，也可手动编辑"></textarea>
+    <div class="knowledge-point-row-actions">
+      <button type="button" class="btn btn-ghost btn-sm btn-kp-explain-one">解释此项</button>
+      <button type="button" class="btn btn-ghost btn-sm btn-kp-remove">删除</button>
+    </div>
+  `;
+  row.querySelector('.kp-row-term').value = data.term || '';
+  row.querySelector('.kp-row-link').value = data.link || '';
+  row.querySelector('.kp-row-explanation').value = data.explanation || '';
+  row.querySelector('.btn-kp-remove').addEventListener('click', () => row.remove());
+  row.querySelector('.btn-kp-explain-one').addEventListener('click', () => {
+    void explainKnowledgePointRows([row]);
+  });
+  return row;
+}
+
+function addKnowledgePointRow(data = {}) {
+  const list = document.getElementById('knowledge-points-list');
+  if (!list) return;
+  list.appendChild(createKnowledgePointRow(data));
+}
+
+function setKnowledgePointsToForm(points = []) {
+  const list = document.getElementById('knowledge-points-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (points.length) {
+    points.forEach(kp => addKnowledgePointRow(kp));
+  }
+  setKpExplainStatus('');
+}
+
+function getKnowledgePointsFromForm() {
+  const list = document.getElementById('knowledge-points-list');
+  if (!list) return [];
+  return [...list.querySelectorAll('.knowledge-point-row')]
+    .map(row => ({
+      term: row.querySelector('.kp-row-term')?.value.trim() || '',
+      link: row.querySelector('.kp-row-link')?.value.trim() || '',
+      explanation: (row.querySelector('.kp-row-explanation')?.value.trim() || '').slice(0, 200),
+    }))
+    .filter(kp => kp.term);
+}
+
+function getKnowledgePointFormContext() {
+  return {
+    title: document.getElementById('title')?.value.trim() || '',
+    summary: document.getElementById('summary')?.value.trim() || '',
+  };
+}
+
+async function explainKnowledgePointRows(rows) {
+  if (!requireAdmin()) return;
+
+  const payload = rows.map(row => ({
+    row,
+    term: row.querySelector('.kp-row-term')?.value.trim() || '',
+    link: row.querySelector('.kp-row-link')?.value.trim() || '',
+    explanation: row.querySelector('.kp-row-explanation')?.value.trim() || '',
+  })).filter(item => item.term);
+
+  if (!payload.length) {
+    alert('请先填写名词');
+    return;
+  }
+
+  setKpExplainStatus('正在生成解释…');
+  const btnAll = document.getElementById('btn-explain-knowledge-points');
+  if (btnAll) btnAll.disabled = true;
+
+  try {
+    const explained = await window.PaperAI.explainKnowledgeTerms(
+      payload.map(({ term, link, explanation }) => ({ term, link, explanation })),
+      getKnowledgePointFormContext()
+    );
+    explained.forEach((item, index) => {
+      const row = payload[index]?.row;
+      if (!row) return;
+      const area = row.querySelector('.kp-row-explanation');
+      if (area && item.explanation) area.value = item.explanation.slice(0, 200);
+    });
+    setKpExplainStatus('解释已生成', 'success');
+  } catch (err) {
+    setKpExplainStatus(err.message, 'error');
+    alert(`生成失败：${err.message}`);
+  } finally {
+    if (btnAll) btnAll.disabled = false;
+  }
+}
+
+async function explainAllKnowledgePointsInForm() {
+  const list = document.getElementById('knowledge-points-list');
+  if (!list) return;
+  const rows = [...list.querySelectorAll('.knowledge-point-row')];
+  await explainKnowledgePointRows(rows);
+}
+
+function renderKnowledgePointsHtml(points) {
+  if (!points?.length) return '<p class="note-empty">暂无知识点</p>';
+  return points.map(kp => `
+    <article class="knowledge-point-card">
+      <h4 class="kp-term">${escapeHtml(kp.term)}</h4>
+      ${kp.explanation
+    ? `<p class="kp-explanation">${escapeHtml(kp.explanation)}</p>`
+    : '<p class="kp-explanation note-empty">暂无解释</p>'}
+      ${kp.link
+    ? `<a class="kp-read-link" href="${escapeHtml(kp.link)}" target="_blank" rel="noopener">讲解链接</a>`
+    : ''}
+    </article>
+  `).join('');
+}
+
 function resetForm() {
   const draftId = document.getElementById('paper-id').value;
   if (draftId && !editingId) {
@@ -1091,6 +1222,7 @@ function resetForm() {
   document.getElementById('pdf-file').value = '';
   setAiExtractStatus('');
   updatePdfFormHints(null);
+  setKnowledgePointsToForm([]);
 }
 
 function editPaper(id) {
@@ -1113,6 +1245,7 @@ function editPaper(id) {
   document.getElementById('tags').value = (p.tags || []).join(', ');
   document.getElementById('summary').value = p.summary || '';
   document.getElementById('notes').value = p.notes || '';
+  setKnowledgePointsToForm(p.knowledgePoints || []);
   document.getElementById('pdf-file').value = '';
   updatePdfFormHints(p);
 
@@ -1175,6 +1308,7 @@ async function submitPaperForm() {
     tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean),
     summary: document.getElementById('summary').value.trim(),
     notes: document.getElementById('notes').value.trim(),
+    knowledgePoints: getKnowledgePointsFromForm(),
     updatedAt: new Date().toISOString(),
   };
 
@@ -1524,6 +1658,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   document.getElementById('btn-ai-extract').addEventListener('click', handleAiExtract);
+  document.getElementById('btn-add-knowledge-point')?.addEventListener('click', () => addKnowledgePointRow());
+  document.getElementById('btn-explain-knowledge-points')?.addEventListener('click', explainAllKnowledgePointsInForm);
   document.getElementById('btn-save-sf-settings').addEventListener('click', saveAdminSettings);
   document.getElementById('btn-cancel').addEventListener('click', () => {
     resetForm();

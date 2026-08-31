@@ -133,11 +133,12 @@ function parseJsonFromLLM(content) {
   }
 }
 
-async function callSiliconFlow(messages) {
+async function callSiliconFlow(messages, options = {}) {
   const apiKey = getSiliconFlowApiKey();
-  if (!apiKey) throw new Error('请先在「统计 → AI 设置」中配置硅基流动 API Key');
+  if (!apiKey) throw new Error('请先在「统计 → 站主设置」中配置硅基流动 API Key');
 
   const { baseUrl, model } = getSiliconFlowConfig();
+  const maxTokens = options.maxTokens ?? 1200;
 
   let res;
   try {
@@ -151,8 +152,8 @@ async function callSiliconFlow(messages) {
         model,
         messages,
         stream: false,
-        max_tokens: 1200,
-        temperature: 0.1,
+        max_tokens: maxTokens,
+        temperature: options.temperature ?? 0.1,
         response_format: { type: 'json_object' },
       }),
     });
@@ -235,6 +236,47 @@ async function generateBookmarkImage(userPrompt) {
   return downloadImageBlob(url);
 }
 
+async function explainKnowledgeTerms(terms, context = {}) {
+  const termList = terms.map(t => (t.term || '').trim()).filter(Boolean);
+  if (!termList.length) throw new Error('请先填写至少一个名词');
+
+  const prompt = `请解释以下学术或技术名词，每个解释不超过200字，语言简洁准确，面向有相关基础的学习者。
+${context.title ? `相关论文标题：${context.title}` : ''}
+${context.summary ? `论文摘要：${context.summary}` : ''}
+
+名词列表：${termList.join('、')}
+
+严格返回 JSON：
+{
+  "items": [
+    { "term": "名词", "explanation": "不超过200字的中文解释" }
+  ]
+}
+
+要求：
+- items 数组顺序与名词列表一致，term 字段与输入名词对应
+- 只返回 JSON，不要 markdown`;
+
+  const content = await callSiliconFlow([
+    { role: 'system', content: '你是学术科普助手，用中文解释术语，只输出合法 JSON。' },
+    { role: 'user', content: prompt },
+  ], { maxTokens: Math.min(4000, 400 * termList.length + 400) });
+
+  const parsed = parseJsonFromLLM(content);
+  const items = parsed.items || [];
+  const map = new Map(items.map(item => [item.term?.trim(), item.explanation?.trim()]));
+
+  return terms.map(t => {
+    const term = (t.term || '').trim();
+    if (!term) return t;
+    const explanation = map.get(term)
+      || items.find(i => i.term?.trim() === term)?.explanation?.trim()
+      || t.explanation
+      || '';
+    return { ...t, term, explanation };
+  });
+}
+
 async function extractPaperMetadataFromPdf(file) {
   const pdfText = await extractPdfText(file);
 
@@ -280,6 +322,7 @@ window.PaperAI = {
   saveSiliconFlowSettings,
   loadSiliconFlowSettingsIntoForm,
   extractPaperMetadataFromPdf,
+  explainKnowledgeTerms,
   generateBookmarkImage,
   buildBookmarkImagePrompt,
 };
