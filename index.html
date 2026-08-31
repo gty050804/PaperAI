@@ -22,8 +22,9 @@
       </div>
       <nav class="nav">
         <button class="nav-btn active" data-view="list">阅读列表</button>
-        <button class="nav-btn" data-view="add">添加论文</button>
+        <button class="nav-btn admin-only hidden" data-view="add">添加论文</button>
         <button class="nav-btn" data-view="stats">统计</button>
+        <button class="nav-btn" id="btn-admin-login" title="登录">🔒</button>
       </nav>
     </div>
   </header>
@@ -54,8 +55,7 @@
       <div id="empty-state" class="empty-state hidden">
         <div class="empty-icon">📚</div>
         <h3>还没有论文记录</h3>
-        <p>点击「添加论文」开始记录你的第一篇阅读笔记</p>
-        <button class="btn btn-primary" onclick="switchView('add')">添加论文</button>
+        <p>暂无论文记录</p>
       </div>
     </section>
 
@@ -65,10 +65,22 @@
         <h2 id="form-title">添加论文</h2>
         <form id="paper-form">
           <input type="hidden" id="paper-id">
+          <div class="form-group">
+            <label for="pdf-file">PDF 文件</label>
+            <input type="file" id="pdf-file" accept=".pdf,application/pdf">
+            <div class="pdf-actions">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-ai-extract" disabled>重新识别</button>
+              <span id="ai-extract-status" class="file-hint"></span>
+            </div>
+            <p id="pdf-current" class="file-hint hidden"></p>
+            <label class="checkbox-label hidden" id="remove-pdf-wrap">
+              <input type="checkbox" id="remove-pdf"> 移除当前 PDF
+            </label>
+          </div>
           <div class="form-row">
             <div class="form-group flex-2">
-              <label for="title">论文标题 *</label>
-              <input type="text" id="title" required placeholder="例如：Attention Is All You Need">
+              <label for="title">论文标题</label>
+              <input type="text" id="title" placeholder="上传 PDF 后自动识别，也可手动填写">
             </div>
             <div class="form-group">
               <label for="status">阅读状态</label>
@@ -82,22 +94,28 @@
           <div class="form-row">
             <div class="form-group">
               <label for="authors">作者</label>
-              <input type="text" id="authors" placeholder="Vaswani et al.">
+              <input type="text" id="authors" placeholder="自动识别">
             </div>
             <div class="form-group">
               <label for="year">年份</label>
-              <input type="number" id="year" min="1900" max="2099" placeholder="2017">
+              <input type="number" id="year" min="1900" max="2099" placeholder="自动识别">
             </div>
             <div class="form-group">
               <label for="venue">发表 venue</label>
-              <input type="text" id="venue" placeholder="NeurIPS, arXiv…">
+              <input type="text" id="venue" placeholder="自动识别">
             </div>
           </div>
           <div class="form-row">
             <div class="form-group flex-2">
-              <label for="url">链接</label>
-              <input type="url" id="url" placeholder="https://arxiv.org/abs/...">
+              <label for="url">论文链接</label>
+              <input type="text" id="url" placeholder="自动识别">
             </div>
+            <div class="form-group flex-2">
+              <label for="source-code-url">源代码地址</label>
+              <input type="text" id="source-code-url" placeholder="自动识别">
+            </div>
+          </div>
+          <div class="form-row">
             <div class="form-group">
               <label for="read-date">阅读日期</label>
               <input type="date" id="read-date">
@@ -109,7 +127,7 @@
           </div>
           <div class="form-group">
             <label for="summary">摘要 / 核心观点</label>
-            <textarea id="summary" rows="3" placeholder="用几句话概括论文的核心贡献…"></textarea>
+            <textarea id="summary" rows="3" placeholder="上传 PDF 后自动识别，也可手动填写"></textarea>
           </div>
           <div class="form-group">
             <label for="notes">详细笔记</label>
@@ -120,6 +138,41 @@
             <button type="submit" class="btn btn-primary">保存</button>
           </div>
         </form>
+      </div>
+    </section>
+
+    <!-- 论文阅读视图 -->
+    <section id="view-reader" class="view">
+      <div class="reader-header">
+        <button class="btn btn-ghost" id="btn-back-list">← 返回列表</button>
+        <div class="reader-header-actions admin-only hidden">
+          <button class="btn btn-secondary" id="reader-edit">编辑</button>
+          <button class="btn btn-danger" id="reader-delete">删除</button>
+        </div>
+      </div>
+      <h2 class="reader-title" id="reader-title"></h2>
+      <p class="reader-meta" id="reader-meta"></p>
+      <div class="reader-layout">
+        <div class="reader-panel reader-pdf-panel">
+          <div class="panel-header">
+            <h3>PDF</h3>
+            <div class="panel-header-actions">
+              <button type="button" class="btn btn-secondary btn-sm hidden" id="pdf-download">下载 PDF</button>
+              <a class="btn btn-secondary btn-sm hidden" id="pdf-open-tab" target="_blank" rel="noopener">新窗口打开</a>
+            </div>
+          </div>
+          <div class="pdf-viewer-wrap">
+            <iframe id="pdf-frame" class="pdf-frame" title="PDF 阅读器"></iframe>
+            <div id="pdf-unavailable" class="pdf-unavailable hidden">
+              <span>📄</span>
+              <p>暂无 PDF 文件</p>
+            </div>
+          </div>
+        </div>
+        <div class="reader-panel reader-notes-panel">
+          <div class="panel-header"><h3>笔记</h3></div>
+          <div id="reader-notes" class="reader-notes-content"></div>
+        </div>
       </div>
     </section>
 
@@ -148,9 +201,34 @@
         <h3>热门标签</h3>
         <div id="tag-cloud" class="tag-cloud"></div>
       </div>
-      <div class="stats-section">
+      <div class="stats-section logged-in-only hidden">
+        <h3>账号</h3>
+        <p class="account-info">当前用户：<strong id="current-username"></strong></p>
+        <button class="btn btn-ghost" id="btn-logout">退出登录</button>
+      </div>
+      <div class="stats-section admin-only hidden">
+        <h3>站主设置</h3>
+        <div class="settings-form">
+          <div class="form-group">
+            <label for="sf-api-key">硅基流动 API Key</label>
+            <input type="password" id="sf-api-key" placeholder="sk-..." autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="sf-model">模型</label>
+            <input type="text" id="sf-model" placeholder="deepseek-ai/DeepSeek-V3">
+          </div>
+          <div class="form-group">
+            <label for="github-token">GitHub Token</label>
+            <input type="password" id="github-token" placeholder="ghp_..." autocomplete="off">
+          </div>
+          <button type="button" class="btn btn-secondary" id="btn-save-sf-settings">保存设置</button>
+        </div>
+        <p class="hint">API Key 与 GitHub Token 保存在浏览器本地，不会上传到 GitHub 仓库。</p>
+      </div>
+      <div class="stats-section admin-only hidden">
         <h3>数据管理</h3>
         <div class="data-actions">
+          <button class="btn btn-primary" id="btn-publish">发布到网站</button>
           <button class="btn btn-secondary" id="btn-export">导出 JSON</button>
           <label class="btn btn-secondary">
             导入 JSON
@@ -158,16 +236,31 @@
           </label>
           <button class="btn btn-danger" id="btn-clear">清空所有数据</button>
         </div>
-        <p class="hint">数据保存在浏览器本地。导出后可备份或迁移到其他设备。</p>
+        <p class="hint">修改后点击「发布到网站」更新数据与 PDF 文件。</p>
       </div>
     </section>
   </main>
 
-  <!-- 论文详情模态框 -->
-  <dialog id="detail-modal" class="modal">
-    <div class="modal-content">
-      <button class="modal-close" aria-label="关闭">&times;</button>
-      <div id="modal-body"></div>
+  <!-- 登录 -->
+  <dialog id="login-modal" class="modal">
+    <div class="modal-content modal-sm">
+      <button class="modal-close" data-close="login-modal" aria-label="关闭">&times;</button>
+      <h2 class="modal-title">登录</h2>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="admin-username">用户名</label>
+          <input type="text" id="admin-username" required autocomplete="username" placeholder="输入用户名">
+        </div>
+        <div class="form-group">
+          <label for="admin-password">密码</label>
+          <input type="password" id="admin-password" autocomplete="current-password" placeholder="请输入密码">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" data-close="login-modal">取消</button>
+          <button type="submit" class="btn btn-primary">登录</button>
+        </div>
+      </form>
+      <p id="login-error" class="login-error hidden"></p>
     </div>
   </dialog>
 
@@ -177,6 +270,10 @@
     </div>
   </footer>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/pdf-store.js"></script>
+  <script src="js/ai.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

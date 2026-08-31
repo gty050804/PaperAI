@@ -1,4 +1,8 @@
-const STORAGE_KEY = 'paperai-papers';
+const DATA_URL = 'data/papers.json';
+const ADMIN_USERNAME = 'Phier';
+const USER_SESSION_KEY = 'paperai-user-session';
+const GITHUB_TOKEN_KEY = 'paperai-github-token';
+const SESSION_HOURS = 24;
 
 const STATUS_LABELS = {
   'to-read': '待读',
@@ -8,78 +12,232 @@ const STATUS_LABELS = {
 
 let papers = [];
 let editingId = null;
+let currentReaderId = null;
+let isAdmin = false;
+let isLoggedIn = false;
+let currentUsername = '';
+let hasUnpublishedChanges = false;
+const pendingPdfs = new Map();
+const pdfBlobUrls = new Map();
 
-function loadPapers() {
+async function hashPassword(password) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function getConfig() {
+  return window.PaperAIConfig || {};
+}
+
+function getGithubToken() {
+  return localStorage.getItem(GITHUB_TOKEN_KEY) || '';
+}
+
+function saveGithubToken(token) {
+  if (token) localStorage.setItem(GITHUB_TOKEN_KEY, token);
+  else localStorage.removeItem(GITHUB_TOKEN_KEY);
+}
+
+function loadAdminSettingsIntoForm() {
+  window.PaperAI?.loadSiliconFlowSettingsIntoForm();
+  const tokenEl = document.getElementById('github-token');
+  if (tokenEl) tokenEl.value = getGithubToken();
+}
+
+function getPdfsDir() {
+  return getConfig().github?.pdfsPath || 'data/pdfs';
+}
+
+function getPdfPath(paperId) {
+  return `${getPdfsDir()}/${paperId}.pdf`;
+}
+
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+function revokePdfBlob(paperId) {
+  const url = pdfBlobUrls.get(paperId);
+  if (url) {
+    URL.revokeObjectURL(url);
+    pdfBlobUrls.delete(paperId);
+  }
+}
+
+function clearAllPdfBlobs() {
+  pdfBlobUrls.forEach(url => URL.revokeObjectURL(url));
+  pdfBlobUrls.clear();
+}
+
+async function resolvePdfUrl(paper) {
+  if (!paper) return null;
+
+  if (pendingPdfs.has(paper.id)) {
+    if (!pdfBlobUrls.has(paper.id)) {
+      pdfBlobUrls.set(paper.id, URL.createObjectURL(pendingPdfs.get(paper.id)));
+    }
+    return pdfBlobUrls.get(paper.id);
+  }
+
+  const stored = await window.PdfStore.getPdfFromStore(paper.id);
+  if (stored) {
+    if (!pdfBlobUrls.has(paper.id)) {
+      pdfBlobUrls.set(paper.id, URL.createObjectURL(stored));
+    }
+    return pdfBlobUrls.get(paper.id);
+  }
+
+  if (paper.pdfPath) {
+    const remoteUrl = window.PdfStore.resolveAssetPath(paper.pdfPath);
+    const ts = paper.updatedAt || paper.createdAt || '';
+    const sep = remoteUrl.includes('?') ? '&' : '?';
+    const url = `${remoteUrl}${sep}t=${encodeURIComponent(ts)}`;
+    const exists = await window.PdfStore.checkRemotePdfExists(remoteUrl);
+    if (exists) return url;
+  }
+
+  return null;
+}
+
+function paperHasPdf(paper) {
+  return !!(paper.pdfPath || pendingPdfs.has(paper.id));
+}
+
+function getSession() {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      papers = JSON.parse(stored);
-      return;
+    const raw = sessionStorage.getItem(USER_SESSION_KEY);
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    if (Date.now() > session.expiresAt) {
+      sessionStorage.removeItem(USER_SESSION_KEY);
+      return null;
+    }
+    return session;
+  } catch {
+    return null;
+  }
+}
+
+function setUserSession(session) {
+  if (session) {
+    sessionStorage.setItem(USER_SESSION_KEY, JSON.stringify({
+      ...session,
+      expiresAt: Date.now() + SESSION_HOURS * 60 * 60 * 1000,
+    }));
+  } else {
+    sessionStorage.removeItem(USER_SESSION_KEY);
+  }
+  applySession(getSession());
+}
+
+function applySession(session) {
+  isAdmin = session?.role === 'admin';
+  isLoggedIn = !!session;
+  currentUsername = session?.username || '';
+  updateUserUI();
+}
+
+function updateUserUI() {
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.classList.toggle('hidden', !isAdmin);
+  });
+  document.querySelectorAll('.logged-in-only').forEach(el => {
+    el.classList.toggle('hidden', !isLoggedIn);
+  });
+
+  const loginBtn = document.getElementById('btn-admin-login');
+  loginBtn.classList.remove('admin-active', 'guest-active');
+
+  if (isAdmin) {
+    loginBtn.textContent = '✓';
+    loginBtn.title = `已登录：${currentUsername}`;
+    loginBtn.classList.add('admin-active');
+  } else if (isLoggedIn) {
+    loginBtn.textContent = currentUsername.slice(0, 2).toUpperCase();
+    loginBtn.title = `已登录：${currentUsername}`;
+    loginBtn.classList.add('guest-active');
+  } else {
+    loginBtn.textContent = '🔒';
+    loginBtn.title = '登录';
+  }
+
+  const usernameEl = document.getElementById('current-username');
+  if (usernameEl) usernameEl.textContent = currentUsername;
+}
+
+function requireAdmin() {
+  if (isAdmin) return true;
+  alert('无权限执行此操作。');
+  if (!isLoggedIn) openLoginModal();
+  return false;
+}
+
+const PAPERS_DRAFT_KEY = 'paperai-papers-draft';
+
+function saveLocalDraft() {
+  if (isAdmin && papers.length >= 0) {
+    localStorage.setItem(PAPERS_DRAFT_KEY, JSON.stringify(papers));
+  }
+}
+
+function clearLocalDraft() {
+  localStorage.removeItem(PAPERS_DRAFT_KEY);
+}
+
+async function loadPapers() {
+  let remote = [];
+  try {
+    const res = await fetch(`${DATA_URL}?t=${Date.now()}`);
+    if (res.ok) {
+      remote = await res.json();
+      if (!Array.isArray(remote)) remote = [];
     }
   } catch {
-    papers = [];
+    console.warn('无法加载 data/papers.json');
   }
-  loadSampleData();
+
+  try {
+    const draftRaw = localStorage.getItem(PAPERS_DRAFT_KEY);
+    if (draftRaw) {
+      const draft = JSON.parse(draftRaw);
+      if (Array.isArray(draft) && draft.length > 0) {
+        papers = draft;
+        hasUnpublishedChanges = true;
+        return;
+      }
+    }
+  } catch {
+    localStorage.removeItem(PAPERS_DRAFT_KEY);
+  }
+
+  papers = remote;
+  hasUnpublishedChanges = false;
 }
 
-function loadSampleData() {
-  papers = [
-    {
-      id: crypto.randomUUID(),
-      title: 'Attention Is All You Need',
-      authors: 'Vaswani et al.',
-      year: 2017,
-      venue: 'NeurIPS',
-      url: 'https://arxiv.org/abs/1706.03762',
-      status: 'finished',
-      readDate: '2026-01-15',
-      tags: ['Transformer', 'NLP', '深度学习'],
-      summary: '提出 Transformer 架构，完全基于自注意力机制，摒弃 RNN 和 CNN，在机器翻译任务上取得 SOTA 效果。',
-      notes: '核心创新：\n1. Multi-Head Self-Attention\n2. Positional Encoding\n3. 并行化训练\n\n对后续大模型发展影响深远。',
-      createdAt: '2026-01-15T10:00:00Z',
-    },
-    {
-      id: crypto.randomUUID(),
-      title: 'BERT: Pre-training of Deep Bidirectional Transformers',
-      authors: 'Devlin et al.',
-      year: 2019,
-      venue: 'NAACL',
-      url: 'https://arxiv.org/abs/1810.04805',
-      status: 'reading',
-      readDate: '2026-02-01',
-      tags: ['BERT', '预训练', 'NLP'],
-      summary: '通过 Masked LM 和 Next Sentence Prediction 进行双向预训练，在多项 NLP 任务上刷新记录。',
-      notes: '待深入阅读 Section 3 的预训练细节。',
-      createdAt: '2026-02-01T08:00:00Z',
-    },
-    {
-      id: crypto.randomUUID(),
-      title: 'Deep Residual Learning for Image Recognition',
-      authors: 'He et al.',
-      year: 2016,
-      venue: 'CVPR',
-      url: 'https://arxiv.org/abs/1512.03385',
-      status: 'to-read',
-      readDate: '',
-      tags: ['ResNet', 'CV', '深度学习'],
-      summary: '提出残差连接解决深层网络退化问题，使训练极深网络成为可能。',
-      notes: '',
-      createdAt: '2026-02-10T12:00:00Z',
-    },
-  ];
-  savePapers();
-}
-
-function savePapers() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(papers));
+function markDirty() {
+  if (isAdmin) {
+    hasUnpublishedChanges = true;
+    saveLocalDraft();
+  }
 }
 
 function switchView(viewName) {
+  if (viewName === 'add' && !requireAdmin()) return;
+
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-btn[data-view]').forEach(b => b.classList.remove('active'));
 
   document.getElementById(`view-${viewName}`).classList.add('active');
-  document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
+  const navBtn = document.querySelector(`[data-view="${viewName}"]`);
+  if (navBtn) navBtn.classList.add('active');
+
+  document.querySelector('.main.container').classList.toggle('main-reader', viewName === 'reader');
 
   if (viewName === 'list') renderList();
   if (viewName === 'stats') renderStats();
@@ -95,7 +253,7 @@ function getFilteredPapers() {
     if (tag && !(p.tags || []).includes(tag)) return false;
     if (search) {
       const haystack = [
-        p.title, p.authors, p.summary, p.notes,
+        p.title, p.authors, p.summary, p.notes, p.pdfName, p.sourceCodeUrl,
         ...(p.tags || []),
       ].join(' ').toLowerCase();
       if (!haystack.includes(search)) return false;
@@ -127,21 +285,20 @@ function renderList() {
   list.innerHTML = filtered.map(p => `
     <article class="paper-card" data-id="${p.id}">
       <div class="paper-card-header">
-        <h3 class="paper-title">${escapeHtml(p.title)}</h3>
+        <h3 class="paper-title">${escapeHtml(getDisplayTitle(p))}</h3>
         <span class="status-badge status-${p.status}">${STATUS_LABELS[p.status]}</span>
       </div>
       <p class="paper-meta">${formatMeta(p)}</p>
       ${p.summary ? `<p class="paper-summary">${escapeHtml(p.summary)}</p>` : ''}
-      ${(p.tags || []).length ? `
-        <div class="paper-tags">
-          ${p.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
-        </div>
-      ` : ''}
+      <div class="paper-card-footer">
+        ${paperHasPdf(p) ? '<span class="pdf-badge">📄 PDF</span>' : ''}
+        ${(p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+      </div>
     </article>
   `).join('');
 
   list.querySelectorAll('.paper-card').forEach(card => {
-    card.addEventListener('click', () => openDetail(card.dataset.id));
+    card.addEventListener('click', () => openReader(card.dataset.id));
   });
 }
 
@@ -154,6 +311,15 @@ function formatMeta(p) {
   return escapeHtml(parts.join(' · '));
 }
 
+function formatMetaPlain(p) {
+  const parts = [];
+  if (p.authors) parts.push(p.authors);
+  if (p.year) parts.push(String(p.year));
+  if (p.venue) parts.push(p.venue);
+  if (p.readDate) parts.push(`阅读于 ${p.readDate}`);
+  return parts.join(' · ');
+}
+
 function updateTagFilter() {
   const select = document.getElementById('filter-tag');
   const current = select.value;
@@ -163,71 +329,267 @@ function updateTagFilter() {
     allTags.map(t => `<option value="${escapeHtml(t)}"${t === current ? ' selected' : ''}>${escapeHtml(t)}</option>`).join('');
 }
 
-function openDetail(id) {
+function renderNoteBlock(title, content, isHtml = false) {
+  if (!content) return '';
+  return `
+    <div class="note-block">
+      <h4>${escapeHtml(title)}</h4>
+      ${isHtml ? content : `<p>${escapeHtml(content)}</p>`}
+    </div>
+  `;
+}
+
+let currentReaderPdfUrl = null;
+
+async function downloadPdf(paper, pdfUrl) {
+  if (!paper || !pdfUrl) return;
+
+  const safeTitle = getDisplayTitle(paper).replace(/[<>:"/\\|?*]/g, '_');
+  const filename = paper.pdfName || `${safeTitle}.pdf`;
+
+  try {
+    const res = await fetch(pdfUrl);
+    if (!res.ok) throw new Error('fetch failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    alert('下载失败，请尝试「新窗口打开」后保存');
+  }
+}
+
+async function openReader(id) {
   const p = papers.find(x => x.id === id);
   if (!p) return;
 
-  const modal = document.getElementById('detail-modal');
-  const body = document.getElementById('modal-body');
+  currentReaderId = id;
+  document.getElementById('reader-title').textContent = getDisplayTitle(p);
+  document.getElementById('reader-meta').textContent = formatMetaPlain(p);
 
-  body.innerHTML = `
-    <h2 class="modal-title">${escapeHtml(p.title)}</h2>
-    <p class="modal-meta">${formatMeta(p)}</p>
+  const frame = document.getElementById('pdf-frame');
+  const unavailable = document.getElementById('pdf-unavailable');
+  const openTab = document.getElementById('pdf-open-tab');
+  const downloadBtn = document.getElementById('pdf-download');
+
+  currentReaderPdfUrl = null;
+  frame.classList.add('hidden');
+  unavailable.classList.remove('hidden');
+  unavailable.querySelector('p').textContent = '正在加载 PDF…';
+  openTab.classList.add('hidden');
+  downloadBtn.classList.add('hidden');
+  frame.src = 'about:blank';
+
+  switchView('reader');
+  updateUserUI();
+
+  const pdfUrl = await resolvePdfUrl(p);
+
+  if (pdfUrl) {
+    currentReaderPdfUrl = pdfUrl;
+    frame.src = pdfUrl;
+    frame.classList.remove('hidden');
+    unavailable.classList.add('hidden');
+    openTab.href = pdfUrl;
+    openTab.classList.remove('hidden');
+    downloadBtn.classList.remove('hidden');
+  } else {
+    frame.classList.add('hidden');
+    unavailable.classList.remove('hidden');
+    unavailable.querySelector('p').textContent = 'PDF 不可用，请先发布到网站或重新上传';
+    openTab.classList.add('hidden');
+    downloadBtn.classList.add('hidden');
+  }
+
+  const notesEl = document.getElementById('reader-notes');
+  const tagsHtml = (p.tags || []).length
+    ? `<div class="paper-tags" style="margin-bottom:1rem">${p.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`
+    : '';
+  const urlHtml = p.url
+    ? renderNoteBlock('论文链接', `<a href="${escapeHtml(p.url)}" target="_blank" rel="noopener">${escapeHtml(p.url)}</a>`, true)
+    : '';
+  const codeHtml = p.sourceCodeUrl
+    ? renderNoteBlock('源代码', `<a href="${escapeHtml(p.sourceCodeUrl)}" target="_blank" rel="noopener">${escapeHtml(p.sourceCodeUrl)}</a>`, true)
+    : '';
+
+  notesEl.innerHTML = `
+    ${tagsHtml}
     <span class="status-badge status-${p.status}">${STATUS_LABELS[p.status]}</span>
-    ${(p.tags || []).length ? `
-      <div class="paper-tags" style="margin-top:0.75rem">
-        ${p.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
-      </div>
-    ` : ''}
-    ${p.url ? `
-      <div class="modal-section">
-        <h4>链接</h4>
-        <a class="modal-link" href="${escapeHtml(p.url)}" target="_blank" rel="noopener">${escapeHtml(p.url)}</a>
-      </div>
-    ` : ''}
-    ${p.summary ? `
-      <div class="modal-section">
-        <h4>摘要 / 核心观点</h4>
-        <p>${escapeHtml(p.summary)}</p>
-      </div>
-    ` : ''}
-    ${p.notes ? `
-      <div class="modal-section">
-        <h4>详细笔记</h4>
-        <p>${escapeHtml(p.notes)}</p>
-      </div>
-    ` : ''}
-    <div class="modal-actions">
-      <button class="btn btn-secondary" id="modal-edit">编辑</button>
-      <button class="btn btn-danger" id="modal-delete">删除</button>
-    </div>
+    ${urlHtml}
+    ${codeHtml}
+    ${renderNoteBlock('摘要 / 核心观点', p.summary)}
+    ${renderNoteBlock('详细笔记', p.notes)}
+    ${!p.summary && !p.notes && !p.url && !p.sourceCodeUrl ? '<p class="note-empty">暂无笔记</p>' : ''}
   `;
+}
 
-  body.querySelector('#modal-edit').addEventListener('click', () => {
-    modal.close();
-    editPaper(id);
-  });
+function updatePdfFormHints(paper = null) {
+  const currentEl = document.getElementById('pdf-current');
+  const removeWrap = document.getElementById('remove-pdf-wrap');
+  const removeCheck = document.getElementById('remove-pdf');
 
-  body.querySelector('#modal-delete').addEventListener('click', () => {
-    if (confirm('确定删除这篇论文记录吗？')) {
-      papers = papers.filter(x => x.id !== id);
-      savePapers();
-      modal.close();
-      renderList();
+  if (paper && paperHasPdf(paper)) {
+    currentEl.textContent = `当前文件：${paper.pdfName || '已上传 PDF'}`;
+    currentEl.classList.remove('hidden');
+    removeWrap.classList.remove('hidden');
+    removeCheck.checked = false;
+  } else {
+    currentEl.classList.add('hidden');
+    removeWrap.classList.add('hidden');
+    removeCheck.checked = false;
+  }
+  updateAiExtractButtonState();
+}
+
+function getDisplayTitle(paper) {
+  if (paper.title) return paper.title;
+  if (paper.pdfName) return paper.pdfName.replace(/\.pdf$/i, '');
+  return '未命名论文';
+}
+
+function ensureDraftPaperId() {
+  let id = document.getElementById('paper-id').value;
+  if (!id) {
+    id = crypto.randomUUID();
+    document.getElementById('paper-id').value = id;
+  }
+  return id;
+}
+
+function applyMetadataToForm(meta) {
+  const fields = [
+    ['title', meta.title],
+    ['authors', meta.authors],
+    ['year', meta.year],
+    ['url', meta.url],
+    ['source-code-url', meta.sourceCodeUrl],
+    ['venue', meta.venue],
+    ['summary', meta.summary],
+  ];
+  fields.forEach(([id, value]) => {
+    if (value != null && value !== '') {
+      document.getElementById(id).value = value;
     }
   });
+}
 
-  modal.showModal();
+function setAiExtractStatus(message, type = '') {
+  const el = document.getElementById('ai-extract-status');
+  if (!el) return;
+  el.textContent = message || '';
+  el.className = 'file-hint' + (type ? ` ai-status-${type}` : '');
+}
+
+function updateAiExtractButtonState() {
+  const btn = document.getElementById('btn-ai-extract');
+  if (!btn) return;
+  const draftId = document.getElementById('paper-id').value;
+  const hasPdfInput = !!document.getElementById('pdf-file')?.files[0];
+  const hasPending = (editingId && pendingPdfs.has(editingId))
+    || (draftId && pendingPdfs.has(draftId));
+  const hasExisting = editingId && papers.find(p => p.id === editingId)?.pdfPath;
+  btn.disabled = !(hasPdfInput || hasPending || hasExisting);
+}
+
+async function getPdfFileForExtract() {
+  const input = document.getElementById('pdf-file');
+  if (input.files[0]) return input.files[0];
+
+  const id = editingId || document.getElementById('paper-id').value;
+  if (id && pendingPdfs.has(id)) return pendingPdfs.get(id);
+
+  if (editingId) {
+    const p = papers.find(x => x.id === editingId);
+    if (p?.pdfPath) {
+      const stored = await window.PdfStore.getPdfFromStore(editingId);
+      if (stored) return stored;
+      const pdfUrl = window.PdfStore.resolveAssetPath(p.pdfPath);
+      const res = await fetch(pdfUrl);
+      if (!res.ok) throw new Error('无法加载 PDF 文件');
+      const blob = await res.blob();
+      return new File([blob], p.pdfName || `${p.id}.pdf`, { type: 'application/pdf' });
+    }
+  }
+  return null;
+}
+
+async function handleAiExtract() {
+  if (!requireAdmin()) return false;
+
+  const btn = document.getElementById('btn-ai-extract');
+  btn.disabled = true;
+  setAiExtractStatus('正在解析 PDF…', 'loading');
+
+  try {
+    const file = await getPdfFileForExtract();
+    if (!file) throw new Error('请先上传 PDF');
+
+    if (!window.PaperAI.getSiliconFlowApiKey()) {
+      setAiExtractStatus('未配置 API Key，请手动填写或前往 AI 设置', 'error');
+      return false;
+    }
+
+    setAiExtractStatus('正在调用大模型识别…', 'loading');
+    const meta = await window.PaperAI.extractPaperMetadataFromPdf(file);
+    applyMetadataToForm(meta);
+    setAiExtractStatus('识别完成，未识别的字段可手动补充', 'success');
+    return true;
+  } catch (err) {
+    setAiExtractStatus(err.message + '，可手动填写', 'error');
+    return false;
+  } finally {
+    updateAiExtractButtonState();
+  }
+}
+
+async function handlePdfUpload(file) {
+  if (!file) return;
+
+  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    alert('请上传 PDF 格式文件');
+    document.getElementById('pdf-file').value = '';
+    return;
+  }
+
+  const paperId = editingId || ensureDraftPaperId();
+  revokePdfBlob(paperId);
+  pendingPdfs.set(paperId, file);
+  await window.PdfStore.savePdfToStore(paperId, file);
+  updateAiExtractButtonState();
+  await handleAiExtract();
+}
+
+function saveAdminSettings() {
+  if (!requireAdmin()) return;
+  const apiKey = document.getElementById('sf-api-key').value.trim();
+  const model = document.getElementById('sf-model').value.trim();
+  const githubToken = document.getElementById('github-token').value.trim();
+  window.PaperAI.saveSiliconFlowSettings(apiKey, model || undefined);
+  saveGithubToken(githubToken);
+  alert('设置已保存');
 }
 
 function resetForm() {
+  const draftId = document.getElementById('paper-id').value;
+  if (draftId && !editingId) {
+    revokePdfBlob(draftId);
+    pendingPdfs.delete(draftId);
+  }
+
   editingId = null;
   document.getElementById('form-title').textContent = '添加论文';
   document.getElementById('paper-form').reset();
   document.getElementById('paper-id').value = '';
+  document.getElementById('pdf-file').value = '';
+  setAiExtractStatus('');
+  updatePdfFormHints(null);
 }
 
 function editPaper(id) {
+  if (!requireAdmin()) return;
   const p = papers.find(x => x.id === id);
   if (!p) return;
 
@@ -239,17 +601,60 @@ function editPaper(id) {
   document.getElementById('year').value = p.year || '';
   document.getElementById('venue').value = p.venue || '';
   document.getElementById('url').value = p.url || '';
+  document.getElementById('source-code-url').value = p.sourceCodeUrl || '';
   document.getElementById('status').value = p.status;
   document.getElementById('read-date').value = p.readDate || '';
   document.getElementById('tags').value = (p.tags || []).join(', ');
   document.getElementById('summary').value = p.summary || '';
   document.getElementById('notes').value = p.notes || '';
+  document.getElementById('pdf-file').value = '';
+  updatePdfFormHints(p);
 
   switchView('add');
 }
 
+function deletePaper(id) {
+  if (!requireAdmin()) return;
+  if (!confirm('确定删除这篇论文记录吗？')) return;
+
+  revokePdfBlob(id);
+  pendingPdfs.delete(id);
+  window.PdfStore.deletePdfFromStore(id);
+  papers = papers.filter(x => x.id !== id);
+  markDirty();
+
+  if (currentReaderId === id) {
+    currentReaderId = null;
+    switchView('list');
+  } else {
+    renderList();
+  }
+}
+
 function handleSubmit(e) {
   e.preventDefault();
+  if (!requireAdmin()) return;
+  submitPaperForm();
+}
+
+async function submitPaperForm() {
+
+  const pdfInput = document.getElementById('pdf-file');
+  const pdfFile = pdfInput.files[0];
+  const removePdf = document.getElementById('remove-pdf').checked;
+
+  if (pdfFile && pdfFile.type !== 'application/pdf' && !pdfFile.name.toLowerCase().endsWith('.pdf')) {
+    alert('请上传 PDF 格式文件');
+    return;
+  }
+
+  const hasPdf = pdfFile || (editingId && (pendingPdfs.has(editingId) || papers.find(p => p.id === editingId)?.pdfPath));
+  const draftId = document.getElementById('paper-id').value;
+  const hasDraftPdf = draftId && pendingPdfs.has(draftId);
+  if (!editingId && !hasPdf && !hasDraftPdf) {
+    alert('请先上传 PDF 文件');
+    return;
+  }
 
   const data = {
     title: document.getElementById('title').value.trim(),
@@ -257,32 +662,70 @@ function handleSubmit(e) {
     year: parseInt(document.getElementById('year').value) || null,
     venue: document.getElementById('venue').value.trim(),
     url: document.getElementById('url').value.trim(),
+    sourceCodeUrl: document.getElementById('source-code-url').value.trim(),
     status: document.getElementById('status').value,
     readDate: document.getElementById('read-date').value,
     tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean),
     summary: document.getElementById('summary').value.trim(),
     notes: document.getElementById('notes').value.trim(),
+    updatedAt: new Date().toISOString(),
   };
+
+  let paperId = editingId;
 
   if (editingId) {
     const idx = papers.findIndex(p => p.id === editingId);
-    if (idx !== -1) {
-      papers[idx] = { ...papers[idx], ...data };
+    if (idx === -1) return;
+
+    const existing = papers[idx];
+    paperId = existing.id;
+
+    if (removePdf) {
+      revokePdfBlob(paperId);
+      pendingPdfs.delete(paperId);
+      window.PdfStore.deletePdfFromStore(paperId);
+      data.pdfPath = null;
+      data.pdfName = null;
+    } else if (pdfFile) {
+      revokePdfBlob(paperId);
+      pendingPdfs.set(paperId, pdfFile);
+      await window.PdfStore.savePdfToStore(paperId, pdfFile);
+      data.pdfPath = getPdfPath(paperId);
+      data.pdfName = pdfFile.name;
+    } else {
+      data.pdfPath = existing.pdfPath || null;
+      data.pdfName = existing.pdfName || null;
     }
+
+    papers[idx] = { ...existing, ...data };
   } else {
+    paperId = draftId || crypto.randomUUID();
+    if (pdfFile || pendingPdfs.has(paperId)) {
+      const file = pdfFile || pendingPdfs.get(paperId);
+      if (pdfFile) pendingPdfs.set(paperId, pdfFile);
+      await window.PdfStore.savePdfToStore(paperId, file);
+      data.pdfPath = getPdfPath(paperId);
+      data.pdfName = file?.name || null;
+    } else {
+      data.pdfPath = null;
+      data.pdfName = null;
+    }
+
     papers.unshift({
-      id: crypto.randomUUID(),
+      id: paperId,
       ...data,
       createdAt: new Date().toISOString(),
     });
   }
 
-  savePapers();
+  markDirty();
   resetForm();
   switchView('list');
 }
 
 function renderStats() {
+  loadAdminSettingsIntoForm();
+
   document.getElementById('stat-total').textContent = papers.length;
   document.getElementById('stat-finished').textContent = papers.filter(p => p.status === 'finished').length;
   document.getElementById('stat-reading').textContent = papers.filter(p => p.status === 'reading').length;
@@ -304,27 +747,135 @@ function renderStats() {
   ).join('');
 }
 
-function exportData() {
-  const blob = new Blob([JSON.stringify(papers, null, 2)], { type: 'application/json' });
+function getPapersJson() {
+  return JSON.stringify(papers, null, 2) + '\n';
+}
+
+function downloadPapersJson() {
+  const blob = new Blob([getPapersJson()], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `paperai-export-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = 'papers.json';
   a.click();
   URL.revokeObjectURL(url);
 }
 
+async function getGithubFileSha(owner, repo, path, branch, token) {
+  const res = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`,
+    { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+  const data = await res.json();
+  return data.sha;
+}
+
+async function uploadGithubFile(owner, repo, path, branch, token, base64Content, message) {
+  const sha = await getGithubFileSha(owner, repo, path, branch, token);
+  const res = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message,
+        content: base64Content,
+        branch,
+        ...(sha ? { sha } : {}),
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+}
+
+async function getPdfFileForPublish(paperId) {
+  if (pendingPdfs.has(paperId)) return pendingPdfs.get(paperId);
+  return window.PdfStore.getPdfFromStore(paperId);
+}
+
+async function publishToGithub() {
+  if (!requireAdmin()) return;
+
+  const config = getConfig().github || {};
+  const { owner, repo, branch = 'main', dataPath = 'data/papers.json' } = config;
+  const token = getGithubToken();
+
+  if (!owner || !repo || !token) {
+    downloadPapersJson();
+    alert(
+      '已下载 papers.json。\n\n' +
+      '请将 papers.json 放到 data/ 目录，并将 PDF 文件放到 data/pdfs/ 后 push 到 GitHub。\n\n' +
+      '提示：配置 GitHub Token 后可一键发布。'
+    );
+    return;
+  }
+
+  const btn = document.getElementById('btn-publish');
+  btn.disabled = true;
+  btn.textContent = '发布中…';
+
+  try {
+    for (const paper of papers) {
+      if (!paper.pdfPath) continue;
+      const file = await getPdfFileForPublish(paper.id);
+      if (!file) continue;
+      const buffer = await file.arrayBuffer();
+      const base64 = arrayBufferToBase64(buffer);
+      await uploadGithubFile(
+        owner, repo, getPdfPath(paper.id), branch, token, base64,
+        `Upload PDF: ${paper.pdfName || paper.id}`
+      );
+    }
+
+    const jsonBase64 = btoa(unescape(encodeURIComponent(getPapersJson())));
+    await uploadGithubFile(
+      owner, repo, dataPath, branch, token, jsonBase64,
+      'Update papers via PaperAI'
+    );
+
+    pendingPdfs.clear();
+    clearLocalDraft();
+    hasUnpublishedChanges = false;
+    alert('发布成功！');
+  } catch (err) {
+    alert(`发布失败：${err.message}\n\n已改为下载 papers.json，请手动提交到仓库。`);
+    downloadPapersJson();
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '发布到网站';
+  }
+}
+
+function exportData() {
+  if (!requireAdmin()) return;
+  downloadPapersJson();
+}
+
 function importData(file) {
+  if (!requireAdmin()) return;
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
       const imported = JSON.parse(e.target.result);
       if (!Array.isArray(imported)) throw new Error('Invalid format');
       if (confirm(`将导入 ${imported.length} 条记录，是否覆盖现有数据？`)) {
+        clearAllPdfBlobs();
+        pendingPdfs.clear();
         papers = imported;
-        savePapers();
+        markDirty();
         renderStats();
-        alert('导入成功');
+        renderList();
+        alert('导入成功，请点击「发布到网站」。PDF 文件需单独上传到 data/pdfs/。');
       }
     } catch {
       alert('导入失败：文件格式不正确');
@@ -333,17 +884,86 @@ function importData(file) {
   reader.readAsText(file);
 }
 
+function openLoginModal() {
+  document.getElementById('login-error').classList.add('hidden');
+  document.getElementById('admin-username').value = '';
+  document.getElementById('admin-password').value = '';
+  document.getElementById('login-modal').showModal();
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('admin-username').value.trim();
+  const password = document.getElementById('admin-password').value;
+  const config = getConfig();
+  const errorEl = document.getElementById('login-error');
+
+  if (!username) {
+    errorEl.textContent = '请输入用户名';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  if (username === ADMIN_USERNAME) {
+    if (!password) {
+      errorEl.textContent = '请输入密码';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    const hash = await hashPassword(password);
+    if (hash !== config.adminPasswordHash) {
+      errorEl.textContent = '用户名或密码错误';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    setUserSession({ username, role: 'admin' });
+  } else {
+    setUserSession({ username, role: 'guest' });
+  }
+
+  document.getElementById('login-modal').close();
+  errorEl.classList.add('hidden');
+}
+
 function escapeHtml(str) {
+  if (str == null) return '';
   const div = document.createElement('div');
-  div.textContent = str;
+  div.textContent = String(str);
   return div.innerHTML;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadPapers();
+document.addEventListener('DOMContentLoaded', async () => {
+  applySession(getSession());
+  await loadPapers();
 
-  document.querySelectorAll('.nav-btn').forEach(btn => {
+  document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
+  });
+
+  document.getElementById('btn-admin-login').addEventListener('click', () => {
+    if (isLoggedIn) {
+      switchView('stats');
+    } else {
+      openLoginModal();
+    }
+  });
+
+  document.getElementById('btn-back-list').addEventListener('click', () => {
+    currentReaderId = null;
+    switchView('list');
+  });
+
+  document.getElementById('reader-edit').addEventListener('click', () => {
+    if (currentReaderId) editPaper(currentReaderId);
+  });
+
+  document.getElementById('reader-delete').addEventListener('click', () => {
+    if (currentReaderId) deletePaper(currentReaderId);
+  });
+
+  document.getElementById('pdf-download').addEventListener('click', () => {
+    const p = papers.find(x => x.id === currentReaderId);
+    if (p && currentReaderPdfUrl) downloadPdf(p, currentReaderPdfUrl);
   });
 
   document.getElementById('search-input').addEventListener('input', renderList);
@@ -351,29 +971,56 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('filter-tag').addEventListener('change', renderList);
 
   document.getElementById('paper-form').addEventListener('submit', handleSubmit);
+  document.getElementById('pdf-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) handlePdfUpload(file);
+    else {
+      setAiExtractStatus('');
+      updateAiExtractButtonState();
+    }
+  });
+  document.getElementById('btn-ai-extract').addEventListener('click', handleAiExtract);
+  document.getElementById('btn-save-sf-settings').addEventListener('click', saveAdminSettings);
   document.getElementById('btn-cancel').addEventListener('click', () => {
     resetForm();
     switchView('list');
   });
 
+  document.getElementById('btn-publish').addEventListener('click', publishToGithub);
   document.getElementById('btn-export').addEventListener('click', exportData);
   document.getElementById('import-file').addEventListener('change', (e) => {
     if (e.target.files[0]) importData(e.target.files[0]);
     e.target.value = '';
   });
-  document.getElementById('btn-clear').addEventListener('click', () => {
+  document.getElementById('btn-clear').addEventListener('click', async () => {
+    if (!requireAdmin()) return;
     if (confirm('确定清空所有论文记录？此操作不可恢复。')) {
+      clearAllPdfBlobs();
+      pendingPdfs.clear();
+      await window.PdfStore.clearPdfStore();
+      clearLocalDraft();
       papers = [];
-      savePapers();
+      hasUnpublishedChanges = false;
       renderStats();
+      renderList();
     }
   });
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    if (hasUnpublishedChanges && !confirm('有未发布的修改，确定退出登录吗？')) return;
+    setUserSession(null);
+    switchView('list');
+  });
 
-  document.querySelector('.modal-close').addEventListener('click', () => {
-    document.getElementById('detail-modal').close();
+  document.getElementById('login-form').addEventListener('submit', handleLogin);
+
+  document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById(btn.dataset.close).close();
+    });
   });
 
   renderList();
 });
 
 window.switchView = switchView;
+window.hashPassword = hashPassword;
