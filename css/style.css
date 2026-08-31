@@ -395,20 +395,19 @@ body {
 }
 
 .bookmark-inner.has-image {
+  display: block;
+  min-height: 0;
+  line-height: 0;
   background: transparent;
   border-color: rgba(0, 0, 0, 0.08);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .bookmark-photo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
   display: block;
-  z-index: 0;
+  width: 100%;
+  height: auto;
+  vertical-align: top;
   pointer-events: none;
 }
 
@@ -417,9 +416,17 @@ body {
 }
 
 .bookmark-inner.has-image .bookmark-content {
-  position: relative;
-  z-index: 1;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 1.125rem;
+  line-height: 1.35;
   pointer-events: none;
+  z-index: 1;
 }
 
 .bookmark-inner.has-image .bookmark-name,
@@ -430,24 +437,22 @@ body {
 
 .bookmark-mini.has-image {
   position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  min-width: 140px;
-  max-width: 280px;
-  min-height: 80px;
+  display: inline-block;
+  width: 200px;
+  max-width: 200px;
+  min-height: 0;
+  line-height: 0;
+  vertical-align: top;
   background: transparent;
   overflow: hidden;
   border-color: rgba(0, 0, 0, 0.08);
 }
 
 .bookmark-mini-photo {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  z-index: 0;
+  height: auto;
+  vertical-align: top;
   pointer-events: none;
 }
 
@@ -456,10 +461,18 @@ body {
 }
 
 .bookmark-mini.has-image .bookmark-mini-content {
-  position: relative;
-  z-index: 1;
-  flex: 1;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.5rem 0.875rem;
+  gap: 0.125rem;
+  line-height: 1.3;
   pointer-events: none;
+  z-index: 1;
 }
 
 .bookmark-mini.has-image .bookmark-mini-name,
@@ -474,10 +487,10 @@ body {
 }
 
 .folder-image-preview {
+  display: block;
   width: 200px;
-  height: 180px;
-  object-fit: contain;
-  background: #f4f4f5;
+  height: auto;
+  margin: 0 auto;
   border-radius: 3px 3px 10px 10px;
   border: 1px solid var(--border);
 }

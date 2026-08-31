@@ -140,6 +140,7 @@ async function applyFolderImageToInner(inner, folder) {
     photo?.remove();
     inner.style.background = '';
     inner.style.borderColor = '';
+    inner.style.minHeight = '';
     if (tab) tab.style.display = '';
     if (nameEl) nameEl.style.color = textColor;
     if (countEl) {
@@ -152,6 +153,7 @@ async function applyFolderImageToInner(inner, folder) {
   inner.classList.add('has-image');
   inner.style.background = 'transparent';
   inner.style.borderColor = 'rgba(0, 0, 0, 0.08)';
+  inner.style.minHeight = '0';
   if (tab) tab.style.display = 'none';
   if (!photo) {
     photo = document.createElement('img');
