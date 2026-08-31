@@ -394,12 +394,11 @@ function renderFolders() {
 
   container.innerHTML = items.map((item, index) => {
     const colors = BOOKMARK_COLORS[item.colorIndex ?? index % BOOKMARK_COLORS.length];
-    const rotation = ((index % 5) - 2) * 2.5;
     const isNew = item.id === lastCreatedFolderId;
     return `
       <div class="bookmark-card${currentFolderId === item.id ? ' active' : ''}${isNew ? ' is-new' : ''}"
-           style="transform: rotate(${rotation}deg); --bookmark-rotate: ${rotation}deg;">
-        <button type="button" class="bookmark-open" data-folder-id="${escapeHtml(item.id)}">
+           data-folder-id="${escapeHtml(item.id)}">
+        <div class="bookmark-open" role="button" tabindex="0" aria-label="${escapeHtml(item.label)}，${item.count} 篇论文">
           <div class="bookmark-inner" style="
             --bookmark-bg: ${colors.bg};
             --bookmark-tab: ${colors.tab};
@@ -409,6 +408,7 @@ function renderFolders() {
             border-color: ${colors.border};
             color: ${colors.text};
           ">
+            <div class="bookmark-tab" style="background:${colors.tab}"></div>
             ${isAdmin ? `
               <span class="bookmark-actions admin-only">
                 <button type="button" class="bookmark-action" data-action="rename" data-folder-id="${escapeHtml(item.id)}" title="重命名">✎</button>
@@ -416,25 +416,39 @@ function renderFolders() {
               </span>
             ` : ''}
             <div class="bookmark-content">
-              <h3 class="bookmark-name" style="color:${colors.text}">${escapeHtml(item.label)}</h3>
-              <p class="bookmark-count" style="color:${colors.text}">${item.count} 篇论文</p>
+              <div class="bookmark-name" style="color:${colors.text}">${escapeHtml(item.label)}</div>
+              <div class="bookmark-count" style="color:${colors.text}">${item.count} 篇论文</div>
             </div>
           </div>
-        </button>
+        </div>
       </div>
     `;
   }).join('');
 
   if (lastCreatedFolderId) {
     setTimeout(() => {
-      const el = container.querySelector(`[data-folder-id="${lastCreatedFolderId}"]`)?.closest('.bookmark-card');
+      const el = container.querySelector(`.bookmark-card[data-folder-id="${lastCreatedFolderId}"]`);
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       lastCreatedFolderId = null;
     }, 100);
   }
 
-  container.querySelectorAll('.bookmark-open').forEach(btn => {
-    btn.addEventListener('click', () => openFolder(btn.dataset.folderId));
+  container.querySelectorAll('.bookmark-card').forEach(card => {
+    const openEl = card.querySelector('.bookmark-open');
+    if (!openEl) return;
+    const folderId = card.dataset.folderId;
+    const activate = () => openFolder(folderId);
+    openEl.addEventListener('click', (e) => {
+      if (e.target.closest('.bookmark-action')) return;
+      activate();
+    });
+    openEl.addEventListener('keydown', (e) => {
+      if (e.target.closest('.bookmark-action')) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        activate();
+      }
+    });
   });
 
   container.querySelectorAll('.bookmark-action').forEach(btn => {
