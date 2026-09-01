@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PaperAI — 论文阅读笔记</title>
   <meta name="description" content="记录与管理学术论文阅读笔记">
-  <link rel="stylesheet" href="css/style.css?v=16">
+  <link rel="stylesheet" href="css/style.css?v=19">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -89,6 +89,20 @@
               <button type="button" class="btn btn-secondary btn-sm" id="btn-ai-extract" disabled>重新识别</button>
               <span id="ai-extract-status" class="file-hint"></span>
             </div>
+            <div class="pdf-page-range-wrap hidden" id="pdf-page-range-wrap">
+              <label class="pdf-page-range-label">页码范围</label>
+              <div class="pdf-page-range">
+                <span>第</span>
+                <input type="number" id="pdf-page-start" min="1" value="1" aria-label="起始页">
+                <span>–</span>
+                <input type="number" id="pdf-page-end" min="1" value="1" aria-label="结束页">
+                <span>页</span>
+                <span id="pdf-page-total" class="file-hint"></span>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-apply-pdf-range">应用</button>
+              </div>
+              <p class="file-hint">可只保留正文页以减小体积；默认上传全部页。</p>
+            </div>
+            <p id="pdf-page-range-saved" class="file-hint hidden"></p>
             <p id="pdf-current" class="file-hint hidden"></p>
             <label class="checkbox-label hidden" id="remove-pdf-wrap">
               <input type="checkbox" id="remove-pdf"> 移除当前 PDF
@@ -342,10 +356,12 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="js/config.js?v=17"></script>
   <script src="js/pdf-store.js?v=14"></script>
+  <script src="js/pdf-range.js?v=19"></script>
   <script src="js/folder-image-store.js?v=14"></script>
   <script src="js/ai.js?v=14"></script>
-  <script src="js/app.js?v=18"></script>
+  <script src="js/app.js?v=19"></script>
 </body>
 </html>

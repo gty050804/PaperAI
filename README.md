@@ -11,10 +11,12 @@
 
 ## 权限模型
 
-| 角色 | 能做什么 |
-|------|----------|
-| **访客** | 阅读列表、查看详情、搜索筛选、看统计 |
+
+| 角色     | 能做什么                       |
+| ------ | -------------------------- |
+| **访客** | 阅读列表、查看详情、搜索筛选、看统计         |
 | **站主** | 以上全部 + 添加/编辑/删除/导入 + 发布到网站 |
+
 
 论文数据存放在仓库的 `data/papers.json`，所有访客读取同一份数据。编辑功能需要站主密码解锁（点击右上角 🔒 登录）。
 
@@ -43,12 +45,13 @@ API Key 与 GitHub Token 保存在浏览器 localStorage，不会提交到 GitHu
 python -m http.server 8080
 ```
 
-访问 http://localhost:8080
+访问 [http://localhost:8080](http://localhost:8080)
 
 ## 部署到 GitHub Pages
 
 ```bash
 git init
+git pull origin main
 git add .
 git commit -m "Initial commit: PaperAI paper reading journal"
 git branch -M main

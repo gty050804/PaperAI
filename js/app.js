@@ -34,6 +34,7 @@ let isLoggedIn = false;
 let currentUsername = '';
 let hasUnpublishedChanges = false;
 const pendingPdfs = new Map();
+const pendingPdfOriginals = new Map();
 const pdfBlobUrls = new Map();
 const pendingFolderImages = new Map();
 const folderImageBlobUrls = new Map();
@@ -978,18 +979,106 @@ function updatePdfFormHints(paper = null) {
   const currentEl = document.getElementById('pdf-current');
   const removeWrap = document.getElementById('remove-pdf-wrap');
   const removeCheck = document.getElementById('remove-pdf');
+  const savedRangeEl = document.getElementById('pdf-page-range-saved');
 
   if (paper && paperHasPdf(paper)) {
     currentEl.textContent = `当前文件：${paper.pdfName || '已上传 PDF'}`;
     currentEl.classList.remove('hidden');
     removeWrap.classList.remove('hidden');
     removeCheck.checked = false;
+    if (paper.pdfPageRange && savedRangeEl) {
+      const { start, end, total } = paper.pdfPageRange;
+      savedRangeEl.textContent = total
+        ? `已保存页码：第 ${start}–${end} 页（原 PDF 共 ${total} 页）`
+        : `已保存页码：第 ${start}–${end} 页`;
+      savedRangeEl.classList.remove('hidden');
+    } else if (savedRangeEl) {
+      savedRangeEl.classList.add('hidden');
+      savedRangeEl.textContent = '';
+    }
   } else {
     currentEl.classList.add('hidden');
     removeWrap.classList.add('hidden');
     removeCheck.checked = false;
+    if (savedRangeEl) {
+      savedRangeEl.classList.add('hidden');
+      savedRangeEl.textContent = '';
+    }
   }
   updateAiExtractButtonState();
+}
+
+function resetPdfPageRangeUI(total = 0, range = null) {
+  const wrap = document.getElementById('pdf-page-range-wrap');
+  const startEl = document.getElementById('pdf-page-start');
+  const endEl = document.getElementById('pdf-page-end');
+  const totalEl = document.getElementById('pdf-page-total');
+  if (!wrap || !startEl || !endEl) return;
+
+  if (total <= 0) {
+    wrap.classList.add('hidden');
+    startEl.value = 1;
+    endEl.value = 1;
+    if (totalEl) totalEl.textContent = '';
+    return;
+  }
+
+  wrap.classList.remove('hidden');
+  startEl.min = 1;
+  endEl.min = 1;
+  startEl.max = total;
+  endEl.max = total;
+  startEl.value = range?.start ?? 1;
+  endEl.value = range?.end ?? total;
+  if (totalEl) totalEl.textContent = `（共 ${total} 页）`;
+}
+
+function getPdfPageRangeFromForm() {
+  const startEl = document.getElementById('pdf-page-start');
+  const endEl = document.getElementById('pdf-page-end');
+  if (!startEl || !endEl) return null;
+  const start = parseInt(startEl.value, 10);
+  const end = parseInt(endEl.value, 10);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+  return { start, end };
+}
+
+function validatePdfPageRange(start, end, total) {
+  if (start < 1 || end < 1) throw new Error('页码不能小于 1');
+  if (start > total || end > total) throw new Error(`页码不能超过 ${total}`);
+  if (start > end) throw new Error('起始页不能大于结束页');
+}
+
+function buildPdfPageRangeMeta(start, end, total) {
+  if (start === 1 && end === total) return null;
+  return { start, end, total };
+}
+
+async function applyPdfPageRangeToPending(paperId, { runAi = false } = {}) {
+  const original = pendingPdfOriginals.get(paperId);
+  if (!original) return null;
+
+  const total = await window.PdfRange.getPdfPageCount(original);
+  const range = getPdfPageRangeFromForm();
+  const start = range?.start ?? 1;
+  const end = range?.end ?? total;
+  validatePdfPageRange(start, end, total);
+  resetPdfPageRangeUI(total, { start, end });
+
+  let file;
+  if (start === 1 && end === total) {
+    file = original;
+  } else {
+    file = await window.PdfRange.extractPdfPageRange(original, start, end);
+  }
+
+  revokePdfBlob(paperId);
+  pendingPdfs.set(paperId, file);
+  await window.PdfStore.savePdfToStore(paperId, file);
+
+  const meta = buildPdfPageRangeMeta(start, end, total);
+  if (runAi) await handleAiExtract();
+  return meta;
 }
 
 function getDisplayTitle(paper) {
@@ -1042,12 +1131,24 @@ function updateAiExtractButtonState() {
   btn.disabled = !(hasPdfInput || hasPending || hasExisting);
 }
 
-async function getPdfFileForExtract() {
-  const input = document.getElementById('pdf-file');
-  if (input.files[0]) return input.files[0];
+async function getPdfPageRangeMetaForPaper(paperId) {
+  if (pendingPdfOriginals.has(paperId)) {
+    const total = await window.PdfRange.getPdfPageCount(pendingPdfOriginals.get(paperId));
+    const range = getPdfPageRangeFromForm();
+    const start = range?.start ?? 1;
+    const end = range?.end ?? total;
+    validatePdfPageRange(start, end, total);
+    return buildPdfPageRangeMeta(start, end, total);
+  }
+  return null;
+}
 
+async function getPdfFileForExtract() {
   const id = editingId || document.getElementById('paper-id').value;
   if (id && pendingPdfs.has(id)) return pendingPdfs.get(id);
+
+  const input = document.getElementById('pdf-file');
+  if (input.files[0]) return input.files[0];
 
   if (editingId) {
     const p = papers.find(x => x.id === editingId);
@@ -1104,10 +1205,51 @@ async function handlePdfUpload(file) {
 
   const paperId = editingId || ensureDraftPaperId();
   revokePdfBlob(paperId);
-  pendingPdfs.set(paperId, file);
-  await window.PdfStore.savePdfToStore(paperId, file);
-  updateAiExtractButtonState();
-  await handleAiExtract();
+  pendingPdfOriginals.set(paperId, file);
+
+  try {
+    const total = await window.PdfRange.getPdfPageCount(file);
+    resetPdfPageRangeUI(total);
+    const savedRangeEl = document.getElementById('pdf-page-range-saved');
+    if (savedRangeEl) {
+      savedRangeEl.classList.add('hidden');
+      savedRangeEl.textContent = '';
+    }
+    setAiExtractStatus('正在处理 PDF…', 'loading');
+    await applyPdfPageRangeToPending(paperId);
+    updateAiExtractButtonState();
+    await handleAiExtract();
+  } catch (err) {
+    pendingPdfOriginals.delete(paperId);
+    pendingPdfs.delete(paperId);
+    resetPdfPageRangeUI(0);
+    document.getElementById('pdf-file').value = '';
+    setAiExtractStatus(err.message, 'error');
+    alert(`PDF 处理失败：${err.message}`);
+  }
+}
+
+async function handleApplyPdfRange() {
+  const paperId = editingId || document.getElementById('paper-id').value;
+  if (!paperId || !pendingPdfOriginals.has(paperId)) {
+    alert('请先上传 PDF 文件');
+    return;
+  }
+
+  const btn = document.getElementById('btn-apply-pdf-range');
+  if (btn) btn.disabled = true;
+  setAiExtractStatus('正在裁剪 PDF 页码…', 'loading');
+
+  try {
+    await applyPdfPageRangeToPending(paperId);
+    setAiExtractStatus('页码范围已应用，可点击「重新识别」更新元数据', 'success');
+    updateAiExtractButtonState();
+  } catch (err) {
+    setAiExtractStatus(err.message, 'error');
+    alert(err.message);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 function saveAdminSettings() {
@@ -1251,6 +1393,7 @@ function resetForm() {
   if (draftId && !editingId) {
     revokePdfBlob(draftId);
     pendingPdfs.delete(draftId);
+    pendingPdfOriginals.delete(draftId);
   }
 
   editingId = null;
@@ -1258,6 +1401,7 @@ function resetForm() {
   document.getElementById('paper-form').reset();
   document.getElementById('paper-id').value = '';
   document.getElementById('pdf-file').value = '';
+  resetPdfPageRangeUI(0);
   setAiExtractStatus('');
   updatePdfFormHints(null);
   setKnowledgePointsToForm([]);
@@ -1285,6 +1429,7 @@ function editPaper(id) {
   document.getElementById('notes').value = p.notes || '';
   setKnowledgePointsToForm(p.knowledgePoints || []);
   document.getElementById('pdf-file').value = '';
+  resetPdfPageRangeUI(0);
   updatePdfFormHints(p);
 
   switchView('add');
@@ -1296,6 +1441,7 @@ function deletePaper(id) {
 
   revokePdfBlob(id);
   pendingPdfs.delete(id);
+  pendingPdfOriginals.delete(id);
   window.PdfStore.deletePdfFromStore(id);
   papers = papers.filter(x => x.id !== id);
   markDirty();
@@ -1351,6 +1497,17 @@ async function submitPaperForm() {
   };
 
   let paperId = editingId;
+  let pdfPageRange = null;
+
+  if (draftId && pendingPdfOriginals.has(draftId)) {
+    try {
+      await applyPdfPageRangeToPending(draftId);
+      pdfPageRange = await getPdfPageRangeMetaForPaper(draftId);
+    } catch (err) {
+      alert(err.message);
+      return;
+    }
+  }
 
   if (editingId) {
     const idx = papers.findIndex(p => p.id === editingId);
@@ -1362,32 +1519,43 @@ async function submitPaperForm() {
     if (removePdf) {
       revokePdfBlob(paperId);
       pendingPdfs.delete(paperId);
+      pendingPdfOriginals.delete(paperId);
       window.PdfStore.deletePdfFromStore(paperId);
       data.pdfPath = null;
       data.pdfName = null;
-    } else if (pdfFile) {
-      revokePdfBlob(paperId);
-      pendingPdfs.set(paperId, pdfFile);
-      await window.PdfStore.savePdfToStore(paperId, pdfFile);
-      data.pdfPath = getPdfPath(paperId);
-      data.pdfName = pdfFile.name;
+      data.pdfPageRange = null;
+    } else if (pdfFile || pendingPdfs.has(paperId)) {
+      const file = pendingPdfs.get(paperId) || pdfFile;
+      if (file) {
+        revokePdfBlob(paperId);
+        pendingPdfs.set(paperId, file);
+        await window.PdfStore.savePdfToStore(paperId, file);
+        data.pdfPath = getPdfPath(paperId);
+        data.pdfName = file.name;
+        data.pdfPageRange = pdfPageRange ?? existing.pdfPageRange ?? null;
+      }
     } else {
       data.pdfPath = existing.pdfPath || null;
       data.pdfName = existing.pdfName || null;
+      data.pdfPageRange = existing.pdfPageRange || null;
     }
 
     papers[idx] = { ...existing, ...data };
   } else {
     paperId = draftId || crypto.randomUUID();
     if (pdfFile || pendingPdfs.has(paperId)) {
-      const file = pdfFile || pendingPdfs.get(paperId);
-      if (pdfFile) pendingPdfs.set(paperId, pdfFile);
-      await window.PdfStore.savePdfToStore(paperId, file);
-      data.pdfPath = getPdfPath(paperId);
-      data.pdfName = file?.name || null;
+      const file = pendingPdfs.get(paperId) || pdfFile;
+      if (file) {
+        if (pdfFile) pendingPdfs.set(paperId, file);
+        await window.PdfStore.savePdfToStore(paperId, file);
+        data.pdfPath = getPdfPath(paperId);
+        data.pdfName = file?.name || null;
+        data.pdfPageRange = pdfPageRange;
+      }
     } else {
       data.pdfPath = null;
       data.pdfName = null;
+      data.pdfPageRange = null;
     }
 
     papers.unshift({
@@ -1396,6 +1564,8 @@ async function submitPaperForm() {
       createdAt: new Date().toISOString(),
     });
   }
+
+  pendingPdfOriginals.delete(paperId);
 
   markDirty();
   resetForm();
@@ -1727,8 +1897,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (file) handlePdfUpload(file);
     else {
       setAiExtractStatus('');
+      resetPdfPageRangeUI(0);
       updateAiExtractButtonState();
     }
+  });
+  document.getElementById('btn-apply-pdf-range')?.addEventListener('click', () => {
+    void handleApplyPdfRange();
   });
   document.getElementById('btn-ai-extract').addEventListener('click', handleAiExtract);
   document.getElementById('btn-add-knowledge-point')?.addEventListener('click', () => addKnowledgePointRow());
@@ -1751,6 +1925,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       clearAllPdfBlobs();
       clearAllFolderImageBlobs();
       pendingPdfs.clear();
+      pendingPdfOriginals.clear();
       pendingFolderImages.clear();
       await window.PdfStore.clearPdfStore();
       await window.FolderImageStore.clearFolderImageStore();
