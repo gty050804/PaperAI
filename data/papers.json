@@ -1,24 +1,5 @@
 [
   {
-    "id": "68519653-cb0e-46fe-91ac-ce6e1b6892fc",
-    "title": "VidCRAFT3: Camera, Object, and Lighting Control for Image-to-Video Generation",
-    "authors": "Sixiao Zheng, Zimian Peng, Yanpeng Zhou, Yi Zhu, Hang Xu, Xiangru Huang, Yanwei Fu",
-    "year": 2026,
-    "venue": "IEEE Transactions on Visualization and Computer Graphics",
-    "url": "https://doi.org/10.1109/TVCG.2026.3688720",
-    "pdfUrl": null,
-    "sourceCodeUrl": "https://sixiaozheng.github.io/VidCRAFT3/",
-    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
-    "status": "to-read",
-    "readDate": "",
-    "tags": [],
-    "summary": "VidCRAFT3提出了一种统一的图像到视频生成框架，通过显式建模几何、运动和光照之间的跨因素交互，实现了对相机运动、物体运动和光照方向的独立与联合控制。该框架包含Image2Cloud模块提供3D几何先验，ObjMotionNet编码物体轨迹，以及空间三重注意力Transformer整合光照方向，并通过三阶段渐进训练策略解决了联合标注数据稀缺的问题。",
-    "notes": "",
-    "knowledgePoints": [],
-    "updatedAt": "2026-09-01T10:13:11.539Z",
-    "createdAt": "2026-09-01T10:09:33.053Z"
-  },
-  {
     "id": "5daaec00-8089-424c-a7a2-b97df886466a",
     "title": "FFP-300K: Scaling First-Frame Propagation for Generalizable Video Editing",
     "authors": "Xijie Huang, Chengming Xu, Donghao Luo, Xiaobin Hu, Peng Tang, Xu Peng, Jiangning Zhang, Chengjie Wang, Yanwei Fu",
@@ -31,11 +12,9 @@
     "status": "finished",
     "readDate": "2026-08-31",
     "tags": [
-      "CV",
-      "深度学习",
-      "大模型",
-      "自蒸馏",
-      "RoPE"
+      "dataset",
+      "AST-RoPE",
+      "self-distillation"
     ],
     "summary": "该论文提出了FFP-300K数据集，包含30万对720p分辨率、81帧长度的视频对，用于训练视频编辑模型。作者还提出了自适应时空RoPE（AST-RoPE）架构和自蒸馏策略，实现了无需运行时指导的高质量视频编辑，在EditVerseBench基准测试中显著优于现有方法。",
     "notes": "",
@@ -56,7 +35,26 @@
         "explanation": "VACE（Video Appearance and Content Editing）模型是一种用于视频编辑的深度学习模型，专注于视频外观和内容的修改。它通过结合生成对抗网络（GAN）和扩散模型等技术，实现对视频中特定对象或场景的编辑，如风格转换、对象替换等。VACE模型通常需要大量视频数据进行训练，以学习视频帧间的时空一致性，确保编辑后的视频在时间维度上保持连贯性。"
       }
     ],
-    "updatedAt": "2026-09-01T09:49:09.286Z",
+    "updatedAt": "2026-09-01T10:56:27.842Z",
     "createdAt": "2026-09-01T09:02:48.307Z"
+  },
+  {
+    "id": "68519653-cb0e-46fe-91ac-ce6e1b6892fc",
+    "title": "VidCRAFT3: Camera, Object, and Lighting Control for Image-to-Video Generation",
+    "authors": "Sixiao Zheng, Zimian Peng, Yanpeng Zhou, Yi Zhu, Hang Xu, Xiangru Huang, Yanwei Fu",
+    "year": 2026,
+    "venue": "IEEE Transactions on Visualization and Computer Graphics",
+    "url": "https://doi.org/10.1109/TVCG.2026.3688720",
+    "pdfUrl": null,
+    "sourceCodeUrl": "https://sixiaozheng.github.io/VidCRAFT3/",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
+    "status": "to-read",
+    "readDate": "",
+    "tags": [],
+    "summary": "VidCRAFT3提出了一种统一的图像到视频生成框架，通过显式建模几何、运动和光照之间的跨因素交互，实现了对相机运动、物体运动和光照方向的独立与联合控制。该框架包含Image2Cloud模块提供3D几何先验，ObjMotionNet编码物体轨迹，以及空间三重注意力Transformer整合光照方向，并通过三阶段渐进训练策略解决了联合标注数据稀缺的问题。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-01T10:13:11.539Z",
+    "createdAt": "2026-09-01T10:09:33.053Z"
   }
 ]
