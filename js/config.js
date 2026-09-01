@@ -9,6 +9,7 @@ window.PaperAIConfig = {
     dataPath: 'data/papers.json',
     foldersPath: 'data/folders.json',
     folderImagesPath: 'data/folder-images',
+    illustrationsPath: 'data/illustrations',
   },
 
   siliconflow: {

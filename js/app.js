@@ -35,7 +35,9 @@ let isLoggedIn = false;
 let currentUsername = '';
 let hasUnpublishedChanges = false;
 const pendingPdfs = new Map();
+const pendingIllustrations = new Map();
 const pdfBlobUrls = new Map();
+const illustrationBlobUrls = new Map();
 const pendingFolderImages = new Map();
 const folderImageBlobUrls = new Map();
 
@@ -84,6 +86,70 @@ function normalizePaperRecord(paper) {
     if (derived) cleaned.pdfUrl = derived;
   }
   return cleaned;
+}
+
+function getIllustrationsDir() {
+  return getConfig().github?.illustrationsPath || 'data/illustrations';
+}
+
+function getIllustrationPendingKey(paperId, illustrationId) {
+  return `${paperId}:${illustrationId}`;
+}
+
+function getIllustrationExtension(file) {
+  const name = file?.name || '';
+  const match = name.match(/\.([a-z0-9]+)$/i);
+  if (match) {
+    const ext = match[1].toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) return ext === 'jpeg' ? 'jpg' : ext;
+  }
+  if (file?.type === 'image/jpeg') return 'jpg';
+  if (file?.type === 'image/png') return 'png';
+  if (file?.type === 'image/webp') return 'webp';
+  if (file?.type === 'image/gif') return 'gif';
+  return 'png';
+}
+
+function getIllustrationPath(paperId, illustrationId, ext = 'png') {
+  return `${getIllustrationsDir()}/${paperId}/${illustrationId}.${ext}`;
+}
+
+function revokeIllustrationBlob(key) {
+  if (illustrationBlobUrls.has(key)) {
+    URL.revokeObjectURL(illustrationBlobUrls.get(key));
+    illustrationBlobUrls.delete(key);
+  }
+}
+
+function clearAllIllustrationBlobs() {
+  illustrationBlobUrls.forEach(url => URL.revokeObjectURL(url));
+  illustrationBlobUrls.clear();
+}
+
+async function resolveIllustrationUrl(paperId, item) {
+  if (!paperId || !item?.id) return null;
+  const key = getIllustrationPendingKey(paperId, item.id);
+
+  if (pendingIllustrations.has(key)) {
+    if (!illustrationBlobUrls.has(key)) {
+      illustrationBlobUrls.set(key, URL.createObjectURL(pendingIllustrations.get(key)));
+    }
+    return illustrationBlobUrls.get(key);
+  }
+
+  const stored = await window.IllustrationStore.getIllustrationFromStore(key);
+  if (stored) {
+    if (!illustrationBlobUrls.has(key)) {
+      illustrationBlobUrls.set(key, URL.createObjectURL(stored));
+    }
+    return illustrationBlobUrls.get(key);
+  }
+
+  if (item.imagePath) {
+    return window.PdfStore.resolveAssetPath(item.imagePath);
+  }
+
+  return null;
 }
 
 function getFolderImagesDir() {
@@ -415,6 +481,9 @@ function mergePaperRecord(remote, draft) {
   if (!merged.url && remote.url) merged.url = remote.url;
   if (!merged.knowledgePoints?.length && remote.knowledgePoints?.length) {
     merged.knowledgePoints = remote.knowledgePoints;
+  }
+  if (!merged.illustrations?.length && remote.illustrations?.length) {
+    merged.illustrations = remote.illustrations;
   }
   return normalizePaperRecord(merged);
 }
@@ -894,6 +963,7 @@ function getFilteredPapers() {
         p.title, p.authors, p.summary, p.notes, p.url, p.pdfUrl, p.sourceCodeUrl,
         ...(p.tags || []),
         ...(p.knowledgePoints || []).flatMap(kp => [kp.term, kp.explanation, kp.link]),
+        ...(p.illustrations || []).flatMap(item => [item.title]),
       ].join(' ').toLowerCase();
       if (!haystack.includes(search)) return false;
     }
@@ -1090,6 +1160,12 @@ async function openReader(id) {
 
   if (knowledgeEl) {
     knowledgeEl.innerHTML = renderKnowledgePointsHtml(p.knowledgePoints);
+  }
+
+  const illustrationsEl = document.getElementById('reader-illustrations');
+  if (illustrationsEl) {
+    illustrationsEl.innerHTML = '<p class="note-empty">加载中…</p>';
+    void renderIllustrationsInReader(p, illustrationsEl);
   }
 }
 
@@ -1332,11 +1408,172 @@ function renderKnowledgePointsHtml(points) {
   `).join('');
 }
 
+function createIllustrationRow(data = {}, paperId) {
+  const row = document.createElement('div');
+  row.className = 'illustration-row';
+  const illustrationId = data.id || crypto.randomUUID();
+  row.dataset.illustrationId = illustrationId;
+  if (data.imagePath) {
+    row.dataset.imagePath = data.imagePath;
+    const extMatch = data.imagePath.match(/\.([a-z0-9]+)$/i);
+    if (extMatch) row.dataset.ext = extMatch[1].toLowerCase();
+  }
+  if (data.ext) row.dataset.ext = data.ext;
+
+  row.innerHTML = `
+    <div class="illustration-row-main">
+      <input type="text" class="illustration-title" placeholder="图片标题（显示在图片下方）">
+      <input type="file" class="illustration-file" accept="image/*">
+      <div class="illustration-preview-wrap hidden">
+        <img class="illustration-preview" alt="">
+      </div>
+    </div>
+    <div class="illustration-row-actions">
+      <button type="button" class="btn btn-ghost btn-sm btn-illustration-remove">删除</button>
+    </div>
+  `;
+
+  row.querySelector('.illustration-title').value = data.title || '';
+  row.querySelector('.illustration-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) void handleIllustrationFile(row, file, paperId);
+  });
+  row.querySelector('.btn-illustration-remove').addEventListener('click', () => {
+    removeIllustrationRow(row, paperId);
+  });
+
+  if (data.imagePath || data.id) {
+    void updateIllustrationPreview(row, paperId, {
+      id: illustrationId,
+      imagePath: data.imagePath,
+    });
+  }
+
+  return row;
+}
+
+function addIllustrationRow(data = {}, paperId) {
+  const list = document.getElementById('illustrations-list');
+  if (!list) return;
+  const id = paperId || ensureDraftPaperId();
+  list.appendChild(createIllustrationRow(data, id));
+}
+
+async function setIllustrationsToForm(items = [], paperId) {
+  const list = document.getElementById('illustrations-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!paperId) return;
+  for (const item of items) {
+    list.appendChild(createIllustrationRow(item, paperId));
+  }
+}
+
+function getIllustrationsFromForm(paperId) {
+  const list = document.getElementById('illustrations-list');
+  if (!list || !paperId) return [];
+  return [...list.querySelectorAll('.illustration-row')]
+    .map(row => {
+      const id = row.dataset.illustrationId;
+      const title = row.querySelector('.illustration-title')?.value.trim() || '';
+      const ext = row.dataset.ext || 'png';
+      const key = getIllustrationPendingKey(paperId, id);
+      const imagePath = row.dataset.imagePath
+        || (pendingIllustrations.has(key) ? getIllustrationPath(paperId, id, ext) : '');
+      return { id, title, imagePath: imagePath || null };
+    })
+    .filter(item => item.imagePath);
+}
+
+async function updateIllustrationPreview(row, paperId, item) {
+  const wrap = row.querySelector('.illustration-preview-wrap');
+  const img = row.querySelector('.illustration-preview');
+  if (!wrap || !img) return;
+  const url = await resolveIllustrationUrl(paperId, item);
+  if (url) {
+    img.src = url;
+    wrap.classList.remove('hidden');
+  } else {
+    img.removeAttribute('src');
+    wrap.classList.add('hidden');
+  }
+}
+
+async function handleIllustrationFile(row, file, paperId) {
+  if (!file.type.startsWith('image/')) {
+    alert('请上传图片文件');
+    row.querySelector('.illustration-file').value = '';
+    return;
+  }
+
+  const illustrationId = row.dataset.illustrationId;
+  const ext = getIllustrationExtension(file);
+  const key = getIllustrationPendingKey(paperId, illustrationId);
+
+  row.dataset.ext = ext;
+  revokeIllustrationBlob(key);
+  pendingIllustrations.set(key, file);
+  await window.IllustrationStore.saveIllustrationToStore(key, file);
+  row.dataset.imagePath = getIllustrationPath(paperId, illustrationId, ext);
+  await updateIllustrationPreview(row, paperId, {
+    id: illustrationId,
+    imagePath: row.dataset.imagePath,
+  });
+}
+
+function removeIllustrationRow(row, paperId) {
+  const illustrationId = row.dataset.illustrationId;
+  const key = getIllustrationPendingKey(paperId, illustrationId);
+  revokeIllustrationBlob(key);
+  pendingIllustrations.delete(key);
+  void window.IllustrationStore.deleteIllustrationFromStore(key);
+  row.remove();
+}
+
+function clearIllustrationsForPaper(paperId) {
+  if (!paperId) return;
+  [...pendingIllustrations.keys()].forEach(key => {
+    if (key.startsWith(`${paperId}:`)) {
+      revokeIllustrationBlob(key);
+      pendingIllustrations.delete(key);
+      void window.IllustrationStore.deleteIllustrationFromStore(key);
+    }
+  });
+}
+
+async function renderIllustrationsInReader(paper, container) {
+  const items = paper.illustrations || [];
+  if (!items.length) {
+    container.innerHTML = '<p class="note-empty">暂无图解</p>';
+    return;
+  }
+
+  const figures = await Promise.all(items.map(async (item) => {
+    const url = await resolveIllustrationUrl(paper.id, item);
+    if (!url) return '';
+    const caption = item.title
+      ? `<figcaption class="illustration-caption">${escapeHtml(item.title)}</figcaption>`
+      : '';
+    return `
+      <figure class="illustration-figure">
+        <img src="${url}" alt="${escapeHtml(item.title || '图解')}" loading="lazy">
+        ${caption}
+      </figure>
+    `;
+  }));
+
+  const html = figures.filter(Boolean).join('');
+  container.innerHTML = html
+    ? `<div class="illustration-gallery">${html}</div>`
+    : '<p class="note-empty">暂无图解</p>';
+}
+
 function resetForm() {
   const draftId = document.getElementById('paper-id').value;
   if (draftId && !editingId) {
     revokePdfBlob(draftId);
     pendingPdfs.delete(draftId);
+    clearIllustrationsForPaper(draftId);
   }
 
   editingId = null;
@@ -1347,6 +1584,8 @@ function resetForm() {
   setAiExtractStatus('');
   updateAiExtractButtonState();
   setKnowledgePointsToForm([]);
+  const illustrationsList = document.getElementById('illustrations-list');
+  if (illustrationsList) illustrationsList.innerHTML = '';
 }
 
 function editPaper(id) {
@@ -1373,6 +1612,7 @@ function editPaper(id) {
   document.getElementById('summary').value = p.summary || '';
   document.getElementById('notes').value = p.notes || '';
   setKnowledgePointsToForm(p.knowledgePoints || []);
+  void setIllustrationsToForm(p.illustrations || [], p.id);
   document.getElementById('pdf-file').value = '';
   updateAiExtractButtonState();
 }
@@ -1383,6 +1623,7 @@ function deletePaper(id) {
 
   revokePdfBlob(id);
   pendingPdfs.delete(id);
+  clearIllustrationsForPaper(id);
   window.PdfStore.deletePdfFromStore(id);
   papers = papers.filter(x => x.id !== id);
   markDirty();
@@ -1447,7 +1688,7 @@ async function submitPaperForm() {
   };
 
   const draftId = document.getElementById('paper-id').value;
-  let paperId = editingId;
+  let paperId = editingId || draftId || crypto.randomUUID();
 
   if (editingId) {
     const idx = papers.findIndex(p => p.id === editingId);
@@ -1460,9 +1701,13 @@ async function submitPaperForm() {
       data.folderId = existing.folderId;
     }
 
+    data.illustrations = getIllustrationsFromForm(paperId);
     papers[idx] = normalizePaperRecord({ ...existing, ...data });
   } else {
-    paperId = draftId || crypto.randomUUID();
+    if (!document.getElementById('paper-id').value) {
+      document.getElementById('paper-id').value = paperId;
+    }
+    data.illustrations = getIllustrationsFromForm(paperId);
     papers.unshift(normalizePaperRecord({
       id: paperId,
       ...data,
@@ -1597,6 +1842,11 @@ async function deleteGithubFile(owner, repo, path, branch, token, message) {
 }
 
 async function listGithubDirectory(owner, repo, path, branch, token) {
+  const data = await listGithubContents(owner, repo, path, branch, token);
+  return data.filter(item => item.type === 'file').map(item => item.path);
+}
+
+async function listGithubContents(owner, repo, path, branch, token) {
   const res = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`,
     { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
@@ -1605,7 +1855,41 @@ async function listGithubDirectory(owner, repo, path, branch, token) {
   if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
   const data = await res.json();
   if (!Array.isArray(data)) return [];
-  return data.filter(item => item.type === 'file').map(item => item.path);
+  return data;
+}
+
+function getActiveIllustrationPaths() {
+  const paths = new Set();
+  papers.forEach(paper => {
+    (paper.illustrations || []).forEach(item => {
+      if (item.imagePath) paths.add(item.imagePath.replace(/^\//, ''));
+    });
+  });
+  return paths;
+}
+
+async function cleanupOrphanGithubIllustrations(owner, repo, branch, token) {
+  const baseDir = getIllustrationsDir();
+  const activePaths = getActiveIllustrationPaths();
+  const entries = await listGithubContents(owner, repo, baseDir, branch, token);
+  let removed = 0;
+
+  for (const entry of entries) {
+    if (entry.type === 'dir') {
+      const files = await listGithubDirectory(owner, repo, entry.path, branch, token);
+      for (const filePath of files) {
+        const normalized = filePath.replace(/^\//, '');
+        if (activePaths.has(normalized)) continue;
+        await deleteGithubFile(
+          owner, repo, filePath, branch, token,
+          `Remove orphan illustration: ${normalized.split('/').pop()}`
+        );
+        removed++;
+      }
+    }
+  }
+
+  return removed;
 }
 
 async function removeAllGithubPdfs(owner, repo, branch, token) {
@@ -1662,6 +1946,25 @@ async function publishToGithub() {
       );
     }
 
+    let uploadedIllustrations = 0;
+    for (const paper of papers) {
+      for (const item of paper.illustrations || []) {
+        if (!item.imagePath) continue;
+        const key = getIllustrationPendingKey(paper.id, item.id);
+        const blob = pendingIllustrations.has(key)
+          ? pendingIllustrations.get(key)
+          : await window.IllustrationStore.getIllustrationFromStore(key);
+        if (!blob) continue;
+        const buffer = await blob.arrayBuffer();
+        const base64 = arrayBufferToBase64(buffer);
+        await uploadGithubFile(
+          owner, repo, item.imagePath, branch, token, base64,
+          `Upload illustration: ${item.title || paper.title || paper.id}`
+        );
+        uploadedIllustrations++;
+      }
+    }
+
     const foldersBase64 = btoa(unescape(encodeURIComponent(getFoldersJson())));
     await uploadGithubFile(
       owner, repo, foldersPath, branch, token, foldersBase64,
@@ -1675,20 +1978,26 @@ async function publishToGithub() {
     );
 
     let removedPdfs = 0;
+    let removedIllustrations = 0;
     try {
       removedPdfs = await removeAllGithubPdfs(owner, repo, branch, token);
+      removedIllustrations = await cleanupOrphanGithubIllustrations(owner, repo, branch, token);
     } catch (err) {
-      console.warn('PDF cleanup failed:', err);
+      console.warn('Asset cleanup failed:', err);
     }
 
     pendingPdfs.clear();
+    pendingIllustrations.clear();
     pendingFolderImages.clear();
     clearAllFolderImageBlobs();
+    clearAllIllustrationBlobs();
     clearLocalDraft();
     hasUnpublishedChanges = false;
 
     let msg = '发布成功！';
+    if (uploadedIllustrations > 0) msg += `\n已上传 ${uploadedIllustrations} 张图解。`;
     if (removedPdfs > 0) msg += `\n已从仓库删除 ${removedPdfs} 个 PDF 文件。`;
+    if (removedIllustrations > 0) msg += `\n已删除 ${removedIllustrations} 张未使用的图解。`;
     alert(msg);
   } catch (err) {
     alert(`发布失败：${formatGithubPublishError(err.message)}\n\n已改为下载 papers.json，请手动提交到仓库。`);
@@ -1713,7 +2022,9 @@ function importData(file) {
       if (!Array.isArray(imported)) throw new Error('Invalid format');
       if (confirm(`将导入 ${imported.length} 条记录，是否覆盖现有数据？`)) {
         clearAllPdfBlobs();
+        clearAllIllustrationBlobs();
         pendingPdfs.clear();
+        pendingIllustrations.clear();
         papers = imported.map(normalizePaperRecord);
         markDirty();
         renderStats();
@@ -1840,6 +2151,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   document.getElementById('btn-ai-extract').addEventListener('click', handleAiExtract);
   document.getElementById('btn-add-knowledge-point')?.addEventListener('click', () => addKnowledgePointRow());
+  document.getElementById('btn-add-illustration')?.addEventListener('click', () => {
+    if (!requireAdmin()) return;
+    addIllustrationRow({}, editingId || document.getElementById('paper-id').value || null);
+  });
   document.getElementById('btn-explain-knowledge-points')?.addEventListener('click', explainAllKnowledgePointsInForm);
   document.getElementById('btn-save-sf-settings').addEventListener('click', saveAdminSettings);
   document.getElementById('btn-cancel').addEventListener('click', () => {
@@ -1858,9 +2173,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (confirm('确定清空所有论文记录？此操作不可恢复。')) {
       clearAllPdfBlobs();
       clearAllFolderImageBlobs();
+      clearAllIllustrationBlobs();
       pendingPdfs.clear();
+      pendingIllustrations.clear();
       pendingFolderImages.clear();
       await window.PdfStore.clearPdfStore();
+      await window.IllustrationStore.clearIllustrationStore();
       await window.FolderImageStore.clearFolderImageStore();
       clearLocalDraft();
       papers = [];

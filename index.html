@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PaperAI — 论文阅读笔记</title>
   <meta name="description" content="记录与管理学术论文阅读笔记">
-  <link rel="stylesheet" href="css/style.css?v=19">
+  <link rel="stylesheet" href="css/style.css?v=25">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -167,6 +167,14 @@
             <div id="knowledge-points-list" class="knowledge-points-list"></div>
             <p id="kp-explain-status" class="file-hint"></p>
           </div>
+          <div class="form-group" id="illustrations-section">
+            <div class="form-group-header">
+              <label>图解</label>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-add-illustration">+ 添加图片</button>
+            </div>
+            <p class="hint">上传论文示意图、实验结果等，可填写图片标题（显示在图片下方）。</p>
+            <div id="illustrations-list" class="illustrations-list"></div>
+          </div>
           <div class="form-group">
             <label for="notes">详细笔记</label>
             <textarea id="notes" rows="8" placeholder="方法细节、实验结果、个人思考…"></textarea>
@@ -210,6 +218,10 @@
         <div class="reader-panel reader-notes-panel">
           <div class="panel-header"><h3>笔记</h3></div>
           <div id="reader-notes" class="reader-notes-content"></div>
+        </div>
+        <div class="reader-panel reader-illustrations-panel">
+          <div class="panel-header"><h3>图解</h3></div>
+          <div id="reader-illustrations" class="reader-illustrations-content"></div>
         </div>
         <div class="reader-panel reader-knowledge-panel">
           <div class="panel-header"><h3>知识点</h3></div>
@@ -283,7 +295,7 @@
           </label>
           <button class="btn btn-danger" id="btn-clear">清空所有数据</button>
         </div>
-        <p class="hint">修改后点击「发布到网站」更新论文、分类与便签背景图（不含 PDF 文件）。</p>
+        <p class="hint">修改后点击「发布到网站」更新论文、分类、图解与便签背景图。</p>
       </div>
     </section>
   </main>
@@ -345,10 +357,11 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="js/config.js?v=23"></script>
+  <script src="js/config.js?v=25"></script>
   <script src="js/pdf-store.js?v=14"></script>
+  <script src="js/illustration-store.js?v=25"></script>
   <script src="js/folder-image-store.js?v=14"></script>
   <script src="js/ai.js?v=14"></script>
-  <script src="js/app.js?v=24"></script>
+  <script src="js/app.js?v=25"></script>
 </body>
 </html>
