@@ -382,7 +382,6 @@ body {
 
 .papers-panel {
   animation: viewFadeIn 0.32s ease forwards;
-  overflow: visible;
 }
 
 .papers-panel-header {
@@ -536,83 +535,21 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  overflow: visible;
 }
 
 .paper-card {
-  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-  overflow: visible;
 }
 
 .paper-card:hover {
   border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
   box-shadow: var(--shadow);
   transform: translateY(-2px);
-  z-index: 20;
-}
-
-.paper-card-preview {
-  position: absolute;
-  top: 50%;
-  left: calc(100% + 0.75rem);
-  z-index: 60;
-  box-sizing: border-box;
-  width: min(280px, 48vw);
-  max-height: min(78vh, 40rem);
-  padding: 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--surface) 96%, transparent);
-  box-shadow: var(--shadow-lg);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(-50%) translateX(-0.25rem) scale(0.98);
-  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
-}
-
-.paper-card-preview img {
-  width: 100%;
-  max-height: calc(min(78vh, 40rem) - 1rem);
-  object-fit: contain;
-  border-radius: calc(var(--radius) - 2px);
-  display: block;
-}
-
-.paper-card:hover .paper-card-preview {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(-50%) translateX(0) scale(1);
-}
-
-@media (max-width: 1023px) {
-  .paper-card-preview {
-    width: min(280px, calc(100vw - 2rem));
-    max-height: none;
-    top: calc(100% + 0.5rem);
-    left: 0;
-    transform: translateY(-0.25rem) scale(0.98);
-  }
-
-  .paper-card-preview img {
-    max-height: 18rem;
-  }
-
-  .paper-card:hover .paper-card-preview {
-    transform: translateY(0) scale(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .paper-card-preview {
-    transition: none;
-  }
 }
 
 .paper-card-header {

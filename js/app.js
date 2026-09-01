@@ -13,7 +13,6 @@ const STATUS_LABELS = {
 };
 
 const THEME_STORAGE_KEY = 'paperai-theme';
-const PAPER_PREVIEW_PLACEHOLDER = 'assets/paper-preview-placeholder.webp';
 
 let papers = [];
 let folders = [];
@@ -1016,9 +1015,7 @@ function renderList() {
 
   empty.classList.add('hidden');
 
-  list.innerHTML = filtered.map(p => {
-    const previewUrl = getPaperPreviewUrl(p);
-    return `
+  list.innerHTML = filtered.map(p => `
     <article class="paper-card" data-id="${p.id}">
       <div class="paper-card-header">
         <h3 class="paper-title">${escapeHtml(getDisplayTitle(p))}</h3>
@@ -1030,24 +1027,12 @@ function renderList() {
         ${paperHasLink(p) ? '<span class="pdf-badge">🔗 链接</span>' : ''}
         ${(p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
       </div>
-      <div class="paper-card-preview" aria-hidden="true">
-        <img src="${escapeHtml(previewUrl)}" alt="" loading="lazy">
-      </div>
     </article>
-  `;
-  }).join('');
+  `).join('');
 
   list.querySelectorAll('.paper-card').forEach(card => {
     card.addEventListener('click', () => openReader(card.dataset.id));
   });
-}
-
-function getPaperPreviewUrl(paper) {
-  const firstIllustration = (paper.illustrations || []).find(item => item?.imagePath);
-  if (firstIllustration?.imagePath && window.PdfStore?.resolveAssetPath) {
-    return window.PdfStore.resolveAssetPath(firstIllustration.imagePath);
-  }
-  return PAPER_PREVIEW_PLACEHOLDER;
 }
 
 function isDarkThemeEnabled() {
