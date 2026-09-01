@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "id": "8438586f-0ef6-4010-8955-01cb49a00017",
+    "title": "FFP-300K: Scaling First-Frame Propagation for Generalizable Video Editing",
+    "authors": "Xijie Huang, Chengming Xu, Donghao Luo, Xiaobin Hu, Peng Tang, Xu Peng, Jiangning Zhang, Chengjie Wang, Yanwei Fu",
+    "year": 2026,
+    "venue": "arXiv",
+    "url": "https://arxiv.org/abs/2601.01720v3",
+    "sourceCodeUrl": "https://ffp-300k.github.io",
+    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "status": "finished",
+    "readDate": "2026-08-31",
+    "tags": [
+      "CV",
+      "深度学习",
+      "大模型",
+      "自蒸馏",
+      "RoPE"
+    ],
+    "summary": "本文提出了FFP-300K，一个大规模视频编辑数据集，包含30万对720p分辨率、81帧长度的视频，用于训练基于首帧传播的视频编辑模型。作者还提出了FreeProp框架，通过自适应时空RoPE（AST-RoPE）和自蒸馏策略，实现了无需额外引导的高质量视频编辑，在EditVerseBench基准测试中优于现有方法。",
+    "notes": "",
+    "knowledgePoints": [
+      {
+        "term": "RoPE",
+        "link": "https://blog.csdn.net/v_july_v/article/details/134085503?ops_request_misc=elastic_search_misc&request_id=18b86e60525f0ca0cfa7986cc10700fe&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-2-134085503-null-null.142^v102^pc_search_result_base3&utm_term=RoPE&spm=1018.2226.3001.4187",
+        "explanation": "RoPE（Rotary Position Embedding）是一种位置编码方法，通过旋转矩阵将位置信息融入注意力机制中。相比传统的位置编码，RoPE能更好地处理长序列，并保持相对位置关系的对称性。在视频编辑中，AST-RoPE（自适应时空RoPE）扩展了RoPE，使其能同时处理时间和空间维度，从而提升视频编辑的连贯性和质量。"
+      }
+    ],
+    "updatedAt": "2026-08-31T14:20:00.660Z",
+    "pdfPath": "data/pdfs/8438586f-0ef6-4010-8955-01cb49a00017.pdf",
+    "pdfName": "FFP-300K——Scaling First-Frame Propagation for Generalizable Video Editing.pdf",
+    "createdAt": "2026-08-31T13:12:12.409Z"
+  }
+]
