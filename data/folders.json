@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "id": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "name": "Video Editing",
+    "createdAt": "2026-08-31T13:11:22.720Z",
+    "imagePrompt": "视频编辑",
+    "imagePath": "data/folder-images/8d9c8d21-d261-463b-8a07-a0f4865902e3.png"
+  },
+  {
+    "id": "2c657fec-269c-4686-9926-71cecd167750",
+    "name": "World Model",
+    "createdAt": "2026-08-31T14:02:47.602Z",
+    "imagePrompt": "地球 周围有很多互联网 从太空观察",
+    "imagePath": "data/folder-images/2c657fec-269c-4686-9926-71cecd167750.png"
+  },
+  {
+    "id": "606db46d-6c4d-4d3f-b495-fc313e7539e2",
+    "name": "Embodied AI",
+    "createdAt": "2026-08-31T14:03:39.549Z",
+    "imagePrompt": "机器人",
+    "imagePath": "data/folder-images/606db46d-6c4d-4d3f-b495-fc313e7539e2.png"
+  }
+]
