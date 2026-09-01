@@ -53,7 +53,7 @@
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
           </svg>
-          <input type="search" id="search-input" placeholder="搜索标题、作者、关键词…">
+          <input type="search" id="search-input" name="paper-search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="搜索标题、作者、关键词…">
         </div>
         <div class="filter-group">
           <select id="filter-status">
@@ -323,11 +323,11 @@
       <form id="login-form">
         <div class="form-group">
           <label for="admin-username">用户名</label>
-          <input type="text" id="admin-username" required autocomplete="username" placeholder="输入用户名">
+          <input type="text" id="admin-username" required autocomplete="off" placeholder="输入用户名">
         </div>
         <div class="form-group">
           <label for="admin-password">密码</label>
-          <input type="password" id="admin-password" autocomplete="current-password" placeholder="请输入密码">
+          <input type="password" id="admin-password" autocomplete="off" placeholder="请输入密码">
         </div>
         <div class="form-actions">
           <button type="button" class="btn btn-ghost" data-close="login-modal">取消</button>
@@ -349,6 +349,6 @@
   <script src="js/pdf-store.js?v=14"></script>
   <script src="js/folder-image-store.js?v=14"></script>
   <script src="js/ai.js?v=14"></script>
-  <script src="js/app.js?v=23"></script>
+  <script src="js/app.js?v=24"></script>
 </body>
 </html>

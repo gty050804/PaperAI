@@ -572,10 +572,26 @@ function renderCurrentFolderTitle() {
   titleEl.textContent = folder?.name || '';
 }
 
+function clearSearchAutofill() {
+  const searchEl = document.getElementById('search-input');
+  if (!searchEl?.value) return;
+  const sessionName = getSession()?.username;
+  if (searchEl.value === sessionName || searchEl.value === ADMIN_USERNAME) {
+    searchEl.value = '';
+  }
+}
+
+function scheduleClearSearchAutofill() {
+  clearSearchAutofill();
+  requestAnimationFrame(clearSearchAutofill);
+  setTimeout(clearSearchAutofill, 100);
+}
+
 function openFolder(id) {
   currentFolderId = id;
   updatePapersPanelVisibility();
   renderFolders();
+  scheduleClearSearchAutofill();
   renderList();
 }
 
@@ -1753,6 +1769,7 @@ async function handleLogin(e) {
   await loadData();
   renderFolders();
   updatePapersPanelVisibility();
+  scheduleClearSearchAutofill();
   if (currentFolderId != null) renderList();
   renderStats();
 }
