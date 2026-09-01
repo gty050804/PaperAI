@@ -1,5 +1,6 @@
 const DATA_URL = 'data/papers.json';
 const FOLDERS_URL = 'data/folders.json';
+const UNCategorized_ID = '__uncategorized__';
 const ADMIN_USERNAME = 'Phier';
 const USER_SESSION_KEY = 'paperai-user-session';
 const GITHUB_TOKEN_KEY = 'paperai-github-token';
@@ -393,15 +394,41 @@ async function loadData() {
   await loadPapers();
 }
 
+function mergePaperRecord(remote, draft) {
+  if (!remote) return draft;
+  if (!draft) return remote;
+
+  const remoteTime = new Date(remote.updatedAt || remote.createdAt || 0).getTime();
+  const draftTime = new Date(draft.updatedAt || draft.createdAt || 0).getTime();
+  const merged = draftTime >= remoteTime
+    ? { ...remote, ...draft }
+    : { ...draft, ...remote };
+
+  if (!merged.folderId && remote.folderId) merged.folderId = remote.folderId;
+  if (!merged.pdfPath && remote.pdfPath) {
+    merged.pdfPath = remote.pdfPath;
+    merged.pdfName = remote.pdfName;
+    merged.pdfPageRange = remote.pdfPageRange;
+  }
+  if (!merged.knowledgePoints?.length && remote.knowledgePoints?.length) {
+    merged.knowledgePoints = remote.knowledgePoints;
+  }
+  return merged;
+}
+
 function mergePapersRemoteAndDraft(draft, remote) {
-  const byId = new Map();
-  remote.forEach(p => byId.set(p.id, p));
-  draft.forEach(p => byId.set(p.id, p));
-  return [...byId.values()].sort((a, b) => {
-    const tb = new Date(b.updatedAt || b.createdAt || 0).getTime();
-    const ta = new Date(a.updatedAt || a.createdAt || 0).getTime();
-    return tb - ta;
-  });
+  const remoteById = new Map(remote.map(p => [p.id, p]));
+  const draftById = new Map(draft.map(p => [p.id, p]));
+  const allIds = new Set([...remoteById.keys(), ...draftById.keys()]);
+
+  return [...allIds]
+    .map(id => mergePaperRecord(remoteById.get(id), draftById.get(id)))
+    .filter(Boolean)
+    .sort((a, b) => {
+      const tb = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      const ta = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      return tb - ta;
+    });
 }
 
 function papersDraftDiffersFromRemote(draft, remote) {
@@ -427,6 +454,15 @@ async function loadPapers() {
             clearLocalDraft();
             papers = remote;
             hasUnpublishedChanges = false;
+            return;
+          }
+          if (remote.length > 0 && draft.length > 0) {
+            papers = mergePapersRemoteAndDraft(draft, remote);
+            hasUnpublishedChanges = papersDraftDiffersFromRemote(papers, remote);
+            if (hasUnpublishedChanges) saveLocalDraft();
+            if (JSON.stringify(draft) !== JSON.stringify(papers)) {
+              console.warn('本地草稿已与远程数据合并修正');
+            }
             return;
           }
           if (remote.length > 0 && draft.length < remote.length) {
@@ -492,7 +528,13 @@ function switchView(viewName) {
 }
 
 function getFolderById(id) {
+  if (id === UNCategorized_ID) return { id: UNCategorized_ID, name: '未分类' };
   return folders.find(f => f.id === id);
+}
+
+function isUncategorizedPaper(paper) {
+  if (!paper.folderId) return true;
+  return !folders.some(f => f.id === paper.folderId);
 }
 
 function getFolderColors(folderId) {
@@ -541,7 +583,14 @@ function closeFolderView() {
 }
 
 function countPapersInFolder(folderId) {
+  if (folderId === UNCategorized_ID) {
+    return papers.filter(isUncategorizedPaper).length;
+  }
   return papers.filter(p => p.folderId === folderId).length;
+}
+
+function getUncategorizedCount() {
+  return papers.filter(isUncategorizedPaper).length;
 }
 
 function renderFolders() {
@@ -554,6 +603,16 @@ function renderFolders() {
     count: countPapersInFolder(f.id),
     colorIndex: i % BOOKMARK_COLORS.length,
   }));
+
+  const uncategorizedCount = getUncategorizedCount();
+  if (uncategorizedCount > 0) {
+    items.push({
+      id: UNCategorized_ID,
+      label: '未分类',
+      count: uncategorizedCount,
+      colorIndex: items.length % BOOKMARK_COLORS.length,
+    });
+  }
 
   if (items.length === 0) {
     container.innerHTML = '<p class="bookmark-empty">暂无分类，站主可点击「新建分类」创建论文分类</p>';
@@ -577,7 +636,7 @@ function renderFolders() {
             color: ${colors.text};
           ">
             <div class="bookmark-tab" style="background:${colors.tab}"></div>
-            ${isAdmin ? `
+            ${isAdmin && item.id !== UNCategorized_ID ? `
               <span class="bookmark-actions admin-only">
                 <button type="button" class="bookmark-action" data-action="rename" data-folder-id="${escapeHtml(item.id)}" title="重命名">✎</button>
                 <button type="button" class="bookmark-action danger" data-action="delete" data-folder-id="${escapeHtml(item.id)}" title="删除">×</button>
@@ -806,7 +865,9 @@ function getFilteredPapers() {
   const tag = document.getElementById('filter-tag').value;
 
   return papers.filter(p => {
-    if (currentFolderId && p.folderId !== currentFolderId) return false;
+    if (currentFolderId === UNCategorized_ID) {
+      if (!isUncategorizedPaper(p)) return false;
+    } else if (currentFolderId && p.folderId !== currentFolderId) return false;
     if (status && p.status !== status) return false;
     if (tag && !(p.tags || []).includes(tag)) return false;
     if (search) {
@@ -823,6 +884,9 @@ function getFilteredPapers() {
 
 function getFolderPapers() {
   if (currentFolderId == null) return [];
+  if (currentFolderId === UNCategorized_ID) {
+    return papers.filter(isUncategorizedPaper);
+  }
   return papers.filter(p => p.folderId === currentFolderId);
 }
 
