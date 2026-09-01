@@ -6,6 +6,7 @@
     "year": 2026,
     "venue": "CVPR",
     "url": "https://arxiv.org/abs/2601.01720v3",
+    "pdfUrl": "https://arxiv.org/pdf/2601.01720v3.pdf",
     "sourceCodeUrl": "ffp-300k.github.io",
     "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
     "status": "finished",
@@ -32,13 +33,6 @@
       }
     ],
     "updatedAt": "2026-09-01T09:42:00.926Z",
-    "pdfPath": "data/pdfs/5daaec00-8089-424c-a7a2-b97df886466a.pdf",
-    "pdfName": "FFP-300K——Scaling First-Frame Propagation for Generalizable Video Editing_p1-8.pdf",
-    "pdfPageRange": {
-      "start": 1,
-      "end": 8,
-      "total": 19
-    },
     "createdAt": "2026-09-01T09:02:48.307Z"
   }
 ]

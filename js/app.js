@@ -35,7 +35,6 @@ let isLoggedIn = false;
 let currentUsername = '';
 let hasUnpublishedChanges = false;
 const pendingPdfs = new Map();
-const pendingPdfOriginals = new Map();
 const pdfBlobUrls = new Map();
 const pendingFolderImages = new Map();
 const folderImageBlobUrls = new Map();
@@ -64,12 +63,27 @@ function loadAdminSettingsIntoForm() {
   if (tokenEl) tokenEl.value = getGithubToken();
 }
 
-function getPdfsDir() {
-  return getConfig().github?.pdfsPath || 'data/pdfs';
+function derivePdfUrlFromPaperUrl(url) {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (/\.pdf(\?|#|$)/i.test(trimmed)) return trimmed;
+  const arxivMatch = trimmed.match(/arxiv\.org\/abs\/([^/?#]+)/i);
+  if (arxivMatch) return `https://arxiv.org/pdf/${arxivMatch[1]}.pdf`;
+  return null;
 }
 
-function getPdfPath(paperId) {
-  return `${getPdfsDir()}/${paperId}.pdf`;
+function sanitizePaperForStorage(paper) {
+  const { pdfPath, pdfName, pdfPageRange, ...rest } = paper;
+  return rest;
+}
+
+function normalizePaperRecord(paper) {
+  const cleaned = sanitizePaperForStorage({ ...paper });
+  if (!cleaned.pdfUrl) {
+    const derived = derivePdfUrlFromPaperUrl(cleaned.url);
+    if (derived) cleaned.pdfUrl = derived;
+  }
+  return cleaned;
 }
 
 function getFolderImagesDir() {
@@ -221,20 +235,12 @@ async function resolvePdfUrl(paper) {
     return pdfBlobUrls.get(paper.id);
   }
 
-  if (paper.pdfPath) {
-    const remoteUrl = window.PdfStore.resolveAssetPath(paper.pdfPath);
-    const ts = paper.updatedAt || paper.createdAt || '';
-    const sep = remoteUrl.includes('?') ? '&' : '?';
-    const url = `${remoteUrl}${sep}t=${encodeURIComponent(ts)}`;
-    const exists = await window.PdfStore.checkRemotePdfExists(remoteUrl);
-    if (exists) return url;
-  }
-
-  return null;
+  if (paper.pdfUrl) return paper.pdfUrl;
+  return derivePdfUrlFromPaperUrl(paper.url);
 }
 
-function paperHasPdf(paper) {
-  return !!(paper.pdfPath || pendingPdfs.has(paper.id));
+function paperHasLink(paper) {
+  return !!(paper.url || paper.pdfUrl || derivePdfUrlFromPaperUrl(paper.url));
 }
 
 function getSession() {
@@ -405,15 +411,12 @@ function mergePaperRecord(remote, draft) {
     : { ...draft, ...remote };
 
   if (!merged.folderId && remote.folderId) merged.folderId = remote.folderId;
-  if (!merged.pdfPath && remote.pdfPath) {
-    merged.pdfPath = remote.pdfPath;
-    merged.pdfName = remote.pdfName;
-    merged.pdfPageRange = remote.pdfPageRange;
-  }
+  if (!merged.pdfUrl && remote.pdfUrl) merged.pdfUrl = remote.pdfUrl;
+  if (!merged.url && remote.url) merged.url = remote.url;
   if (!merged.knowledgePoints?.length && remote.knowledgePoints?.length) {
     merged.knowledgePoints = remote.knowledgePoints;
   }
-  return merged;
+  return normalizePaperRecord(merged);
 }
 
 function mergePapersRemoteAndDraft(draft, remote) {
@@ -452,7 +455,7 @@ async function loadPapers() {
           if (draft.length === 0 && remote.length > 0) {
             console.warn('忽略空草稿，已恢复远程论文数据');
             clearLocalDraft();
-            papers = remote;
+            papers = remote.map(normalizePaperRecord);
             hasUnpublishedChanges = false;
             return;
           }
@@ -472,7 +475,7 @@ async function loadPapers() {
             console.warn('本地草稿不完整，已与远程数据合并');
             return;
           }
-          papers = draft;
+          papers = draft.map(normalizePaperRecord);
           hasUnpublishedChanges = true;
           if (fromCache && remote.length === 0 && draft.length > 0) {
             console.warn('网络异常，已恢复本地未发布草稿');
@@ -486,7 +489,7 @@ async function loadPapers() {
     }
   }
 
-  papers = remote;
+  papers = remote.map(normalizePaperRecord);
   hasUnpublishedChanges = false;
 
   if (fromCache && remote.length > 0) {
@@ -872,7 +875,7 @@ function getFilteredPapers() {
     if (tag && !(p.tags || []).includes(tag)) return false;
     if (search) {
       const haystack = [
-        p.title, p.authors, p.summary, p.notes, p.pdfName, p.sourceCodeUrl,
+        p.title, p.authors, p.summary, p.notes, p.url, p.pdfUrl, p.sourceCodeUrl,
         ...(p.tags || []),
         ...(p.knowledgePoints || []).flatMap(kp => [kp.term, kp.explanation, kp.link]),
       ].join(' ').toLowerCase();
@@ -933,7 +936,7 @@ function renderList() {
       <p class="paper-meta">${formatMeta(p)}</p>
       ${p.summary ? `<p class="paper-summary">${escapeHtml(p.summary)}</p>` : ''}
       <div class="paper-card-footer">
-        ${paperHasPdf(p) ? '<span class="pdf-badge">📄 PDF</span>' : ''}
+        ${paperHasLink(p) ? '<span class="pdf-badge">🔗 链接</span>' : ''}
         ${(p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
       </div>
     </article>
@@ -987,18 +990,15 @@ async function downloadPdf(paper, pdfUrl) {
   if (!paper || !pdfUrl) return;
 
   const safeTitle = getDisplayTitle(paper).replace(/[<>:"/\\|?*]/g, '_');
-  const filename = paper.pdfName || `${safeTitle}.pdf`;
+  const filename = `${safeTitle}.pdf`;
 
   try {
-    const res = await fetch(pdfUrl);
-    if (!res.ok) throw new Error('fetch failed');
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
+    a.href = pdfUrl;
+    a.target = '_blank';
+    a.rel = 'noopener';
     a.download = filename;
     a.click();
-    URL.revokeObjectURL(url);
   } catch {
     alert('下载失败，请尝试「新窗口打开」后保存');
   }
@@ -1028,22 +1028,26 @@ async function openReader(id) {
   switchView('reader');
   updateUserUI();
 
-  const pdfUrl = await resolvePdfUrl(p);
+  const embedUrl = await resolvePdfUrl(p);
+  const linkUrl = p.url || p.pdfUrl || embedUrl;
 
-  if (pdfUrl) {
-    currentReaderPdfUrl = pdfUrl;
-    frame.src = pdfUrl;
+  if (embedUrl) {
+    currentReaderPdfUrl = embedUrl;
+    frame.src = embedUrl;
     frame.classList.remove('hidden');
     unavailable.classList.add('hidden');
-    openTab.href = pdfUrl;
-    openTab.classList.remove('hidden');
     downloadBtn.classList.remove('hidden');
   } else {
     frame.classList.add('hidden');
     unavailable.classList.remove('hidden');
-    unavailable.querySelector('p').textContent = 'PDF 不可用，请先发布到网站或重新上传';
-    openTab.classList.add('hidden');
+    unavailable.querySelector('p').textContent = '无法在页内预览 PDF，请点击下方链接阅读';
     downloadBtn.classList.add('hidden');
+  }
+
+  if (linkUrl) {
+    openTab.href = linkUrl;
+    openTab.textContent = p.url ? '打开论文链接' : '打开 PDF';
+    openTab.classList.remove('hidden');
   }
 
   const notesEl = document.getElementById('reader-notes');
@@ -1073,115 +1077,18 @@ async function openReader(id) {
   }
 }
 
-function updatePdfFormHints(paper = null) {
-  const currentEl = document.getElementById('pdf-current');
-  const removeWrap = document.getElementById('remove-pdf-wrap');
-  const removeCheck = document.getElementById('remove-pdf');
-  const savedRangeEl = document.getElementById('pdf-page-range-saved');
-
-  if (paper && paperHasPdf(paper)) {
-    currentEl.textContent = `当前文件：${paper.pdfName || '已上传 PDF'}`;
-    currentEl.classList.remove('hidden');
-    removeWrap.classList.remove('hidden');
-    removeCheck.checked = false;
-    if (paper.pdfPageRange && savedRangeEl) {
-      const { start, end, total } = paper.pdfPageRange;
-      savedRangeEl.textContent = total
-        ? `已保存页码：第 ${start}–${end} 页（原 PDF 共 ${total} 页）`
-        : `已保存页码：第 ${start}–${end} 页`;
-      savedRangeEl.classList.remove('hidden');
-    } else if (savedRangeEl) {
-      savedRangeEl.classList.add('hidden');
-      savedRangeEl.textContent = '';
-    }
-  } else {
-    currentEl.classList.add('hidden');
-    removeWrap.classList.add('hidden');
-    removeCheck.checked = false;
-    if (savedRangeEl) {
-      savedRangeEl.classList.add('hidden');
-      savedRangeEl.textContent = '';
-    }
-  }
-  updateAiExtractButtonState();
-}
-
-function resetPdfPageRangeUI(total = 0, range = null) {
-  const wrap = document.getElementById('pdf-page-range-wrap');
-  const startEl = document.getElementById('pdf-page-start');
-  const endEl = document.getElementById('pdf-page-end');
-  const totalEl = document.getElementById('pdf-page-total');
-  if (!wrap || !startEl || !endEl) return;
-
-  if (total <= 0) {
-    wrap.classList.add('hidden');
-    startEl.value = 1;
-    endEl.value = 1;
-    if (totalEl) totalEl.textContent = '';
-    return;
-  }
-
-  wrap.classList.remove('hidden');
-  startEl.min = 1;
-  endEl.min = 1;
-  startEl.max = total;
-  endEl.max = total;
-  startEl.value = range?.start ?? 1;
-  endEl.value = range?.end ?? total;
-  if (totalEl) totalEl.textContent = `（共 ${total} 页）`;
-}
-
-function getPdfPageRangeFromForm() {
-  const startEl = document.getElementById('pdf-page-start');
-  const endEl = document.getElementById('pdf-page-end');
-  if (!startEl || !endEl) return null;
-  const start = parseInt(startEl.value, 10);
-  const end = parseInt(endEl.value, 10);
-  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
-  return { start, end };
-}
-
-function validatePdfPageRange(start, end, total) {
-  if (start < 1 || end < 1) throw new Error('页码不能小于 1');
-  if (start > total || end > total) throw new Error(`页码不能超过 ${total}`);
-  if (start > end) throw new Error('起始页不能大于结束页');
-}
-
-function buildPdfPageRangeMeta(start, end, total) {
-  if (start === 1 && end === total) return null;
-  return { start, end, total };
-}
-
-async function applyPdfPageRangeToPending(paperId, { runAi = false } = {}) {
-  const original = pendingPdfOriginals.get(paperId);
-  if (!original) return null;
-
-  const total = await window.PdfRange.getPdfPageCount(original);
-  const range = getPdfPageRangeFromForm();
-  const start = range?.start ?? 1;
-  const end = range?.end ?? total;
-  validatePdfPageRange(start, end, total);
-  resetPdfPageRangeUI(total, { start, end });
-
-  let file;
-  if (start === 1 && end === total) {
-    file = original;
-  } else {
-    file = await window.PdfRange.extractPdfPageRange(original, start, end);
-  }
-
-  revokePdfBlob(paperId);
-  pendingPdfs.set(paperId, file);
-  await window.PdfStore.savePdfToStore(paperId, file);
-
-  const meta = buildPdfPageRangeMeta(start, end, total);
-  if (runAi) await handleAiExtract();
-  return meta;
+function updateAiExtractButtonState() {
+  const btn = document.getElementById('btn-ai-extract');
+  if (!btn) return;
+  const draftId = document.getElementById('paper-id').value;
+  const hasPdfInput = !!document.getElementById('pdf-file')?.files[0];
+  const hasPending = (editingId && pendingPdfs.has(editingId))
+    || (draftId && pendingPdfs.has(draftId));
+  btn.disabled = !(hasPdfInput || hasPending);
 }
 
 function getDisplayTitle(paper) {
   if (paper.title) return paper.title;
-  if (paper.pdfName) return paper.pdfName.replace(/\.pdf$/i, '');
   return '未命名论文';
 }
 
@@ -1218,48 +1125,12 @@ function setAiExtractStatus(message, type = '') {
   el.className = 'file-hint' + (type ? ` ai-status-${type}` : '');
 }
 
-function updateAiExtractButtonState() {
-  const btn = document.getElementById('btn-ai-extract');
-  if (!btn) return;
-  const draftId = document.getElementById('paper-id').value;
-  const hasPdfInput = !!document.getElementById('pdf-file')?.files[0];
-  const hasPending = (editingId && pendingPdfs.has(editingId))
-    || (draftId && pendingPdfs.has(draftId));
-  const hasExisting = editingId && papers.find(p => p.id === editingId)?.pdfPath;
-  btn.disabled = !(hasPdfInput || hasPending || hasExisting);
-}
-
-async function getPdfPageRangeMetaForPaper(paperId) {
-  if (pendingPdfOriginals.has(paperId)) {
-    const total = await window.PdfRange.getPdfPageCount(pendingPdfOriginals.get(paperId));
-    const range = getPdfPageRangeFromForm();
-    const start = range?.start ?? 1;
-    const end = range?.end ?? total;
-    validatePdfPageRange(start, end, total);
-    return buildPdfPageRangeMeta(start, end, total);
-  }
-  return null;
-}
-
 async function getPdfFileForExtract() {
   const id = editingId || document.getElementById('paper-id').value;
   if (id && pendingPdfs.has(id)) return pendingPdfs.get(id);
 
   const input = document.getElementById('pdf-file');
   if (input.files[0]) return input.files[0];
-
-  if (editingId) {
-    const p = papers.find(x => x.id === editingId);
-    if (p?.pdfPath) {
-      const stored = await window.PdfStore.getPdfFromStore(editingId);
-      if (stored) return stored;
-      const pdfUrl = window.PdfStore.resolveAssetPath(p.pdfPath);
-      const res = await fetch(pdfUrl);
-      if (!res.ok) throw new Error('无法加载 PDF 文件');
-      const blob = await res.blob();
-      return new File([blob], p.pdfName || `${p.id}.pdf`, { type: 'application/pdf' });
-    }
-  }
   return null;
 }
 
@@ -1303,51 +1174,10 @@ async function handlePdfUpload(file) {
 
   const paperId = editingId || ensureDraftPaperId();
   revokePdfBlob(paperId);
-  pendingPdfOriginals.set(paperId, file);
-
-  try {
-    const total = await window.PdfRange.getPdfPageCount(file);
-    resetPdfPageRangeUI(total);
-    const savedRangeEl = document.getElementById('pdf-page-range-saved');
-    if (savedRangeEl) {
-      savedRangeEl.classList.add('hidden');
-      savedRangeEl.textContent = '';
-    }
-    setAiExtractStatus('正在处理 PDF…', 'loading');
-    await applyPdfPageRangeToPending(paperId);
-    updateAiExtractButtonState();
-    await handleAiExtract();
-  } catch (err) {
-    pendingPdfOriginals.delete(paperId);
-    pendingPdfs.delete(paperId);
-    resetPdfPageRangeUI(0);
-    document.getElementById('pdf-file').value = '';
-    setAiExtractStatus(err.message, 'error');
-    alert(`PDF 处理失败：${err.message}`);
-  }
-}
-
-async function handleApplyPdfRange() {
-  const paperId = editingId || document.getElementById('paper-id').value;
-  if (!paperId || !pendingPdfOriginals.has(paperId)) {
-    alert('请先上传 PDF 文件');
-    return;
-  }
-
-  const btn = document.getElementById('btn-apply-pdf-range');
-  if (btn) btn.disabled = true;
-  setAiExtractStatus('正在裁剪 PDF 页码…', 'loading');
-
-  try {
-    await applyPdfPageRangeToPending(paperId);
-    setAiExtractStatus('页码范围已应用，可点击「重新识别」更新元数据', 'success');
-    updateAiExtractButtonState();
-  } catch (err) {
-    setAiExtractStatus(err.message, 'error');
-    alert(err.message);
-  } finally {
-    if (btn) btn.disabled = false;
-  }
+  pendingPdfs.set(paperId, file);
+  await window.PdfStore.savePdfToStore(paperId, file);
+  updateAiExtractButtonState();
+  await handleAiExtract();
 }
 
 function saveAdminSettings() {
@@ -1491,7 +1321,6 @@ function resetForm() {
   if (draftId && !editingId) {
     revokePdfBlob(draftId);
     pendingPdfs.delete(draftId);
-    pendingPdfOriginals.delete(draftId);
   }
 
   editingId = null;
@@ -1499,9 +1328,8 @@ function resetForm() {
   document.getElementById('paper-form').reset();
   document.getElementById('paper-id').value = '';
   document.getElementById('pdf-file').value = '';
-  resetPdfPageRangeUI(0);
   setAiExtractStatus('');
-  updatePdfFormHints(null);
+  updateAiExtractButtonState();
   setKnowledgePointsToForm([]);
 }
 
@@ -1520,6 +1348,7 @@ function editPaper(id) {
   document.getElementById('year').value = p.year || '';
   document.getElementById('venue').value = p.venue || '';
   document.getElementById('url').value = p.url || '';
+  document.getElementById('pdf-url').value = p.pdfUrl || '';
   document.getElementById('source-code-url').value = p.sourceCodeUrl || '';
   document.getElementById('paper-folder').value = p.folderId || '';
   document.getElementById('status').value = p.status;
@@ -1529,8 +1358,7 @@ function editPaper(id) {
   document.getElementById('notes').value = p.notes || '';
   setKnowledgePointsToForm(p.knowledgePoints || []);
   document.getElementById('pdf-file').value = '';
-  resetPdfPageRangeUI(0);
-  updatePdfFormHints(p);
+  updateAiExtractButtonState();
 }
 
 function deletePaper(id) {
@@ -1539,7 +1367,6 @@ function deletePaper(id) {
 
   revokePdfBlob(id);
   pendingPdfs.delete(id);
-  pendingPdfOriginals.delete(id);
   window.PdfStore.deletePdfFromStore(id);
   papers = papers.filter(x => x.id !== id);
   markDirty();
@@ -1559,21 +1386,17 @@ function handleSubmit(e) {
 }
 
 async function submitPaperForm() {
-
   const pdfInput = document.getElementById('pdf-file');
   const pdfFile = pdfInput.files[0];
-  const removePdf = document.getElementById('remove-pdf').checked;
 
   if (pdfFile && pdfFile.type !== 'application/pdf' && !pdfFile.name.toLowerCase().endsWith('.pdf')) {
     alert('请上传 PDF 格式文件');
     return;
   }
 
-  const hasPdf = pdfFile || (editingId && (pendingPdfs.has(editingId) || papers.find(p => p.id === editingId)?.pdfPath));
-  const draftId = document.getElementById('paper-id').value;
-  const hasDraftPdf = draftId && pendingPdfs.has(draftId);
-  if (!editingId && !hasPdf && !hasDraftPdf) {
-    alert('请先上传 PDF 文件');
+  const url = document.getElementById('url').value.trim();
+  if (!url) {
+    alert('请填写论文链接');
     return;
   }
 
@@ -1582,18 +1405,20 @@ async function submitPaperForm() {
     const duplicate = papers.find(p => p.title.trim().toLowerCase() === title.toLowerCase());
     if (duplicate && !confirm(
       `已存在同名论文「${duplicate.title}」。\n\n` +
-      '若要更换 PDF 或修改内容，请打开该论文后点「编辑」。\n\n仍要再添加一条记录吗？'
+      '若要修改内容，请打开该论文后点「编辑」。\n\n仍要再添加一条记录吗？'
     )) {
       return;
     }
   }
 
+  const pdfUrlInput = document.getElementById('pdf-url').value.trim();
   const data = {
     title,
     authors: document.getElementById('authors').value.trim(),
     year: parseInt(document.getElementById('year').value) || null,
     venue: document.getElementById('venue').value.trim(),
-    url: document.getElementById('url').value.trim(),
+    url,
+    pdfUrl: pdfUrlInput || derivePdfUrlFromPaperUrl(url) || null,
     sourceCodeUrl: document.getElementById('source-code-url').value.trim(),
     folderId: document.getElementById('paper-folder').value || null,
     status: document.getElementById('status').value,
@@ -1605,18 +1430,8 @@ async function submitPaperForm() {
     updatedAt: new Date().toISOString(),
   };
 
+  const draftId = document.getElementById('paper-id').value;
   let paperId = editingId;
-  let pdfPageRange = null;
-
-  if (draftId && pendingPdfOriginals.has(draftId)) {
-    try {
-      await applyPdfPageRangeToPending(draftId);
-      pdfPageRange = await getPdfPageRangeMetaForPaper(draftId);
-    } catch (err) {
-      alert(err.message);
-      return;
-    }
-  }
 
   if (editingId) {
     const idx = papers.findIndex(p => p.id === editingId);
@@ -1629,56 +1444,15 @@ async function submitPaperForm() {
       data.folderId = existing.folderId;
     }
 
-    if (removePdf) {
-      revokePdfBlob(paperId);
-      pendingPdfs.delete(paperId);
-      pendingPdfOriginals.delete(paperId);
-      window.PdfStore.deletePdfFromStore(paperId);
-      data.pdfPath = null;
-      data.pdfName = null;
-      data.pdfPageRange = null;
-    } else if (pdfFile || pendingPdfs.has(paperId)) {
-      const file = pendingPdfs.get(paperId) || pdfFile;
-      if (file) {
-        revokePdfBlob(paperId);
-        pendingPdfs.set(paperId, file);
-        await window.PdfStore.savePdfToStore(paperId, file);
-        data.pdfPath = getPdfPath(paperId);
-        data.pdfName = file.name;
-        data.pdfPageRange = pdfPageRange ?? existing.pdfPageRange ?? null;
-      }
-    } else {
-      data.pdfPath = existing.pdfPath || null;
-      data.pdfName = existing.pdfName || null;
-      data.pdfPageRange = existing.pdfPageRange || null;
-    }
-
-    papers[idx] = { ...existing, ...data };
+    papers[idx] = normalizePaperRecord({ ...existing, ...data });
   } else {
     paperId = draftId || crypto.randomUUID();
-    if (pdfFile || pendingPdfs.has(paperId)) {
-      const file = pendingPdfs.get(paperId) || pdfFile;
-      if (file) {
-        if (pdfFile) pendingPdfs.set(paperId, file);
-        await window.PdfStore.savePdfToStore(paperId, file);
-        data.pdfPath = getPdfPath(paperId);
-        data.pdfName = file?.name || null;
-        data.pdfPageRange = pdfPageRange;
-      }
-    } else {
-      data.pdfPath = null;
-      data.pdfName = null;
-      data.pdfPageRange = null;
-    }
-
-    papers.unshift({
+    papers.unshift(normalizePaperRecord({
       id: paperId,
       ...data,
       createdAt: new Date().toISOString(),
-    });
+    }));
   }
-
-  pendingPdfOriginals.delete(paperId);
 
   markDirty();
   resetForm();
@@ -1715,7 +1489,7 @@ function getFoldersJson() {
 }
 
 function getPapersJson() {
-  return JSON.stringify(papers, null, 2) + '\n';
+  return JSON.stringify(papers.map(sanitizePaperForStorage), null, 2) + '\n';
 }
 
 function downloadPapersJson() {
@@ -1818,38 +1592,22 @@ async function listGithubDirectory(owner, repo, path, branch, token) {
   return data.filter(item => item.type === 'file').map(item => item.path);
 }
 
-function getActivePdfPaths() {
-  const paths = new Set();
-  papers.forEach(paper => {
-    if (paper.pdfPath) paths.add(paper.pdfPath.replace(/^\//, ''));
-    else if (paper.id) paths.add(getPdfPath(paper.id).replace(/^\//, ''));
-  });
-  return paths;
-}
-
-async function cleanupOrphanGithubPdfs(owner, repo, branch, token) {
-  const pdfsDir = getPdfsDir();
-  const activePaths = getActivePdfPaths();
+async function removeAllGithubPdfs(owner, repo, branch, token) {
+  const pdfsDir = 'data/pdfs';
   const remoteFiles = await listGithubDirectory(owner, repo, pdfsDir, branch, token);
   let removed = 0;
 
   for (const filePath of remoteFiles) {
     const normalized = filePath.replace(/^\//, '');
     if (normalized.endsWith('.gitkeep')) continue;
-    if (activePaths.has(normalized)) continue;
     await deleteGithubFile(
       owner, repo, filePath, branch, token,
-      `Remove orphan PDF: ${normalized.split('/').pop()}`
+      `Remove stored PDF: ${normalized.split('/').pop()}`
     );
     removed++;
   }
 
   return removed;
-}
-
-async function getPdfFileForPublish(paperId) {
-  if (pendingPdfs.has(paperId)) return pendingPdfs.get(paperId);
-  return window.PdfStore.getPdfFromStore(paperId);
 }
 
 async function publishToGithub() {
@@ -1863,7 +1621,7 @@ async function publishToGithub() {
     downloadPapersJson();
     alert(
       '已下载 papers.json。\n\n' +
-      '请将 papers.json 放到 data/ 目录，并将 PDF 文件放到 data/pdfs/ 后 push 到 GitHub。\n\n' +
+      '请将 papers.json 放到 data/ 目录后 push 到 GitHub。\n\n' +
       '提示：配置 GitHub Token 后可一键发布。'
     );
     return;
@@ -1874,9 +1632,6 @@ async function publishToGithub() {
   btn.textContent = '发布中…';
 
   try {
-    let uploadedPdfs = 0;
-    let skippedPdfs = 0;
-
     for (const folder of folders) {
       if (!folder.imagePath && !pendingFolderImages.has(folder.id)) continue;
       const blob = pendingFolderImages.has(folder.id)
@@ -1889,22 +1644,6 @@ async function publishToGithub() {
         owner, repo, getFolderImagePath(folder.id), branch, token, base64,
         `Upload folder image: ${folder.name}`
       );
-    }
-
-    for (const paper of papers) {
-      if (!paper.pdfPath) continue;
-      const file = await getPdfFileForPublish(paper.id);
-      if (!file) {
-        skippedPdfs++;
-        continue;
-      }
-      const buffer = await file.arrayBuffer();
-      const base64 = arrayBufferToBase64(buffer);
-      await uploadGithubFile(
-        owner, repo, getPdfPath(paper.id), branch, token, base64,
-        `Upload PDF: ${paper.pdfName || paper.id}`
-      );
-      uploadedPdfs++;
     }
 
     const foldersBase64 = btoa(unescape(encodeURIComponent(getFoldersJson())));
@@ -1921,9 +1660,9 @@ async function publishToGithub() {
 
     let removedPdfs = 0;
     try {
-      removedPdfs = await cleanupOrphanGithubPdfs(owner, repo, branch, token);
+      removedPdfs = await removeAllGithubPdfs(owner, repo, branch, token);
     } catch (err) {
-      console.warn('Orphan PDF cleanup failed:', err);
+      console.warn('PDF cleanup failed:', err);
     }
 
     pendingPdfs.clear();
@@ -1933,11 +1672,7 @@ async function publishToGithub() {
     hasUnpublishedChanges = false;
 
     let msg = '发布成功！';
-    if (uploadedPdfs > 0) msg += `\n已上传 ${uploadedPdfs} 个 PDF 到 data/pdfs/。`;
-    if (removedPdfs > 0) msg += `\n已删除 ${removedPdfs} 个仓库中不再使用的 PDF。`;
-    if (skippedPdfs > 0) {
-      msg += `\n\n警告：${skippedPdfs} 个 PDF 未找到（可能已清除浏览器缓存）。请重新打开论文、重新上传 PDF 后再发布。`;
-    }
+    if (removedPdfs > 0) msg += `\n已从仓库删除 ${removedPdfs} 个 PDF 文件。`;
     alert(msg);
   } catch (err) {
     alert(`发布失败：${formatGithubPublishError(err.message)}\n\n已改为下载 papers.json，请手动提交到仓库。`);
@@ -1963,11 +1698,11 @@ function importData(file) {
       if (confirm(`将导入 ${imported.length} 条记录，是否覆盖现有数据？`)) {
         clearAllPdfBlobs();
         pendingPdfs.clear();
-        papers = imported;
+        papers = imported.map(normalizePaperRecord);
         markDirty();
         renderStats();
         renderList();
-        alert('导入成功，请点击「发布到网站」。PDF 文件需单独上传到 data/pdfs/。');
+        alert('导入成功，请点击「发布到网站」。');
       }
     } catch {
       alert('导入失败：文件格式不正确');
@@ -2083,12 +1818,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (file) handlePdfUpload(file);
     else {
       setAiExtractStatus('');
-      resetPdfPageRangeUI(0);
       updateAiExtractButtonState();
     }
-  });
-  document.getElementById('btn-apply-pdf-range')?.addEventListener('click', () => {
-    void handleApplyPdfRange();
   });
   document.getElementById('btn-ai-extract').addEventListener('click', handleAiExtract);
   document.getElementById('btn-add-knowledge-point')?.addEventListener('click', () => addKnowledgePointRow());
@@ -2111,7 +1842,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       clearAllPdfBlobs();
       clearAllFolderImageBlobs();
       pendingPdfs.clear();
-      pendingPdfOriginals.clear();
       pendingFolderImages.clear();
       await window.PdfStore.clearPdfStore();
       await window.FolderImageStore.clearFolderImageStore();
