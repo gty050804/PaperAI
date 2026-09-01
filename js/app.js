@@ -1479,8 +1479,19 @@ async function submitPaperForm() {
     return;
   }
 
+  const title = document.getElementById('title').value.trim();
+  if (!editingId && title) {
+    const duplicate = papers.find(p => p.title.trim().toLowerCase() === title.toLowerCase());
+    if (duplicate && !confirm(
+      `已存在同名论文「${duplicate.title}」。\n\n` +
+      '若要更换 PDF 或修改内容，请打开该论文后点「编辑」。\n\n仍要再添加一条记录吗？'
+    )) {
+      return;
+    }
+  }
+
   const data = {
-    title: document.getElementById('title').value.trim(),
+    title,
     authors: document.getElementById('authors').value.trim(),
     year: parseInt(document.getElementById('year').value) || null,
     venue: document.getElementById('venue').value.trim(),
@@ -1669,6 +1680,71 @@ async function uploadGithubFile(owner, repo, path, branch, token, base64Content,
   }
 }
 
+async function deleteGithubFile(owner, repo, path, branch, token, message) {
+  const sha = await getGithubFileSha(owner, repo, path, branch, token);
+  if (!sha) return false;
+
+  const res = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message, sha, branch }),
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+  return true;
+}
+
+async function listGithubDirectory(owner, repo, path, branch, token) {
+  const res = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`,
+    { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
+  );
+  if (res.status === 404) return [];
+  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+  const data = await res.json();
+  if (!Array.isArray(data)) return [];
+  return data.filter(item => item.type === 'file').map(item => item.path);
+}
+
+function getActivePdfPaths() {
+  const paths = new Set();
+  papers.forEach(paper => {
+    if (paper.pdfPath) paths.add(paper.pdfPath.replace(/^\//, ''));
+    else if (paper.id) paths.add(getPdfPath(paper.id).replace(/^\//, ''));
+  });
+  return paths;
+}
+
+async function cleanupOrphanGithubPdfs(owner, repo, branch, token) {
+  const pdfsDir = getPdfsDir();
+  const activePaths = getActivePdfPaths();
+  const remoteFiles = await listGithubDirectory(owner, repo, pdfsDir, branch, token);
+  let removed = 0;
+
+  for (const filePath of remoteFiles) {
+    const normalized = filePath.replace(/^\//, '');
+    if (normalized.endsWith('.gitkeep')) continue;
+    if (activePaths.has(normalized)) continue;
+    await deleteGithubFile(
+      owner, repo, filePath, branch, token,
+      `Remove orphan PDF: ${normalized.split('/').pop()}`
+    );
+    removed++;
+  }
+
+  return removed;
+}
+
 async function getPdfFileForPublish(paperId) {
   if (pendingPdfs.has(paperId)) return pendingPdfs.get(paperId);
   return window.PdfStore.getPdfFromStore(paperId);
@@ -1741,6 +1817,13 @@ async function publishToGithub() {
       'Update papers via PaperAI'
     );
 
+    let removedPdfs = 0;
+    try {
+      removedPdfs = await cleanupOrphanGithubPdfs(owner, repo, branch, token);
+    } catch (err) {
+      console.warn('Orphan PDF cleanup failed:', err);
+    }
+
     pendingPdfs.clear();
     pendingFolderImages.clear();
     clearAllFolderImageBlobs();
@@ -1749,6 +1832,7 @@ async function publishToGithub() {
 
     let msg = '发布成功！';
     if (uploadedPdfs > 0) msg += `\n已上传 ${uploadedPdfs} 个 PDF 到 data/pdfs/。`;
+    if (removedPdfs > 0) msg += `\n已删除 ${removedPdfs} 个仓库中不再使用的 PDF。`;
     if (skippedPdfs > 0) {
       msg += `\n\n警告：${skippedPdfs} 个 PDF 未找到（可能已清除浏览器缓存）。请重新打开论文、重新上传 PDF 后再发布。`;
     }
