@@ -123,14 +123,17 @@ html.immersive .bookmark-subtitle,
 html.immersive .current-folder-label,
 html.immersive .paper-title,
 html.immersive .paper-meta,
-html.immersive .paper-summary {
+html.immersive .paper-summary,
+html.immersive .reader-title,
+html.immersive .reader-meta {
   color: #fff;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 html.immersive .bookmark-subtitle,
 html.immersive .paper-meta,
-html.immersive .paper-summary {
+html.immersive .paper-summary,
+html.immersive .reader-meta {
   color: rgba(255, 255, 255, 0.88);
 }
 
