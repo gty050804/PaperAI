@@ -28,10 +28,10 @@
       {
         "term": "LoRA微调",
         "link": "https://blog.csdn.net/qq_45752541/article/details/140616087?ops_request_misc=elastic_search_misc&request_id=fdb9e3b807b258d1f33aa519062193d9&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-2-140616087-null-null.142^v102^pc_search_result_base3&utm_term=LoRA%E5%BE%AE%E8%B0%83&spm=1018.2226.3001.4187",
-        "explanation": "LoRA（Low-Rank Adaptation）微调是一种高效的模型微调技术，通过引入低秩矩阵来调整预训练模型的权重，而非直接微调所有参数。这种方法显著减少了需要训练的参数量，降低了计算成本，同时保持了模型性能。LoRA特别适用于大规模预训练模型的适配任务，如自然语言处理和计算机视觉领域。"
+        "explanation": "LoRA（Low-Rank Adaptation）是一种高效的微调方法，通过引入低秩矩阵来调整预训练模型的权重，而非直接微调所有参数。这种方法显著减少了计算和存储开销，同时保持了模型性能。LoRA特别适用于大规模预训练模型（如GPT、BERT）的适配任务，允许在有限资源下快速适应新任务。"
       }
     ],
-    "updatedAt": "2026-09-01T09:40:38.205Z",
+    "updatedAt": "2026-09-01T09:42:00.926Z",
     "pdfPath": "data/pdfs/5daaec00-8089-424c-a7a2-b97df886466a.pdf",
     "pdfName": "FFP-300K——Scaling First-Frame Propagation for Generalizable Video Editing_p1-8.pdf",
     "pdfPageRange": {
