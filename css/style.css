@@ -113,6 +113,27 @@ html.immersive .bookmark-inner {
   -webkit-backdrop-filter: blur(10px);
 }
 
+html.immersive .paper-card {
+  background: color-mix(in srgb, hsl(220 15% 10%) 48%, transparent);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+html.immersive .bookmark-title,
+html.immersive .bookmark-subtitle,
+html.immersive .current-folder-label,
+html.immersive .paper-title,
+html.immersive .paper-meta,
+html.immersive .paper-summary {
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+html.immersive .bookmark-subtitle,
+html.immersive .paper-meta,
+html.immersive .paper-summary {
+  color: rgba(255, 255, 255, 0.88);
+}
+
 html.immersive .panel-header {
   background: color-mix(in srgb, var(--bg) 75%, transparent);
   backdrop-filter: blur(8px);
