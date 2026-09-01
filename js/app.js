@@ -393,6 +393,26 @@ async function loadData() {
   await loadPapers();
 }
 
+function mergePapersRemoteAndDraft(draft, remote) {
+  const byId = new Map();
+  remote.forEach(p => byId.set(p.id, p));
+  draft.forEach(p => byId.set(p.id, p));
+  return [...byId.values()].sort((a, b) => {
+    const tb = new Date(b.updatedAt || b.createdAt || 0).getTime();
+    const ta = new Date(a.updatedAt || a.createdAt || 0).getTime();
+    return tb - ta;
+  });
+}
+
+function papersDraftDiffersFromRemote(draft, remote) {
+  if (draft.length !== remote.length) return true;
+  const remoteById = new Map(remote.map(p => [p.id, p]));
+  return draft.some(p => {
+    const other = remoteById.get(p.id);
+    return !other || JSON.stringify(other) !== JSON.stringify(p);
+  });
+}
+
 async function loadPapers() {
   const { data: remote, fromCache } = await fetchJsonArray(DATA_URL, PAPERS_REMOTE_CACHE_KEY);
 
@@ -402,6 +422,20 @@ async function loadPapers() {
       if (draftRaw) {
         const draft = JSON.parse(draftRaw);
         if (Array.isArray(draft)) {
+          if (draft.length === 0 && remote.length > 0) {
+            console.warn('忽略空草稿，已恢复远程论文数据');
+            clearLocalDraft();
+            papers = remote;
+            hasUnpublishedChanges = false;
+            return;
+          }
+          if (remote.length > 0 && draft.length < remote.length) {
+            papers = mergePapersRemoteAndDraft(draft, remote);
+            hasUnpublishedChanges = papersDraftDiffersFromRemote(papers, remote);
+            if (hasUnpublishedChanges) saveLocalDraft();
+            console.warn('本地草稿不完整，已与远程数据合并');
+            return;
+          }
           papers = draft;
           hasUnpublishedChanges = true;
           if (fromCache && remote.length === 0 && draft.length > 0) {
@@ -1414,6 +1448,8 @@ function editPaper(id) {
 
   editingId = id;
   document.getElementById('form-title').textContent = '编辑论文';
+  switchView('add');
+
   document.getElementById('paper-id').value = p.id;
   document.getElementById('title').value = p.title;
   document.getElementById('authors').value = p.authors || '';
@@ -1431,8 +1467,6 @@ function editPaper(id) {
   document.getElementById('pdf-file').value = '';
   resetPdfPageRangeUI(0);
   updatePdfFormHints(p);
-
-  switchView('add');
 }
 
 function deletePaper(id) {
@@ -1527,6 +1561,10 @@ async function submitPaperForm() {
     const existing = papers[idx];
     paperId = existing.id;
 
+    if (!data.folderId && existing.folderId) {
+      data.folderId = existing.folderId;
+    }
+
     if (removePdf) {
       revokePdfBlob(paperId);
       pendingPdfs.delete(paperId);
@@ -1580,7 +1618,7 @@ async function submitPaperForm() {
 
   markDirty();
   resetForm();
-  currentFolderId = data.folderId || null;
+  currentFolderId = data.folderId || currentFolderId;
   switchView('list');
 }
 
