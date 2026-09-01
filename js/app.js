@@ -28,14 +28,6 @@ let folderEditingId = null;
 let folderDraftId = null;
 let lastCreatedFolderId = null;
 
-const BOOKMARK_COLORS = [
-  { bg: '#f5f3ea', tab: '#e8e4d4', border: '#d4cfc0', text: '#5c5346' },
-  { bg: '#eef4f8', tab: '#d4e4ef', border: '#b8d4e8', text: '#3d5a6e' },
-  { bg: '#edf5ef', tab: '#cfe8d6', border: '#a8d4b8', text: '#3d5a48' },
-  { bg: '#f8f0f4', tab: '#ecdce6', border: '#d4b8c8', text: '#6e4a5c' },
-  { bg: '#f8f2ea', tab: '#ede0d0', border: '#d8c4a8', text: '#6e5a3d' },
-  { bg: '#f0eef8', tab: '#ddd8ec', border: '#c4bcd8', text: '#4a456e' },
-];
 let editingId = null;
 let currentReaderId = null;
 let isAdmin = false;
@@ -46,8 +38,6 @@ const pendingPdfs = new Map();
 const pendingIllustrations = new Map();
 const pdfBlobUrls = new Map();
 const illustrationBlobUrls = new Map();
-const pendingFolderImages = new Map();
-const folderImageBlobUrls = new Map();
 
 async function hashPassword(password) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
@@ -158,114 +148,6 @@ async function resolveIllustrationUrl(paperId, item) {
   }
 
   return null;
-}
-
-function getFolderImagesDir() {
-  return getConfig().github?.folderImagesPath || 'data/folder-images';
-}
-
-function getFolderImagePath(folderId) {
-  return `${getFolderImagesDir()}/${folderId}.png`;
-}
-
-function revokeFolderImageBlob(folderId) {
-  if (folderImageBlobUrls.has(folderId)) {
-    URL.revokeObjectURL(folderImageBlobUrls.get(folderId));
-    folderImageBlobUrls.delete(folderId);
-  }
-}
-
-function clearAllFolderImageBlobs() {
-  folderImageBlobUrls.forEach(url => URL.revokeObjectURL(url));
-  folderImageBlobUrls.clear();
-}
-
-async function resolveFolderImageUrl(folder) {
-  if (!folder?.id) return null;
-
-  if (pendingFolderImages.has(folder.id)) {
-    if (!folderImageBlobUrls.has(folder.id)) {
-      folderImageBlobUrls.set(folder.id, URL.createObjectURL(pendingFolderImages.get(folder.id)));
-    }
-    return folderImageBlobUrls.get(folder.id);
-  }
-
-  const stored = await window.FolderImageStore.getFolderImageFromStore(folder.id);
-  if (stored) {
-    if (!folderImageBlobUrls.has(folder.id)) {
-      folderImageBlobUrls.set(folder.id, URL.createObjectURL(stored));
-    }
-    return folderImageBlobUrls.get(folder.id);
-  }
-
-  if (folder.imagePath) {
-    const remoteUrl = window.PdfStore.resolveAssetPath(folder.imagePath);
-    const ts = folder.updatedAt || folder.createdAt || '';
-    const sep = remoteUrl.includes('?') ? '&' : '?';
-    return `${remoteUrl}${sep}t=${encodeURIComponent(ts)}`;
-  }
-
-  return null;
-}
-
-async function storeFolderImageBlob(folderId, blob) {
-  pendingFolderImages.set(folderId, blob);
-  revokeFolderImageBlob(folderId);
-  await window.FolderImageStore.saveFolderImageToStore(folderId, blob);
-}
-
-async function applyFolderImageToInner(inner, folder) {
-  if (!inner || !folder) return;
-  const url = await resolveFolderImageUrl(folder);
-  let photo = inner.querySelector('.bookmark-photo');
-  const tab = inner.querySelector('.bookmark-tab');
-  const nameEl = inner.querySelector('.bookmark-name');
-  const countEl = inner.querySelector('.bookmark-count');
-  const textColor = inner.style.getPropertyValue('--bookmark-text').trim()
-    || getComputedStyle(inner).getPropertyValue('--bookmark-text').trim()
-    || '#713f12';
-
-  if (!url) {
-    inner.classList.remove('has-image');
-    photo?.remove();
-    inner.style.background = '';
-    inner.style.borderColor = '';
-    inner.style.minHeight = '';
-    if (tab) tab.style.display = '';
-    if (nameEl) nameEl.style.color = textColor;
-    if (countEl) {
-      countEl.style.color = textColor;
-      countEl.style.opacity = '';
-    }
-    return;
-  }
-
-  inner.classList.add('has-image');
-  inner.style.background = 'transparent';
-  inner.style.borderColor = 'rgba(0, 0, 0, 0.08)';
-  inner.style.minHeight = '0';
-  if (tab) tab.style.display = 'none';
-  if (!photo) {
-    photo = document.createElement('img');
-    photo.className = 'bookmark-photo';
-    photo.alt = '';
-    inner.insertBefore(photo, inner.firstChild);
-  }
-  photo.src = url;
-  if (nameEl) nameEl.style.color = '#fff';
-  if (countEl) {
-    countEl.style.color = '#fff';
-    countEl.style.opacity = '0.92';
-  }
-}
-
-async function applyFolderImages(container) {
-  const cards = container.querySelectorAll('.bookmark-card');
-  await Promise.all([...cards].map(async (card) => {
-    const folder = getFolderById(card.dataset.folderId);
-    const inner = card.querySelector('.bookmark-inner');
-    await applyFolderImageToInner(inner, folder);
-  }));
 }
 
 function arrayBufferToBase64(buffer) {
@@ -617,11 +499,6 @@ function isUncategorizedPaper(paper) {
   return !folders.some(f => f.id === paper.folderId);
 }
 
-function getFolderColors(folderId) {
-  const index = folders.findIndex(f => f.id === folderId);
-  return BOOKMARK_COLORS[index >= 0 ? index % BOOKMARK_COLORS.length : 0];
-}
-
 function updatePapersPanelVisibility() {
   const panel = document.getElementById('papers-panel');
   const section = document.querySelector('.bookmark-section');
@@ -693,11 +570,10 @@ function renderFolders() {
   const container = document.getElementById('folder-list');
   if (!container) return;
 
-  const items = folders.map((f, i) => ({
+  const items = folders.map(f => ({
     id: f.id,
     label: f.name,
     count: countPapersInFolder(f.id),
-    colorIndex: i % BOOKMARK_COLORS.length,
   }));
 
   const uncategorizedCount = getUncategorizedCount();
@@ -706,75 +582,54 @@ function renderFolders() {
       id: UNCategorized_ID,
       label: '未分类',
       count: uncategorizedCount,
-      colorIndex: items.length % BOOKMARK_COLORS.length,
     });
   }
 
   if (items.length === 0) {
-    container.innerHTML = '<p class="bookmark-empty">暂无分类，站主可点击「新建分类」创建论文分类</p>';
+    container.innerHTML = '<p class="folder-empty">暂无分类，站主可点击「新建分类」创建论文分类</p>';
     return;
   }
 
-  container.innerHTML = items.map((item, index) => {
-    const colors = BOOKMARK_COLORS[item.colorIndex ?? index % BOOKMARK_COLORS.length];
+  container.innerHTML = items.map(item => {
     const isNew = item.id === lastCreatedFolderId;
+    const isUncategorized = item.id === UNCategorized_ID;
     return `
-      <div class="bookmark-card${currentFolderId === item.id ? ' active' : ''}${isNew ? ' is-new' : ''}"
+      <div class="folder-tile-wrap${currentFolderId === item.id ? ' active' : ''}${isNew ? ' is-new' : ''}"
            data-folder-id="${escapeHtml(item.id)}">
-        <div class="bookmark-open" role="button" tabindex="0" aria-label="${escapeHtml(item.label)}，${item.count} 篇论文">
-          <div class="bookmark-inner" style="
-            --bookmark-bg: ${colors.bg};
-            --bookmark-tab: ${colors.tab};
-            --bookmark-border: ${colors.border};
-            --bookmark-text: ${colors.text};
-            background: ${colors.bg};
-            border-color: ${colors.border};
-            color: ${colors.text};
-          ">
-            <div class="bookmark-tab" style="background:${colors.tab}"></div>
-            ${isAdmin && item.id !== UNCategorized_ID ? `
-              <span class="bookmark-actions admin-only">
-                <button type="button" class="bookmark-action" data-action="rename" data-folder-id="${escapeHtml(item.id)}" title="重命名">✎</button>
-                <button type="button" class="bookmark-action danger" data-action="delete" data-folder-id="${escapeHtml(item.id)}" title="删除">×</button>
-              </span>
-            ` : ''}
-            <div class="bookmark-content">
-              <div class="bookmark-name" style="color:${colors.text}">${escapeHtml(item.label)}</div>
-              <div class="bookmark-count" style="color:${colors.text}">${item.count} 篇论文</div>
-            </div>
-          </div>
-        </div>
+        <button type="button" class="folder-tile" aria-label="${escapeHtml(item.label)}，${item.count} 篇论文">
+          <span class="folder-tile-name">${escapeHtml(item.label)}</span>
+          <span class="folder-tile-count">${item.count} 篇论文</span>
+        </button>
+        ${isAdmin && !isUncategorized ? `
+          <span class="folder-tile-actions admin-only">
+            <button type="button" class="folder-tile-action" data-action="rename" data-folder-id="${escapeHtml(item.id)}" title="重命名">✎</button>
+            <button type="button" class="folder-tile-action danger" data-action="delete" data-folder-id="${escapeHtml(item.id)}" title="删除">×</button>
+          </span>
+        ` : ''}
       </div>
     `;
   }).join('');
 
   if (lastCreatedFolderId) {
     setTimeout(() => {
-      const el = container.querySelector(`.bookmark-card[data-folder-id="${lastCreatedFolderId}"]`);
+      const el = container.querySelector(`.folder-tile-wrap[data-folder-id="${lastCreatedFolderId}"]`);
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       lastCreatedFolderId = null;
     }, 100);
   }
 
-  container.querySelectorAll('.bookmark-card').forEach(card => {
-    const openEl = card.querySelector('.bookmark-open');
-    if (!openEl) return;
-    const folderId = card.dataset.folderId;
+  container.querySelectorAll('.folder-tile-wrap').forEach(wrap => {
+    const tile = wrap.querySelector('.folder-tile');
+    if (!tile) return;
+    const folderId = wrap.dataset.folderId;
     const activate = () => openFolder(folderId);
-    openEl.addEventListener('click', (e) => {
-      if (e.target.closest('.bookmark-action')) return;
+    tile.addEventListener('click', (e) => {
+      if (e.target.closest('.folder-tile-action')) return;
       activate();
-    });
-    openEl.addEventListener('keydown', (e) => {
-      if (e.target.closest('.bookmark-action')) return;
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        activate();
-      }
     });
   });
 
-  container.querySelectorAll('.bookmark-action').forEach(btn => {
+  container.querySelectorAll('.folder-tile-action').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -783,8 +638,6 @@ function renderFolders() {
       if (btn.dataset.action === 'delete') deleteFolder(id);
     });
   });
-
-  void applyFolderImages(container);
 }
 
 function openFolderModal(mode, id = null) {
@@ -795,78 +648,8 @@ function openFolderModal(mode, id = null) {
   document.getElementById('folder-modal-title').textContent = mode === 'create' ? '新建分类' : '重命名分类';
   document.getElementById('folder-name-input').value = mode === 'rename' ? (getFolderById(id)?.name || '') : '';
 
-  const promptEl = document.getElementById('folder-image-prompt');
-  const folder = mode === 'rename' ? getFolderById(id) : null;
-  if (promptEl) promptEl.value = folder?.imagePrompt || '';
-
-  void updateFolderImagePreviewInModal(folderDraftId);
-
   document.getElementById('folder-modal').showModal();
   setTimeout(() => document.getElementById('folder-name-input').focus(), 50);
-}
-
-async function updateFolderImagePreviewInModal(folderId) {
-  const wrap = document.getElementById('folder-image-preview-wrap');
-  const img = document.getElementById('folder-image-preview');
-  if (!wrap || !img || !folderId) return;
-
-  let previewUrl = null;
-  if (pendingFolderImages.has(folderId)) {
-    if (!folderImageBlobUrls.has(folderId)) {
-      folderImageBlobUrls.set(folderId, URL.createObjectURL(pendingFolderImages.get(folderId)));
-    }
-    previewUrl = folderImageBlobUrls.get(folderId);
-  } else {
-    const folder = getFolderById(folderId);
-    if (folder) previewUrl = await resolveFolderImageUrl(folder);
-  }
-
-  if (previewUrl) {
-    img.src = previewUrl;
-    wrap.classList.remove('hidden');
-  } else {
-    img.removeAttribute('src');
-    wrap.classList.add('hidden');
-  }
-}
-
-async function generateFolderImage() {
-  if (!requireAdmin()) return;
-
-  const userPrompt = document.getElementById('folder-image-prompt')?.value.trim() || '';
-  if (!userPrompt) {
-    alert('请先填写图片提示词');
-    return;
-  }
-
-  const folderId = folderModalMode === 'create' ? folderDraftId : folderEditingId;
-  const btn = document.getElementById('btn-generate-folder-image');
-
-  btn.disabled = true;
-  const prevText = btn.textContent;
-  btn.textContent = '生成中…';
-
-  try {
-    const blob = await window.PaperAI.generateBookmarkImage(userPrompt);
-    await storeFolderImageBlob(folderId, blob);
-
-    const folder = getFolderById(folderId);
-    if (folder) {
-      folder.imagePath = getFolderImagePath(folderId);
-      folder.imagePrompt = userPrompt || undefined;
-    }
-    markDirty();
-
-    await updateFolderImagePreviewInModal(folderId);
-    renderFolders();
-    if (currentFolderId === folderId) updatePapersPanelVisibility();
-    alert('便签图片已生成，记得点击「发布到网站」保存');
-  } catch (err) {
-    alert(`生成失败：${err.message}`);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = prevText;
-  }
 }
 
 function createFolder() {
@@ -885,31 +668,18 @@ function handleFolderFormSubmit(e) {
   const name = document.getElementById('folder-name-input').value.trim();
   if (!name) return;
 
-  const imagePrompt = document.getElementById('folder-image-prompt')?.value.trim() || '';
   const folderId = folderModalMode === 'create' ? folderDraftId : folderEditingId;
 
   if (folderModalMode === 'create') {
-    const newFolder = {
+    folders.push({
       id: folderId,
       name,
       createdAt: new Date().toISOString(),
-    };
-    if (imagePrompt) newFolder.imagePrompt = imagePrompt;
-    if (pendingFolderImages.has(folderId)) {
-      newFolder.imagePath = getFolderImagePath(folderId);
-    }
-    folders.push(newFolder);
-    lastCreatedFolderId = newFolder.id;
+    });
+    lastCreatedFolderId = folderId;
   } else if (folderEditingId) {
     const folder = getFolderById(folderEditingId);
-    if (folder) {
-      folder.name = name;
-      if (imagePrompt) folder.imagePrompt = imagePrompt;
-      else delete folder.imagePrompt;
-      if (pendingFolderImages.has(folderEditingId)) {
-        folder.imagePath = getFolderImagePath(folderEditingId);
-      }
-    }
+    if (folder) folder.name = name;
   }
 
   markDirty();
@@ -934,9 +704,6 @@ function deleteFolder(id) {
     if (p.folderId === id) p.folderId = null;
   });
   folders = folders.filter(f => f.id !== id);
-  revokeFolderImageBlob(id);
-  pendingFolderImages.delete(id);
-  void window.FolderImageStore.deleteFolderImageFromStore(id);
   if (currentFolderId === id) closeFolderView();
   markDirty();
   renderFolders();
@@ -1336,9 +1103,8 @@ function saveAdminSettings() {
   if (!requireAdmin()) return;
   const apiKey = document.getElementById('sf-api-key').value.trim();
   const model = document.getElementById('sf-model').value.trim();
-  const imageModel = document.getElementById('sf-image-model')?.value.trim();
   const githubToken = document.getElementById('github-token').value.trim();
-  window.PaperAI.saveSiliconFlowSettings(apiKey, model || undefined, imageModel || undefined);
+  window.PaperAI.saveSiliconFlowSettings(apiKey, model || undefined);
   saveGithubToken(githubToken);
   alert('设置已保存');
 }
@@ -1805,8 +1571,18 @@ function renderStats() {
   ).join('');
 }
 
+function sanitizeFolderForStorage(folder) {
+  const out = {
+    id: folder.id,
+    name: folder.name,
+    createdAt: folder.createdAt,
+  };
+  if (folder.updatedAt) out.updatedAt = folder.updatedAt;
+  return out;
+}
+
 function getFoldersJson() {
-  return JSON.stringify(folders, null, 2) + '\n';
+  return JSON.stringify(folders.map(sanitizeFolderForStorage), null, 2) + '\n';
 }
 
 function getPapersJson() {
@@ -1952,6 +1728,24 @@ async function cleanupOrphanGithubIllustrations(owner, repo, branch, token) {
   return removed;
 }
 
+async function removeAllGithubFolderImages(owner, repo, branch, token) {
+  const imagesDir = getConfig().github?.folderImagesPath || 'data/folder-images';
+  const remoteFiles = await listGithubDirectory(owner, repo, imagesDir, branch, token);
+  let removed = 0;
+
+  for (const filePath of remoteFiles) {
+    const normalized = filePath.replace(/^\//, '');
+    if (normalized.endsWith('.gitkeep')) continue;
+    await deleteGithubFile(
+      owner, repo, filePath, branch, token,
+      `Remove folder image: ${normalized.split('/').pop()}`
+    );
+    removed++;
+  }
+
+  return removed;
+}
+
 async function removeAllGithubPdfs(owner, repo, branch, token) {
   const pdfsDir = 'data/pdfs';
   const remoteFiles = await listGithubDirectory(owner, repo, pdfsDir, branch, token);
@@ -1992,20 +1786,6 @@ async function publishToGithub() {
   btn.textContent = '发布中…';
 
   try {
-    for (const folder of folders) {
-      if (!folder.imagePath && !pendingFolderImages.has(folder.id)) continue;
-      const blob = pendingFolderImages.has(folder.id)
-        ? pendingFolderImages.get(folder.id)
-        : await window.FolderImageStore.getFolderImageFromStore(folder.id);
-      if (!blob) continue;
-      const buffer = await blob.arrayBuffer();
-      const base64 = arrayBufferToBase64(buffer);
-      await uploadGithubFile(
-        owner, repo, getFolderImagePath(folder.id), branch, token, base64,
-        `Upload folder image: ${folder.name}`
-      );
-    }
-
     let uploadedIllustrations = 0;
     for (const paper of papers) {
       for (const item of paper.illustrations || []) {
@@ -2039,17 +1819,17 @@ async function publishToGithub() {
 
     let removedPdfs = 0;
     let removedIllustrations = 0;
+    let removedFolderImages = 0;
     try {
       removedPdfs = await removeAllGithubPdfs(owner, repo, branch, token);
       removedIllustrations = await cleanupOrphanGithubIllustrations(owner, repo, branch, token);
+      removedFolderImages = await removeAllGithubFolderImages(owner, repo, branch, token);
     } catch (err) {
       console.warn('Asset cleanup failed:', err);
     }
 
     pendingPdfs.clear();
     pendingIllustrations.clear();
-    pendingFolderImages.clear();
-    clearAllFolderImageBlobs();
     clearAllIllustrationBlobs();
     clearLocalDraft();
     hasUnpublishedChanges = false;
@@ -2058,6 +1838,7 @@ async function publishToGithub() {
     if (uploadedIllustrations > 0) msg += `\n已上传 ${uploadedIllustrations} 张图解。`;
     if (removedPdfs > 0) msg += `\n已从仓库删除 ${removedPdfs} 个 PDF 文件。`;
     if (removedIllustrations > 0) msg += `\n已删除 ${removedIllustrations} 张未使用的图解。`;
+    if (removedFolderImages > 0) msg += `\n已删除 ${removedFolderImages} 张分类封面图。`;
     alert(msg);
   } catch (err) {
     alert(`发布失败：${formatGithubPublishError(err.message)}\n\n已改为下载 papers.json，请手动提交到仓库。`);
@@ -2164,7 +1945,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-back-folders').addEventListener('click', closeFolderView);
 
   document.getElementById('folder-form').addEventListener('submit', handleFolderFormSubmit);
-  document.getElementById('btn-generate-folder-image')?.addEventListener('click', generateFolderImage);
 
   document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
@@ -2232,14 +2012,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!requireAdmin()) return;
     if (confirm('确定清空所有论文记录？此操作不可恢复。')) {
       clearAllPdfBlobs();
-      clearAllFolderImageBlobs();
       clearAllIllustrationBlobs();
       pendingPdfs.clear();
       pendingIllustrations.clear();
-      pendingFolderImages.clear();
       await window.PdfStore.clearPdfStore();
       await window.IllustrationStore.clearIllustrationStore();
-      await window.FolderImageStore.clearFolderImageStore();
       clearLocalDraft();
       papers = [];
       folders = [];

@@ -1,6 +1,5 @@
 const SF_KEY_STORAGE = 'paperai-siliconflow-key';
 const SF_MODEL_STORAGE = 'paperai-siliconflow-model';
-const SF_IMAGE_MODEL_STORAGE = 'paperai-siliconflow-image-model';
 
 function getSiliconFlowConfig() {
   const cfg = window.PaperAIConfig?.siliconflow || {};
@@ -14,82 +13,21 @@ function getSiliconFlowApiKey() {
   return localStorage.getItem(SF_KEY_STORAGE) || '';
 }
 
-const DEPRECATED_IMAGE_MODELS = new Set([
-  'black-forest-labs/FLUX.1-schnell',
-  'Pro/black-forest-labs/FLUX.1-schnell',
-  'black-forest-labs/FLUX.1-dev',
-  'black-forest-labs/FLUX.1-pro',
-  'stabilityai/stable-diffusion-xl-base-1.0',
-  'stabilityai/stable-diffusion-3-5-large',
-  'stabilityai/stable-diffusion-3-5-large-turbo',
-  'stabilityai/stable-diffusion-2-1',
-]);
-
-function getDefaultImageModel() {
-  return window.PaperAIConfig?.siliconflow?.imageModel || 'Tongyi-MAI/Z-Image-Turbo';
-}
-
-function getSiliconFlowImageModel() {
-  const stored = localStorage.getItem(SF_IMAGE_MODEL_STORAGE);
-  if (stored && DEPRECATED_IMAGE_MODELS.has(stored)) {
-    localStorage.removeItem(SF_IMAGE_MODEL_STORAGE);
-  } else if (stored) {
-    return stored;
-  }
-  return getDefaultImageModel();
-}
-
-function getBookmarkImageSize(model = getSiliconFlowImageModel()) {
-  const cfgSize = window.PaperAIConfig?.siliconflow?.bookmarkImageSize;
-  if (cfgSize) return cfgSize;
-  if (model.includes('Z-Image')) return '512x512';
-  if (model.includes('Qwen-Image')) return '1472x1140';
-  if (model.includes('FLUX.2')) return '1024x1024';
-  if (model.includes('FLUX.1-Kontext')) return '1024x1024';
-  return '1024x576';
-}
-
-function buildImageGenerationBody(model, prompt, imageSize) {
-  const body = { model, prompt, image_size: imageSize };
-  if (model.includes('FLUX')) {
-    body.prompt_enhancement = false;
-  }
-  if (model.includes('Qwen-Image') && !model.includes('Edit')) {
-    body.negative_prompt = 'text, letters, numbers, words, watermark, logo, signature';
-  }
-  return body;
-}
-
-function formatImageApiError(message, status) {
-  const msg = message || `图像 API 错误 (${status})`;
-  if (/disabled|not found|not authorized|unavailable/i.test(msg)) {
-    return `${msg}。FLUX.1-schnell 等旧模型已下线，请在「统计 → 站主设置」将图像模型改为 Tongyi-MAI/Z-Image-Turbo 或 Qwen/Qwen-Image`;
-  }
-  return msg;
-}
-
-function saveSiliconFlowSettings(apiKey, model, imageModel) {
+function saveSiliconFlowSettings(apiKey, model) {
   if (apiKey) localStorage.setItem(SF_KEY_STORAGE, apiKey);
   else localStorage.removeItem(SF_KEY_STORAGE);
 
   if (model) localStorage.setItem(SF_MODEL_STORAGE, model);
   else localStorage.removeItem(SF_MODEL_STORAGE);
-
-  if (imageModel !== undefined) {
-    if (imageModel) localStorage.setItem(SF_IMAGE_MODEL_STORAGE, imageModel);
-    else localStorage.removeItem(SF_IMAGE_MODEL_STORAGE);
-  }
 }
 
 function loadSiliconFlowSettingsIntoForm() {
   const keyEl = document.getElementById('sf-api-key');
   const modelEl = document.getElementById('sf-model');
-  const imageModelEl = document.getElementById('sf-image-model');
   if (!keyEl || !modelEl) return;
 
   keyEl.value = getSiliconFlowApiKey();
   modelEl.value = getSiliconFlowConfig().model;
-  if (imageModelEl) imageModelEl.value = getSiliconFlowImageModel();
 }
 
 function ensurePdfJsReady() {
@@ -169,71 +107,6 @@ async function callSiliconFlow(messages, options = {}) {
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error('API 未返回有效内容');
   return content;
-}
-
-async function downloadImageBlob(url) {
-  try {
-    const res = await fetch(url);
-    if (res.ok) return await res.blob();
-  } catch {
-    // fall through to canvas approach
-  }
-
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      canvas.toBlob(
-        blob => (blob ? resolve(blob) : reject(new Error('无法保存生成的图片'))),
-        'image/png'
-      );
-    };
-    img.onerror = () => reject(new Error('无法下载生成的图片，请稍后重试'));
-    img.src = url;
-  });
-}
-
-function buildBookmarkImagePrompt(userPrompt) {
-  const prompt = userPrompt.trim();
-  if (!prompt) throw new Error('请填写图片提示词');
-  return prompt;
-}
-
-async function generateBookmarkImage(userPrompt) {
-  const apiKey = getSiliconFlowApiKey();
-  if (!apiKey) throw new Error('请先在「统计 → 站主设置」中配置硅基流动 API Key');
-
-  const { baseUrl } = getSiliconFlowConfig();
-  const model = getSiliconFlowImageModel();
-  const imageSize = getBookmarkImageSize(model);
-  const prompt = buildBookmarkImagePrompt(userPrompt);
-
-  let res;
-  try {
-    res = await fetch(`${baseUrl}/images/generations`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(buildImageGenerationBody(model, prompt, imageSize)),
-    });
-  } catch {
-    throw new Error('无法连接硅基流动 API，请检查网络或 API 地址');
-  }
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(formatImageApiError(data.message || data.error?.message, res.status));
-  }
-
-  const url = data.images?.[0]?.url;
-  if (!url) throw new Error('API 未返回图片 URL');
-  return downloadImageBlob(url);
 }
 
 async function explainKnowledgeTerms(terms, context = {}) {
@@ -318,11 +191,8 @@ ${pdfText}`;
 
 window.PaperAI = {
   getSiliconFlowApiKey,
-  getSiliconFlowImageModel,
   saveSiliconFlowSettings,
   loadSiliconFlowSettingsIntoForm,
   extractPaperMetadataFromPdf,
   explainKnowledgeTerms,
-  generateBookmarkImage,
-  buildBookmarkImagePrompt,
 };

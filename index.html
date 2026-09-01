@@ -15,7 +15,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=33">
+  <link rel="stylesheet" href="css/style.css?v=35">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -55,7 +55,7 @@
           </div>
           <button type="button" class="btn btn-primary btn-sm admin-only hidden" id="btn-new-folder">+ 新建分类</button>
         </div>
-        <div id="folder-list" class="folder-bookmarks"></div>
+        <div id="folder-list" class="folder-list"></div>
       </div>
 
       <div id="papers-panel" class="papers-panel hidden">
@@ -287,11 +287,6 @@
             <input type="text" id="sf-model" placeholder="deepseek-ai/DeepSeek-V3">
           </div>
           <div class="form-group">
-            <label for="sf-image-model">图像模型（便签生成）</label>
-            <input type="text" id="sf-image-model" placeholder="Tongyi-MAI/Z-Image-Turbo">
-            <p class="hint">推荐 Tongyi-MAI/Z-Image-Turbo（便宜）或 Qwen/Qwen-Image。FLUX.1-schnell 已下线。</p>
-          </div>
-          <div class="form-group">
             <label for="github-token">GitHub Token</label>
             <input type="password" id="github-token" placeholder="ghp_..." autocomplete="off">
           </div>
@@ -310,7 +305,7 @@
           </label>
           <button class="btn btn-danger" id="btn-clear">清空所有数据</button>
         </div>
-        <p class="hint">修改后点击「发布到网站」更新论文、分类、图解与便签背景图。</p>
+        <p class="hint">修改后点击「发布到网站」更新论文、分类与图解。</p>
       </div>
     </section>
   </main>
@@ -325,16 +320,7 @@
           <label for="folder-name-input">分类名称</label>
           <input type="text" id="folder-name-input" required placeholder="例如：自然语言处理">
         </div>
-        <div class="form-group admin-only">
-          <label for="folder-image-prompt">便签图片提示词</label>
-          <textarea id="folder-image-prompt" rows="3" placeholder="例如：蓝色科技风抽象背景，柔和光晕"></textarea>
-          <p class="hint">根据提示词生成完整图片；展示时在图片上方显示分类名称与论文数量。</p>
-        </div>
-        <div class="folder-image-preview-wrap admin-only hidden" id="folder-image-preview-wrap">
-          <img id="folder-image-preview" class="folder-image-preview" alt="便签预览">
-        </div>
-        <div class="form-actions folder-form-actions">
-          <button type="button" class="btn btn-secondary admin-only" id="btn-generate-folder-image">生成便签图片</button>
+        <div class="form-actions">
           <button type="button" class="btn btn-ghost" data-close="folder-modal">取消</button>
           <button type="submit" class="btn btn-primary">确定</button>
         </div>
@@ -375,8 +361,7 @@
   <script src="js/config.js?v=25"></script>
   <script src="js/pdf-store.js?v=14"></script>
   <script src="js/illustration-store.js?v=25"></script>
-  <script src="js/folder-image-store.js?v=14"></script>
   <script src="js/ai.js?v=14"></script>
-  <script src="js/app.js?v=33"></script>
+  <script src="js/app.js?v=35"></script>
 </body>
 </html>
