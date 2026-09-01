@@ -1076,7 +1076,7 @@ function initThemeToggle() {
   if (stored === 'dark' || stored === 'immersive' || stored === 'light') {
     applyTheme(stored);
   } else {
-    updateThemeToggleUI(getCurrentTheme());
+    applyTheme('light');
   }
   document.getElementById('btn-theme-toggle')?.addEventListener('click', toggleTheme);
 }
