@@ -13,6 +13,12 @@ const STATUS_LABELS = {
 };
 
 const THEME_STORAGE_KEY = 'paperai-theme';
+const THEME_CYCLE = ['light', 'dark', 'immersive'];
+const THEME_LABELS = {
+  light: '浅色模式',
+  dark: '深色模式',
+  immersive: '沉浸模式',
+};
 
 let papers = [];
 let folders = [];
@@ -1035,21 +1041,43 @@ function renderList() {
   });
 }
 
-function isDarkThemeEnabled() {
-  return document.documentElement.classList.contains('dark');
+function getCurrentTheme() {
+  const root = document.documentElement;
+  if (root.classList.contains('dark')) return 'dark';
+  if (root.classList.contains('immersive')) return 'immersive';
+  return 'light';
+}
+
+function updateThemeToggleUI(theme) {
+  const btn = document.getElementById('btn-theme-toggle');
+  if (!btn) return;
+  const label = THEME_LABELS[theme] || THEME_LABELS.light;
+  btn.title = label;
+  btn.setAttribute('aria-label', `当前：${label}，点击切换`);
 }
 
 function applyTheme(theme) {
-  const dark = theme === 'dark';
-  document.documentElement.classList.toggle('dark', dark);
-  localStorage.setItem(THEME_STORAGE_KEY, dark ? 'dark' : 'light');
+  const root = document.documentElement;
+  root.classList.remove('dark', 'immersive');
+  if (theme === 'dark') root.classList.add('dark');
+  else if (theme === 'immersive') root.classList.add('immersive');
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+  updateThemeToggleUI(theme);
 }
 
 function toggleTheme() {
-  applyTheme(isDarkThemeEnabled() ? 'light' : 'dark');
+  const idx = THEME_CYCLE.indexOf(getCurrentTheme());
+  const next = THEME_CYCLE[(idx + 1) % THEME_CYCLE.length];
+  applyTheme(next);
 }
 
 function initThemeToggle() {
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === 'dark' || stored === 'immersive' || stored === 'light') {
+    applyTheme(stored);
+  } else {
+    updateThemeToggleUI(getCurrentTheme());
+  }
   document.getElementById('btn-theme-toggle')?.addEventListener('click', toggleTheme);
 }
 

@@ -93,6 +93,32 @@ html.dark body::after {
   background: color-mix(in srgb, var(--bg) 84%, transparent);
 }
 
+html.immersive body::before {
+  transform: none;
+  filter: none;
+}
+
+html.immersive body::after {
+  display: none;
+}
+
+html.immersive .paper-card,
+html.immersive .form-card,
+html.immersive .reader-panel,
+html.immersive .stat-card,
+html.immersive .modal-content,
+html.immersive .bookmark-inner {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html.immersive .panel-header {
+  background: color-mix(in srgb, var(--bg) 75%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 .container {
   max-width: 960px;
   margin: 0 auto;
@@ -1367,19 +1393,19 @@ html.dark body::after {
 }
 
 .theme-icon {
-  display: inline-block;
+  display: none;
   line-height: 1;
 }
 
-html:not(.dark) .theme-icon-dark {
-  display: none;
-}
-
-html.dark .theme-icon-light {
-  display: none;
+html:not(.dark):not(.immersive) .theme-icon-light {
+  display: inline-block;
 }
 
 html.dark .theme-icon-dark {
+  display: inline-block;
+}
+
+html.immersive .theme-icon-immersive {
   display: inline-block;
 }
 
