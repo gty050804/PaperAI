@@ -1509,6 +1509,9 @@ async function publishToGithub() {
   btn.textContent = '发布中…';
 
   try {
+    let uploadedPdfs = 0;
+    let skippedPdfs = 0;
+
     for (const folder of folders) {
       if (!folder.imagePath && !pendingFolderImages.has(folder.id)) continue;
       const blob = pendingFolderImages.has(folder.id)
@@ -1526,13 +1529,17 @@ async function publishToGithub() {
     for (const paper of papers) {
       if (!paper.pdfPath) continue;
       const file = await getPdfFileForPublish(paper.id);
-      if (!file) continue;
+      if (!file) {
+        skippedPdfs++;
+        continue;
+      }
       const buffer = await file.arrayBuffer();
       const base64 = arrayBufferToBase64(buffer);
       await uploadGithubFile(
         owner, repo, getPdfPath(paper.id), branch, token, base64,
         `Upload PDF: ${paper.pdfName || paper.id}`
       );
+      uploadedPdfs++;
     }
 
     const foldersBase64 = btoa(unescape(encodeURIComponent(getFoldersJson())));
@@ -1552,7 +1559,13 @@ async function publishToGithub() {
     clearAllFolderImageBlobs();
     clearLocalDraft();
     hasUnpublishedChanges = false;
-    alert('发布成功！');
+
+    let msg = '发布成功！';
+    if (uploadedPdfs > 0) msg += `\n已上传 ${uploadedPdfs} 个 PDF 到 data/pdfs/。`;
+    if (skippedPdfs > 0) {
+      msg += `\n\n警告：${skippedPdfs} 个 PDF 未找到（可能已清除浏览器缓存）。请重新打开论文、重新上传 PDF 后再发布。`;
+    }
+    alert(msg);
   } catch (err) {
     alert(`发布失败：${err.message}\n\n已改为下载 papers.json，请手动提交到仓库。`);
     downloadPapersJson();
