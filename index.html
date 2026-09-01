@@ -15,7 +15,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=35">
+  <link rel="stylesheet" href="css/style.css?v=36">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -48,12 +48,8 @@
     <!-- 阅读列表视图 -->
     <section id="view-list" class="view active">
       <div class="bookmark-section">
-        <div class="bookmark-header">
-          <div>
-            <h2 class="bookmark-title">论文分类</h2>
-            <p class="bookmark-subtitle">点击分类浏览其中的论文</p>
-          </div>
-          <button type="button" class="btn btn-primary btn-sm admin-only hidden" id="btn-new-folder">+ 新建分类</button>
+        <div class="bookmark-header admin-only hidden">
+          <button type="button" class="btn btn-primary btn-sm" id="btn-new-folder">+ 新建分类</button>
         </div>
         <div id="folder-list" class="folder-list"></div>
       </div>
@@ -362,6 +358,6 @@
   <script src="js/pdf-store.js?v=14"></script>
   <script src="js/illustration-store.js?v=25"></script>
   <script src="js/ai.js?v=14"></script>
-  <script src="js/app.js?v=35"></script>
+  <script src="js/app.js?v=36"></script>
 </body>
 </html>

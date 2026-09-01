@@ -119,8 +119,6 @@ html.immersive .folder-tile {
   border-color: rgba(255, 255, 255, 0.16);
 }
 
-html.immersive .bookmark-title,
-html.immersive .bookmark-subtitle,
 html.immersive .current-folder-label,
 html.immersive .paper-title,
 html.immersive .paper-meta,
@@ -133,7 +131,6 @@ html.immersive .folder-tile-count {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
-html.immersive .bookmark-subtitle,
 html.immersive .paper-meta,
 html.immersive .paper-summary,
 html.immersive .reader-meta,
@@ -290,32 +287,21 @@ html.immersive .panel-header {
 
 .bookmark-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  max-width: 900px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 1.25rem;
+  max-width: 800px;
   margin-left: auto;
   margin-right: auto;
   width: 100%;
-}
-
-.bookmark-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.375rem;
-}
-
-.bookmark-subtitle {
-  font-size: 0.9375rem;
-  color: var(--text-muted);
+  padding: 0 1rem;
 }
 
 .folder-list {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
-  max-width: 640px;
+  gap: 1.25rem;
+  max-width: 800px;
   margin: 0 auto;
   padding: 0 1rem;
   width: 100%;
@@ -338,9 +324,10 @@ html.immersive .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
-  padding: 1.125rem 1.375rem;
+  min-height: 5.5rem;
+  padding: 1.75rem 2rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
@@ -363,14 +350,14 @@ html.immersive .panel-header {
 }
 
 .folder-tile-name {
-  font-size: 1.0625rem;
+  font-size: 1.3125rem;
   font-weight: 600;
   line-height: 1.35;
 }
 
 .folder-tile-count {
   flex-shrink: 0;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   color: var(--text-muted);
 }
 
