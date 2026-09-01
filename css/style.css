@@ -52,6 +52,10 @@ html.dark {
   padding: 0;
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
   font-family: var(--font);
   background: var(--bg);
@@ -61,6 +65,32 @@ body {
   display: flex;
   flex-direction: column;
   scroll-behavior: smooth;
+  position: relative;
+  isolation: isolate;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: url('../assets/background.jpg') center / cover no-repeat;
+  transform: scale(1.04);
+  filter: blur(6px);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+html.dark body::after {
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
 }
 
 .container {
