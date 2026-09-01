@@ -12,6 +12,9 @@ const STATUS_LABELS = {
   'finished': '已读完',
 };
 
+const THEME_STORAGE_KEY = 'paperai-theme';
+const PAPER_PREVIEW_PLACEHOLDER = 'assets/paper-preview-placeholder.webp';
+
 let papers = [];
 let folders = [];
 let currentFolderId = null;
@@ -21,12 +24,12 @@ let folderDraftId = null;
 let lastCreatedFolderId = null;
 
 const BOOKMARK_COLORS = [
-  { bg: '#fef9c3', tab: '#fde047', border: '#facc15', text: '#713f12' },
-  { bg: '#dbeafe', tab: '#93c5fd', border: '#60a5fa', text: '#1e3a8a' },
-  { bg: '#dcfce7', tab: '#86efac', border: '#4ade80', text: '#14532d' },
-  { bg: '#fce7f3', tab: '#f9a8d4', border: '#f472b6', text: '#831843' },
-  { bg: '#ffedd5', tab: '#fdba74', border: '#fb923c', text: '#7c2d12' },
-  { bg: '#ede9fe', tab: '#c4b5fd', border: '#a78bfa', text: '#4c1d95' },
+  { bg: '#f5f3ea', tab: '#e8e4d4', border: '#d4cfc0', text: '#5c5346' },
+  { bg: '#eef4f8', tab: '#d4e4ef', border: '#b8d4e8', text: '#3d5a6e' },
+  { bg: '#edf5ef', tab: '#cfe8d6', border: '#a8d4b8', text: '#3d5a48' },
+  { bg: '#f8f0f4', tab: '#ecdce6', border: '#d4b8c8', text: '#6e4a5c' },
+  { bg: '#f8f2ea', tab: '#ede0d0', border: '#d8c4a8', text: '#6e5a3d' },
+  { bg: '#f0eef8', tab: '#ddd8ec', border: '#c4bcd8', text: '#4a456e' },
 ];
 let editingId = null;
 let currentReaderId = null;
@@ -1013,7 +1016,9 @@ function renderList() {
 
   empty.classList.add('hidden');
 
-  list.innerHTML = filtered.map(p => `
+  list.innerHTML = filtered.map(p => {
+    const previewUrl = getPaperPreviewUrl(p);
+    return `
     <article class="paper-card" data-id="${p.id}">
       <div class="paper-card-header">
         <h3 class="paper-title">${escapeHtml(getDisplayTitle(p))}</h3>
@@ -1025,12 +1030,54 @@ function renderList() {
         ${paperHasLink(p) ? '<span class="pdf-badge">🔗 链接</span>' : ''}
         ${(p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
       </div>
+      <div class="paper-card-preview" aria-hidden="true">
+        <img src="${escapeHtml(previewUrl)}" alt="" loading="lazy">
+      </div>
     </article>
-  `).join('');
+  `;
+  }).join('');
 
   list.querySelectorAll('.paper-card').forEach(card => {
     card.addEventListener('click', () => openReader(card.dataset.id));
   });
+}
+
+function getPaperPreviewUrl(paper) {
+  const firstIllustration = (paper.illustrations || []).find(item => item?.imagePath);
+  if (firstIllustration?.imagePath && window.PdfStore?.resolveAssetPath) {
+    return window.PdfStore.resolveAssetPath(firstIllustration.imagePath);
+  }
+  return PAPER_PREVIEW_PLACEHOLDER;
+}
+
+function isDarkThemeEnabled() {
+  return document.documentElement.classList.contains('dark');
+}
+
+function applyTheme(theme) {
+  const dark = theme === 'dark';
+  document.documentElement.classList.toggle('dark', dark);
+  localStorage.setItem(THEME_STORAGE_KEY, dark ? 'dark' : 'light');
+}
+
+function toggleTheme() {
+  applyTheme(isDarkThemeEnabled() ? 'light' : 'dark');
+}
+
+function initThemeToggle() {
+  document.getElementById('btn-theme-toggle')?.addEventListener('click', toggleTheme);
+}
+
+function initHeaderScroll() {
+  const header = document.getElementById('site-header');
+  if (!header) return;
+
+  const updateHeader = () => {
+    header.classList.toggle('header--scrolled', window.scrollY > 12);
+  };
+
+  updateHeader();
+  window.addEventListener('scroll', updateHeader, { passive: true });
 }
 
 function formatMeta(p) {
@@ -2205,6 +2252,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById(btn.dataset.close).close();
     });
   });
+
+  initThemeToggle();
+  initHeaderScroll();
 
   renderFolders();
   updatePapersPanelVisibility();
