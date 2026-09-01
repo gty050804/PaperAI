@@ -1445,6 +1445,23 @@ function downloadPapersJson() {
   URL.revokeObjectURL(url);
 }
 
+function formatGithubPublishError(message) {
+  const msg = message || '';
+  if (/not accessible by personal access token|Resource not accessible/i.test(msg)) {
+    return `${msg}\n\nToken 权限不足。请重新生成 GitHub Token：\n` +
+      '· 经典 Token：勾选 repo 权限\n' +
+      '· 细粒度 Token：选择仓库 gty050804/PaperAI，Contents 设为「读写」\n' +
+      '生成后在「统计 → 站主设置」重新粘贴保存。';
+  }
+  if (/Bad credentials|401/i.test(msg)) {
+    return `${msg}\n\nToken 无效或已过期，请重新生成并粘贴。`;
+  }
+  if (/Not Found|404/i.test(msg)) {
+    return `${msg}\n\n请确认 config.js 中 owner/repo 为 gty050804/PaperAI，且 Token 对该仓库有写入权限。`;
+  }
+  return msg;
+}
+
 async function getGithubFileSha(owner, repo, path, branch, token) {
   const res = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`,
@@ -1567,7 +1584,7 @@ async function publishToGithub() {
     }
     alert(msg);
   } catch (err) {
-    alert(`发布失败：${err.message}\n\n已改为下载 papers.json，请手动提交到仓库。`);
+    alert(`发布失败：${formatGithubPublishError(err.message)}\n\n已改为下载 papers.json，请手动提交到仓库。`);
     downloadPapersJson();
   } finally {
     btn.disabled = false;
