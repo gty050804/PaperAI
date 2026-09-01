@@ -8,14 +8,14 @@
     "url": "https://doi.org/10.1109/TVCG.2026.3688720",
     "pdfUrl": null,
     "sourceCodeUrl": "https://sixiaozheng.github.io/VidCRAFT3/",
-    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
     "status": "to-read",
     "readDate": "",
     "tags": [],
     "summary": "VidCRAFT3提出了一种统一的图像到视频生成框架，通过显式建模几何、运动和光照之间的跨因素交互，实现了对相机运动、物体运动和光照方向的独立与联合控制。该框架包含Image2Cloud模块提供3D几何先验，ObjMotionNet编码物体轨迹，以及空间三重注意力Transformer整合光照方向，并通过三阶段渐进训练策略解决了联合标注数据稀缺的问题。",
     "notes": "",
     "knowledgePoints": [],
-    "updatedAt": "2026-09-01T10:09:33.052Z",
+    "updatedAt": "2026-09-01T10:13:11.539Z",
     "createdAt": "2026-09-01T10:09:33.053Z"
   },
   {
