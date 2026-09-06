@@ -14,8 +14,14 @@
     "tags": [],
     "summary": "本文提出了τ 0 -WM，一个统一的视频-动作世界模型，将策略学习、视频预测和动作评估集成在一个未来预测框架中。该模型基于共享的视频扩散主干，通过多视角观测、语言指令和机器人状态联合预测未来视觉潜在表示和连续动作块，并在真实机器人操作任务中表现出优越性能。",
     "notes": "",
-    "knowledgePoints": [],
-    "updatedAt": "2026-09-06T11:14:07.050Z",
+    "knowledgePoints": [
+      {
+        "term": "UMI-style demonstration",
+        "link": "",
+        "explanation": "UMI-style demonstration 是一种机器人学习中的演示方法，通过人类直接操作机器人来收集示范数据。这种方法允许机器人记录人类操作时的动作序列和传感器数据，用于后续的策略学习或模仿学习。UMI（User-guided Manipulation Interface）强调用户友好性和直观性，常用于复杂操作任务的示范收集。"
+      }
+    ],
+    "updatedAt": "2026-09-06T11:17:08.825Z",
     "illustrations": [],
     "createdAt": "2026-09-06T11:13:46.833Z"
   },
