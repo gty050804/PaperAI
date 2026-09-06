@@ -1,5 +1,25 @@
 [
   {
+    "id": "5722d710-3e61-4f89-97a0-1c21abfdf755",
+    "title": "τ 0 -WM: A Unified Video-Action World Model for Robotic Manipulation",
+    "authors": "Pengfei Zhou, Shengcong Chen, Di Chen, Jiaxu Wang, Rongjun Jin, Bingwen Zhu, Yike Pan, Songen Gu, Kuanning Wang, Shufeng Nan, Xingyu Qiu, Chenhao Qiu, Pu Yang, Yunuo Cai, Jianxiong Gao, Yifan Li, Yanwei Fu, Xiangyu Yue, Zhi Chen, Jianlan Luo",
+    "year": 2026,
+    "venue": "CoRL",
+    "url": "https://arxiv.org/abs/2606.01027v2",
+    "pdfUrl": "https://arxiv.org/pdf/2606.01027v2.pdf",
+    "sourceCodeUrl": "https://tau0-wm.github.io/",
+    "folderId": "606db46d-6c4d-4d3f-b495-fc313e7539e2",
+    "status": "reading",
+    "readDate": "",
+    "tags": [],
+    "summary": "本文提出了τ 0 -WM，一个统一的视频-动作世界模型，将策略学习、视频预测和动作评估集成在一个未来预测框架中。该模型基于共享的视频扩散主干，通过多视角观测、语言指令和机器人状态联合预测未来视觉潜在表示和连续动作块，并在真实机器人操作任务中表现出优越性能。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-06T11:14:07.050Z",
+    "illustrations": [],
+    "createdAt": "2026-09-06T11:13:46.833Z"
+  },
+  {
     "id": "0eaad17d-41c1-4eff-b9fd-cb4256c78957",
     "title": "VidCRAFT3: Camera, Object, and Lighting Control for Image-to-Video Generation",
     "authors": "Sixiao Zheng, Zimian Peng, Yanpeng Zhou, Yi Zhu, Hang Xu, Xiangru Huang, Yanwei Fu",
