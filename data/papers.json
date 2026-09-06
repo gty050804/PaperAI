@@ -9,9 +9,16 @@
     "pdfUrl": null,
     "sourceCodeUrl": "https://sixiaozheng.github.io/VidCRAFT3/",
     "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
-    "status": "reading",
+    "status": "finished",
     "readDate": "2026-09-06",
-    "tags": [],
+    "tags": [
+      "dataset",
+      "diffusion models",
+      "image-to-video generation",
+      "camera control",
+      "motion control",
+      "lighting control"
+    ],
     "summary": "VidCRAFT3提出了一种统一的图像到视频生成框架，能够同时控制相机运动、物体运动和光照方向。该框架通过显式建模几何、运动和光照之间的交叉因素交互，解决了现有方法独立处理这些因素导致的视觉不一致问题。此外，作者还构建了带有精确光照方向标注的VLD数据集，并提出三阶段渐进训练策略以解决联合标注数据稀缺的问题。",
     "notes": "",
     "knowledgePoints": [
@@ -26,7 +33,7 @@
         "explanation": "SH Encoding（球谐编码）是一种用于表示和近似复杂函数（如光照或反射率）的数学方法。它通过将函数投影到一组正交的球谐基函数上，实现数据的低维表示。在计算机图形学中，SH Encoding常用于环境光照和漫反射的近似计算，能够高效地捕捉光照的方向性特征。其优势在于计算效率高且对旋转操作友好，适用于实时渲染和全局光照模拟。"
       }
     ],
-    "updatedAt": "2026-09-06T09:59:42.257Z",
+    "updatedAt": "2026-09-06T10:30:03.274Z",
     "illustrations": [
       {
         "id": "3d0f1d30-a016-4c3d-a6f8-4886e1b4f6e3",
