@@ -9,7 +9,7 @@
     "pdfUrl": "https://arxiv.org/pdf/2606.01027v2.pdf",
     "sourceCodeUrl": "https://tau0-wm.github.io/",
     "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
-    "status": "reading",
+    "status": "finished",
     "readDate": "",
     "tags": [],
     "summary": "本文提出了τ 0 -WM，一个统一的视频-动作世界模型，将策略学习、视频预测和动作评估集成在一个未来预测框架中。该模型基于共享的视频扩散主干，通过多视角观测、语言指令和机器人状态联合预测未来视觉潜在表示和连续动作块，并在真实机器人操作任务中表现出优越性能。",
@@ -36,7 +36,7 @@
         "explanation": "AdaLN（Adaptive Layer Normalization）调制是一种自适应层归一化技术，通过动态调整归一化层的参数（如缩放因子和平移项）来适应不同输入或任务需求。它常用于生成模型或世界模型中，以增强模型对不同条件（如语言指令或环境状态）的适应能力。AdaLN通过条件信息（如嵌入向量）生成归一化参数，使模型能更灵活地处理多样化输入。"
       }
     ],
-    "updatedAt": "2026-09-10T09:23:38.577Z",
+    "updatedAt": "2026-09-10T09:30:21.626Z",
     "illustrations": [
       {
         "id": "6b49c9df-4b4d-4a12-ba1b-4623d59fff9d",
