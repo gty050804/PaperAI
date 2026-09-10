@@ -1,5 +1,25 @@
 [
   {
+    "id": "bb07ff3b-5432-4151-bd4d-54cd2ac3934e",
+    "title": "VerseCrafter: Dynamic Realistic Video World Model with 4D Geometric Control",
+    "authors": "Sixiao Zheng, Minghao Yin, Wenbo Hu, Xiaoyu Li, Ying Shan, Yanwei Fu",
+    "year": 2026,
+    "venue": "CVPR",
+    "url": "https://arxiv.org/abs/2601.05138v2",
+    "pdfUrl": "https://arxiv.org/pdf/2601.05138v2.pdf",
+    "sourceCodeUrl": "",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
+    "status": "to-read",
+    "readDate": "2026-09-11",
+    "tags": [],
+    "summary": "VerseCrafter提出了一种基于4D几何控制的视频世界模型，通过静态背景点云和每对象3D高斯轨迹的统一表示，实现了对相机和多对象运动的精确控制。该方法能够生成高保真、视角一致的动态视频，并通过构建VerseControl4D数据集支持大规模训练。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-10T09:51:08.615Z",
+    "illustrations": [],
+    "createdAt": "2026-09-10T09:51:08.615Z"
+  },
+  {
     "id": "5722d710-3e61-4f89-97a0-1c21abfdf755",
     "title": "τ0 -WM: A Unified Video-Action World Model for Robotic Manipulation",
     "authors": "Pengfei Zhou, Shengcong Chen, Di Chen, Jiaxu Wang, Rongjun Jin, Bingwen Zhu, Yike Pan, Songen Gu, Kuanning Wang, Shufeng Nan, Xingyu Qiu, Chenhao Qiu, Pu Yang, Yunuo Cai, Jianxiong Gao, Yifan Li, Yanwei Fu, Xiangyu Yue, Zhi Chen, Jianlan Luo",
@@ -11,7 +31,12 @@
     "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
     "status": "finished",
     "readDate": "",
-    "tags": [],
+    "tags": [
+      "dataset",
+      "WAM",
+      "VAM",
+      "ACVS"
+    ],
     "summary": "本文提出了τ 0 -WM，一个统一的视频-动作世界模型，将策略学习、视频预测和动作评估集成在一个未来预测框架中。该模型基于共享的视频扩散主干，通过多视角观测、语言指令和机器人状态联合预测未来视觉潜在表示和连续动作块，并在真实机器人操作任务中表现出优越性能。",
     "notes": "省流：想出几个方案 → 预演后果 → 挑最好的未来 → 回头修正动作",
     "knowledgePoints": [
@@ -36,7 +61,7 @@
         "explanation": "AdaLN（Adaptive Layer Normalization）调制是一种自适应层归一化技术，通过动态调整归一化层的参数（如缩放因子和平移项）来适应不同输入或任务需求。它常用于生成模型或世界模型中，以增强模型对不同条件（如语言指令或环境状态）的适应能力。AdaLN通过条件信息（如嵌入向量）生成归一化参数，使模型能更灵活地处理多样化输入。"
       }
     ],
-    "updatedAt": "2026-09-10T09:30:21.626Z",
+    "updatedAt": "2026-09-10T09:48:57.744Z",
     "illustrations": [
       {
         "id": "6b49c9df-4b4d-4a12-ba1b-4623d59fff9d",
