@@ -26,8 +26,14 @@
         "explanation": "流匹配是一种用于生成模型的方法，通过匹配概率流来学习数据分布。它通过优化一个连续时间动态系统，使得从噪声分布到数据分布的转换路径最小化特定的损失函数。这种方法在生成高质量样本和稳定训练方面表现出色，常用于图像和视频生成任务。"
       }
     ],
-    "updatedAt": "2026-09-10T07:53:31.457Z",
-    "illustrations": [],
+    "updatedAt": "2026-09-10T08:22:16.533Z",
+    "illustrations": [
+      {
+        "id": "6b49c9df-4b4d-4a12-ba1b-4623d59fff9d",
+        "title": "",
+        "imagePath": "data/illustrations/5722d710-3e61-4f89-97a0-1c21abfdf755/6b49c9df-4b4d-4a12-ba1b-4623d59fff9d.png"
+      }
+    ],
     "createdAt": "2026-09-06T11:13:46.833Z"
   },
   {
