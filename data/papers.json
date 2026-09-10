@@ -1,7 +1,7 @@
 [
   {
     "id": "5722d710-3e61-4f89-97a0-1c21abfdf755",
-    "title": "τ 0 -WM: A Unified Video-Action World Model for Robotic Manipulation",
+    "title": "τ0 -WM: A Unified Video-Action World Model for Robotic Manipulation",
     "authors": "Pengfei Zhou, Shengcong Chen, Di Chen, Jiaxu Wang, Rongjun Jin, Bingwen Zhu, Yike Pan, Songen Gu, Kuanning Wang, Shufeng Nan, Xingyu Qiu, Chenhao Qiu, Pu Yang, Yunuo Cai, Jianxiong Gao, Yifan Li, Yanwei Fu, Xiangyu Yue, Zhi Chen, Jianlan Luo",
     "year": 2026,
     "venue": "CoRL",
@@ -26,7 +26,7 @@
         "explanation": "流匹配是一种用于生成模型的方法，通过匹配概率流来学习数据分布。它通过优化一个连续时间动态系统，使得从噪声分布到数据分布的转换路径最小化特定的损失函数。这种方法在生成高质量样本和稳定训练方面表现出色，常用于图像和视频生成任务。"
       }
     ],
-    "updatedAt": "2026-09-10T08:22:16.533Z",
+    "updatedAt": "2026-09-10T08:23:49.281Z",
     "illustrations": [
       {
         "id": "6b49c9df-4b4d-4a12-ba1b-4623d59fff9d",
