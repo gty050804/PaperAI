@@ -19,9 +19,14 @@
         "term": "UMI-style demonstration",
         "link": "",
         "explanation": "UMI-style demonstration 是一种机器人学习中的演示方法，通过人类直接操作机器人来收集示范数据。这种方法允许机器人记录人类操作时的动作序列和传感器数据，用于后续的策略学习或模仿学习。UMI（User-guided Manipulation Interface）强调用户友好性和直观性，常用于复杂操作任务的示范收集。"
+      },
+      {
+        "term": "flow matching",
+        "link": "",
+        "explanation": "流匹配是一种用于生成模型的方法，通过匹配概率流来学习数据分布。它通过优化一个连续时间动态系统，使得从噪声分布到数据分布的转换路径最小化特定的损失函数。这种方法在生成高质量样本和稳定训练方面表现出色，常用于图像和视频生成任务。"
       }
     ],
-    "updatedAt": "2026-09-06T11:17:08.825Z",
+    "updatedAt": "2026-09-10T07:53:31.457Z",
     "illustrations": [],
     "createdAt": "2026-09-06T11:13:46.833Z"
   },
