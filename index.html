@@ -15,7 +15,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=36">
+  <link rel="stylesheet" href="css/style.css?v=37">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -59,6 +59,18 @@
           <button type="button" class="btn btn-ghost btn-sm" id="btn-back-folders">← 返回分类</button>
           <span id="current-folder-title" class="current-folder-label"></span>
         </div>
+
+        <div id="subcategory-panel" class="subcategory-panel hidden">
+          <div class="subcategory-toolbar admin-only hidden">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-new-subcategory">+ 新建子分类</button>
+          </div>
+          <div id="subcategory-list" class="folder-list"></div>
+        </div>
+
+        <div id="papers-content">
+        <div class="subcategory-toolbar papers-subcategory-toolbar admin-only hidden">
+          <button type="button" class="btn btn-primary btn-sm" id="btn-add-subcategory-from-list">+ 新建子分类</button>
+        </div>
         <div class="toolbar">
         <div class="search-box">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -84,6 +96,7 @@
         <h3>还没有论文记录</h3>
         <p>暂无论文记录</p>
       </div>
+        </div>
       </div>
     </section>
 
@@ -358,6 +371,6 @@
   <script src="js/pdf-store.js?v=14"></script>
   <script src="js/illustration-store.js?v=25"></script>
   <script src="js/ai.js?v=14"></script>
-  <script src="js/app.js?v=36"></script>
+  <script src="js/app.js?v=37"></script>
 </body>
 </html>

@@ -413,6 +413,16 @@ html.immersive .panel-header {
   animation: viewFadeIn 0.32s ease forwards;
 }
 
+.subcategory-panel {
+  animation: viewFadeIn 0.32s ease forwards;
+}
+
+.subcategory-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.25rem;
+}
+
 .papers-panel-header {
   display: flex;
   align-items: center;

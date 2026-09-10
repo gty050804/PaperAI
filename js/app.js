@@ -23,9 +23,11 @@ const THEME_LABELS = {
 let papers = [];
 let folders = [];
 let currentFolderId = null;
+let currentSubcategoryId = null;
 let folderModalMode = 'create';
 let folderEditingId = null;
 let folderDraftId = null;
+let folderParentId = null;
 let lastCreatedFolderId = null;
 
 let editingId = null;
@@ -351,9 +353,24 @@ async function loadFolders() {
   folders = remote;
 }
 
+const EMBODIED_AI_FOLDER_ID = '606db46d-6c4d-4d3f-b495-fc313e7539e2';
+const WAM_FOLDER_ID = 'f7c8a901-2b3d-4e5f-a678-901234567890';
+
 async function loadData() {
   await loadFolders();
   await loadPapers();
+  migrateLegacyParentFolderAssignments();
+}
+
+function migrateLegacyParentFolderAssignments() {
+  let changed = false;
+  papers.forEach(paper => {
+    if (paper.folderId !== EMBODIED_AI_FOLDER_ID) return;
+    if (!getFolderById(WAM_FOLDER_ID)) return;
+    paper.folderId = WAM_FOLDER_ID;
+    changed = true;
+  });
+  if (changed) markDirty();
 }
 
 function mergePaperRecord(remote, draft) {
@@ -478,12 +495,18 @@ function switchView(viewName) {
   if (viewName === 'list') {
     updatePapersPanelVisibility();
     renderFolders();
-    if (currentFolderId != null) renderList();
+    if (currentFolderId != null) {
+      if (isShowingSubcategoryList()) renderSubcategories();
+      else renderList();
+    }
   }
   if (viewName === 'add') {
     updateFolderSelect();
-    if (!editingId && currentFolderId && getFolderById(currentFolderId)) {
-      document.getElementById('paper-folder').value = currentFolderId;
+    if (!editingId) {
+      const activeFolderId = getActivePaperFolderId();
+      if (activeFolderId) {
+        document.getElementById('paper-folder').value = activeFolderId;
+      }
     }
   }
   if (viewName === 'stats') renderStats();
@@ -494,6 +517,54 @@ function getFolderById(id) {
   return folders.find(f => f.id === id);
 }
 
+function getTopLevelFolders() {
+  return folders.filter(f => !f.parentId);
+}
+
+function getSubfolders(parentId) {
+  return folders.filter(f => f.parentId === parentId);
+}
+
+function hasSubfolders(folderId) {
+  return getSubfolders(folderId).length > 0;
+}
+
+function getFolderSubtreeIds(folderId) {
+  const ids = [folderId];
+  getSubfolders(folderId).forEach(sub => {
+    ids.push(...getFolderSubtreeIds(sub.id));
+  });
+  return ids;
+}
+
+function getPaperFolderContext(folderId) {
+  const folder = getFolderById(folderId);
+  if (!folder || folder.id === UNCategorized_ID) {
+    return { parentId: null, subcategoryId: null };
+  }
+  if (folder.parentId) {
+    return { parentId: folder.parentId, subcategoryId: folder.id };
+  }
+  return { parentId: folder.id, subcategoryId: null };
+}
+
+function isShowingSubcategoryList() {
+  return currentFolderId != null
+    && currentFolderId !== UNCategorized_ID
+    && hasSubfolders(currentFolderId)
+    && currentSubcategoryId == null;
+}
+
+function isShowingPaperList() {
+  return currentFolderId != null && !isShowingSubcategoryList();
+}
+
+function getActivePaperFolderId() {
+  if (currentSubcategoryId) return currentSubcategoryId;
+  if (currentFolderId && !hasSubfolders(currentFolderId)) return currentFolderId;
+  return null;
+}
+
 function isUncategorizedPaper(paper) {
   if (!paper.folderId) return true;
   return !folders.some(f => f.id === paper.folderId);
@@ -502,16 +573,35 @@ function isUncategorizedPaper(paper) {
 function updatePapersPanelVisibility() {
   const panel = document.getElementById('papers-panel');
   const section = document.querySelector('.bookmark-section');
+  const subcategoryPanel = document.getElementById('subcategory-panel');
+  const papersContent = document.getElementById('papers-content');
   const open = currentFolderId != null;
 
   if (panel) panel.classList.toggle('hidden', !open);
   if (section) section.classList.toggle('hidden', open);
 
+  const showSubcategories = isShowingSubcategoryList();
+  if (subcategoryPanel) subcategoryPanel.classList.toggle('hidden', !showSubcategories);
+  if (papersContent) papersContent.classList.toggle('hidden', !isShowingPaperList());
+
+  const papersSubcategoryToolbar = document.querySelector('.papers-subcategory-toolbar');
+  if (papersSubcategoryToolbar) {
+    const showCreateSubcategory = isShowingPaperList()
+      && currentFolderId !== UNCategorized_ID
+      && !hasSubfolders(currentFolderId);
+    papersSubcategoryToolbar.classList.toggle('hidden', !showCreateSubcategory);
+  }
+
+  const backBtn = document.getElementById('btn-back-folders');
+  if (backBtn) {
+    backBtn.textContent = currentSubcategoryId ? '← 返回子分类' : '← 返回分类';
+  }
+
   const titleEl = document.getElementById('current-folder-title');
   if (!titleEl) return;
 
   if (!open) {
-    titleEl.innerHTML = '';
+    titleEl.textContent = '';
     return;
   }
 
@@ -522,8 +612,13 @@ function renderCurrentFolderTitle() {
   const titleEl = document.getElementById('current-folder-title');
   if (!titleEl || currentFolderId == null) return;
 
-  const folder = getFolderById(currentFolderId);
-  titleEl.textContent = folder?.name || '';
+  const parent = getFolderById(currentFolderId);
+  if (currentSubcategoryId) {
+    const sub = getFolderById(currentSubcategoryId);
+    titleEl.textContent = parent?.name && sub?.name ? `${parent.name} / ${sub.name}` : (sub?.name || '');
+    return;
+  }
+  titleEl.textContent = parent?.name || '';
 }
 
 function clearSearchAutofill() {
@@ -543,14 +638,41 @@ function scheduleClearSearchAutofill() {
 
 function openFolder(id) {
   currentFolderId = id;
+  currentSubcategoryId = null;
   updatePapersPanelVisibility();
   renderFolders();
+  if (isShowingSubcategoryList()) {
+    renderSubcategories();
+  } else {
+    scheduleClearSearchAutofill();
+    renderList();
+  }
+}
+
+function openSubcategory(id) {
+  const sub = getFolderById(id);
+  if (!sub?.parentId) return;
+  currentFolderId = sub.parentId;
+  currentSubcategoryId = id;
+  updatePapersPanelVisibility();
+  renderSubcategories();
   scheduleClearSearchAutofill();
   renderList();
 }
 
+function handleBackNavigation() {
+  if (currentSubcategoryId) {
+    currentSubcategoryId = null;
+    updatePapersPanelVisibility();
+    renderSubcategories();
+    return;
+  }
+  closeFolderView();
+}
+
 function closeFolderView() {
   currentFolderId = null;
+  currentSubcategoryId = null;
   updatePapersPanelVisibility();
   renderFolders();
 }
@@ -558,6 +680,10 @@ function closeFolderView() {
 function countPapersInFolder(folderId) {
   if (folderId === UNCategorized_ID) {
     return papers.filter(isUncategorizedPaper).length;
+  }
+  if (hasSubfolders(folderId)) {
+    const ids = getFolderSubtreeIds(folderId);
+    return papers.filter(p => ids.includes(p.folderId)).length;
   }
   return papers.filter(p => p.folderId === folderId).length;
 }
@@ -570,7 +696,7 @@ function renderFolders() {
   const container = document.getElementById('folder-list');
   if (!container) return;
 
-  const items = folders.map(f => ({
+  const items = getTopLevelFolders().map(f => ({
     id: f.id,
     label: f.name,
     count: countPapersInFolder(f.id),
@@ -640,25 +766,102 @@ function renderFolders() {
   });
 }
 
-function openFolderModal(mode, id = null) {
+function renderSubcategoryTiles(container, items, activeId) {
+  if (items.length === 0) {
+    container.innerHTML = '<p class="folder-empty">暂无子分类，站主可点击「新建子分类」创建</p>';
+    return;
+  }
+
+  container.innerHTML = items.map(item => {
+    const isNew = item.id === lastCreatedFolderId;
+    return `
+      <div class="folder-tile-wrap${activeId === item.id ? ' active' : ''}${isNew ? ' is-new' : ''}"
+           data-folder-id="${escapeHtml(item.id)}">
+        <button type="button" class="folder-tile" aria-label="${escapeHtml(item.label)}，${item.count} 篇论文">
+          <span class="folder-tile-name">${escapeHtml(item.label)}</span>
+          <span class="folder-tile-count">${item.count} 篇论文</span>
+        </button>
+        ${isAdmin ? `
+          <span class="folder-tile-actions admin-only">
+            <button type="button" class="folder-tile-action" data-action="rename" data-folder-id="${escapeHtml(item.id)}" title="重命名">✎</button>
+            <button type="button" class="folder-tile-action danger" data-action="delete" data-folder-id="${escapeHtml(item.id)}" title="删除">×</button>
+          </span>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  if (lastCreatedFolderId) {
+    setTimeout(() => {
+      const el = container.querySelector(`.folder-tile-wrap[data-folder-id="${lastCreatedFolderId}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      lastCreatedFolderId = null;
+    }, 100);
+  }
+
+  container.querySelectorAll('.folder-tile-wrap').forEach(wrap => {
+    const tile = wrap.querySelector('.folder-tile');
+    if (!tile) return;
+    const folderId = wrap.dataset.folderId;
+    tile.addEventListener('click', (e) => {
+      if (e.target.closest('.folder-tile-action')) return;
+      openSubcategory(folderId);
+    });
+  });
+
+  container.querySelectorAll('.folder-tile-action').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.dataset.folderId;
+      if (btn.dataset.action === 'rename') renameFolder(id);
+      if (btn.dataset.action === 'delete') deleteFolder(id);
+    });
+  });
+}
+
+function renderSubcategories() {
+  const container = document.getElementById('subcategory-list');
+  if (!container || currentFolderId == null) return;
+
+  const items = getSubfolders(currentFolderId).map(f => ({
+    id: f.id,
+    label: f.name,
+    count: countPapersInFolder(f.id),
+  }));
+
+  renderSubcategoryTiles(container, items, currentSubcategoryId);
+}
+
+function openFolderModal(mode, id = null, parentId = null) {
   folderModalMode = mode;
   folderEditingId = id;
   folderDraftId = mode === 'create' ? crypto.randomUUID() : id;
+  folderParentId = mode === 'create' ? parentId : (getFolderById(id)?.parentId || null);
 
-  document.getElementById('folder-modal-title').textContent = mode === 'create' ? '新建分类' : '重命名分类';
+  const isSubcategory = !!folderParentId;
+  document.getElementById('folder-modal-title').textContent =
+    mode === 'create'
+      ? (isSubcategory ? '新建子分类' : '新建分类')
+      : (isSubcategory ? '重命名子分类' : '重命名分类');
   document.getElementById('folder-name-input').value = mode === 'rename' ? (getFolderById(id)?.name || '') : '';
 
   document.getElementById('folder-modal').showModal();
   setTimeout(() => document.getElementById('folder-name-input').focus(), 50);
 }
 
-function createFolder() {
+function createFolder(parentId = null) {
   if (!isAdmin) {
     alert('无权限执行此操作。');
     if (!isLoggedIn) openLoginModal();
     return;
   }
-  openFolderModal('create');
+  openFolderModal('create', null, parentId);
+}
+
+function createSubcategory() {
+  if (!currentFolderId || currentFolderId === UNCategorized_ID) return;
+  createFolder(currentFolderId);
 }
 
 function handleFolderFormSubmit(e) {
@@ -671,11 +874,19 @@ function handleFolderFormSubmit(e) {
   const folderId = folderModalMode === 'create' ? folderDraftId : folderEditingId;
 
   if (folderModalMode === 'create') {
-    folders.push({
+    const hadSubfolders = folderParentId ? getSubfolders(folderParentId).length > 0 : false;
+    const newFolder = {
       id: folderId,
       name,
       createdAt: new Date().toISOString(),
-    });
+    };
+    if (folderParentId) newFolder.parentId = folderParentId;
+    folders.push(newFolder);
+    if (folderParentId && !hadSubfolders) {
+      papers.forEach(p => {
+        if (p.folderId === folderParentId) p.folderId = folderId;
+      });
+    }
     lastCreatedFolderId = folderId;
   } else if (folderEditingId) {
     const folder = getFolderById(folderEditingId);
@@ -684,7 +895,25 @@ function handleFolderFormSubmit(e) {
 
   markDirty();
   document.getElementById('folder-modal').close();
-  closeFolderView();
+
+  if (folderModalMode === 'create' && folderParentId) {
+    currentFolderId = folderParentId;
+    currentSubcategoryId = null;
+    updatePapersPanelVisibility();
+    renderSubcategories();
+  } else if (folderModalMode === 'rename') {
+    const folder = getFolderById(folderEditingId);
+    if (folder?.parentId) {
+      if (currentSubcategoryId === folder.id) renderCurrentFolderTitle();
+      renderSubcategories();
+      if (currentSubcategoryId) renderList();
+    } else if (currentFolderId === folder?.id) {
+      renderCurrentFolderTitle();
+    }
+  } else {
+    closeFolderView();
+  }
+
   renderFolders();
   updateFolderSelect();
 }
@@ -698,16 +927,22 @@ function deleteFolder(id) {
   if (!isAdmin) return;
   const folder = getFolderById(id);
   if (!folder) return;
-  if (!confirm(`确定删除分类「${folder.name}」？其中的论文将变为未分类。`)) return;
+  const subtreeIds = getFolderSubtreeIds(id);
+  const label = folder.parentId ? '子分类' : '分类';
+  if (!confirm(`确定删除${label}「${folder.name}」？其中的论文将变为未分类。`)) return;
 
   papers.forEach(p => {
-    if (p.folderId === id) p.folderId = null;
+    if (subtreeIds.includes(p.folderId)) p.folderId = null;
   });
-  folders = folders.filter(f => f.id !== id);
-  if (currentFolderId === id) closeFolderView();
+  folders = folders.filter(f => !subtreeIds.includes(f.id));
+  if (subtreeIds.includes(currentSubcategoryId)) currentSubcategoryId = null;
+  if (subtreeIds.includes(currentFolderId)) closeFolderView();
   markDirty();
   renderFolders();
-  if (currentFolderId != null) renderList();
+  if (currentFolderId != null) {
+    if (isShowingSubcategoryList()) renderSubcategories();
+    else renderList();
+  }
   updateFolderSelect();
 }
 
@@ -715,8 +950,22 @@ function updateFolderSelect() {
   const select = document.getElementById('paper-folder');
   if (!select) return;
   const current = select.value;
-  select.innerHTML = '<option value="">未分类</option>' +
-    folders.map(f => `<option value="${escapeHtml(f.id)}">${escapeHtml(f.name)}</option>`).join('');
+  const options = ['<option value="">未分类</option>'];
+
+  getTopLevelFolders().forEach(folder => {
+    const subfolders = getSubfolders(folder.id);
+    if (subfolders.length === 0) {
+      options.push(`<option value="${escapeHtml(folder.id)}">${escapeHtml(folder.name)}</option>`);
+      return;
+    }
+    options.push(`<optgroup label="${escapeHtml(folder.name)}">`);
+    subfolders.forEach(sub => {
+      options.push(`<option value="${escapeHtml(sub.id)}">${escapeHtml(sub.name)}</option>`);
+    });
+    options.push('</optgroup>');
+  });
+
+  select.innerHTML = options.join('');
   if ([...select.options].some(o => o.value === current)) {
     select.value = current;
   }
@@ -730,7 +979,10 @@ function getFilteredPapers() {
   return papers.filter(p => {
     if (currentFolderId === UNCategorized_ID) {
       if (!isUncategorizedPaper(p)) return false;
-    } else if (currentFolderId && p.folderId !== currentFolderId) return false;
+    } else {
+      const activeFolderId = getActivePaperFolderId();
+      if (activeFolderId && p.folderId !== activeFolderId) return false;
+    }
     if (status && p.status !== status) return false;
     if (tag && !(p.tags || []).includes(tag)) return false;
     if (search) {
@@ -751,11 +1003,13 @@ function getFolderPapers() {
   if (currentFolderId === UNCategorized_ID) {
     return papers.filter(isUncategorizedPaper);
   }
-  return papers.filter(p => p.folderId === currentFolderId);
+  const activeFolderId = getActivePaperFolderId();
+  if (!activeFolderId) return [];
+  return papers.filter(p => p.folderId === activeFolderId);
 }
 
 function renderList() {
-  if (currentFolderId == null) return;
+  if (!isShowingPaperList()) return;
 
   const list = document.getElementById('paper-list');
   const empty = document.getElementById('empty-state');
@@ -1543,7 +1797,16 @@ async function submitPaperForm() {
 
   markDirty();
   resetForm();
-  currentFolderId = data.folderId || currentFolderId;
+  if (data.folderId) {
+    const ctx = getPaperFolderContext(data.folderId);
+    if (ctx.parentId) {
+      currentFolderId = ctx.parentId;
+      currentSubcategoryId = ctx.subcategoryId;
+    } else {
+      currentFolderId = data.folderId;
+      currentSubcategoryId = null;
+    }
+  }
   switchView('list');
 }
 
@@ -1577,6 +1840,7 @@ function sanitizeFolderForStorage(folder) {
     name: folder.name,
     createdAt: folder.createdAt,
   };
+  if (folder.parentId) out.parentId = folder.parentId;
   if (folder.updatedAt) out.updatedAt = folder.updatedAt;
   return out;
 }
@@ -1922,7 +2186,10 @@ async function handleLogin(e) {
   renderFolders();
   updatePapersPanelVisibility();
   scheduleClearSearchAutofill();
-  if (currentFolderId != null) renderList();
+  if (currentFolderId != null) {
+    if (isShowingSubcategoryList()) renderSubcategories();
+    else renderList();
+  }
   renderStats();
 }
 
@@ -1942,7 +2209,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     createFolder();
   });
 
-  document.getElementById('btn-back-folders').addEventListener('click', closeFolderView);
+  document.getElementById('btn-new-subcategory')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    createSubcategory();
+  });
+
+  document.getElementById('btn-add-subcategory-from-list')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    createSubcategory();
+  });
+
+  document.getElementById('btn-back-folders').addEventListener('click', handleBackNavigation);
 
   document.getElementById('folder-form').addEventListener('submit', handleFolderFormSubmit);
 
@@ -2021,6 +2298,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       papers = [];
       folders = [];
       currentFolderId = null;
+      currentSubcategoryId = null;
       hasUnpublishedChanges = false;
       writeRemoteCache(PAPERS_REMOTE_CACHE_KEY, []);
       writeRemoteCache(FOLDERS_REMOTE_CACHE_KEY, []);
