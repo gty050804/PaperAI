@@ -16,20 +16,20 @@
   },
   {
     "id": "f7c8a901-2b3d-4e5f-a678-901234567890",
-    "name": "WAM",
-    "parentId": "606db46d-6c4d-4d3f-b495-fc313e7539e2",
-    "createdAt": "2026-09-10T08:00:00.000Z"
+    "name": "WAM——World Action Model",
+    "createdAt": "2026-09-10T08:00:00.000Z",
+    "parentId": "606db46d-6c4d-4d3f-b495-fc313e7539e2"
   },
   {
     "id": "f7c8a902-2b3d-4e5f-a678-901234567891",
-    "name": "VLA",
-    "parentId": "606db46d-6c4d-4d3f-b495-fc313e7539e2",
-    "createdAt": "2026-09-10T08:00:00.000Z"
+    "name": "VLA——Vision-Language-Action",
+    "createdAt": "2026-09-10T08:00:00.000Z",
+    "parentId": "606db46d-6c4d-4d3f-b495-fc313e7539e2"
   },
   {
     "id": "f7c8a903-2b3d-4e5f-a678-901234567892",
-    "name": "RL",
-    "parentId": "606db46d-6c4d-4d3f-b495-fc313e7539e2",
-    "createdAt": "2026-09-10T08:00:00.000Z"
+    "name": "RL——Reinforcement Learning",
+    "createdAt": "2026-09-10T08:00:00.000Z",
+    "parentId": "606db46d-6c4d-4d3f-b495-fc313e7539e2"
   }
 ]
