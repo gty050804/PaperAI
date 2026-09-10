@@ -28,10 +28,10 @@
       {
         "term": "DiT",
         "link": "",
-        "explanation": "DiT（Diffusion Transformer）是一种基于Transformer架构的扩散模型，用于生成高质量图像或视频。它结合了扩散模型的渐进式去噪过程和Transformer的强大序列建模能力，能够处理高维数据并生成细节丰富的输出。在视频生成任务中，DiT通过逐步预测和修正潜在表示来实现时间上连贯的视频预测。"
+        "explanation": "DiT（Diffusion Transformer）是一种去噪网络，是一种基于Transformer架构的扩散模型，用于生成高质量图像或视频。它结合了扩散模型的渐进式去噪过程和Transformer的强大序列建模能力，能够处理高维数据并生成细节丰富的输出。在视频生成任务中，DiT通过逐步预测和修正潜在表示来实现时间上连贯的视频预测。"
       }
     ],
-    "updatedAt": "2026-09-10T08:42:40.590Z",
+    "updatedAt": "2026-09-10T08:47:05.865Z",
     "illustrations": [
       {
         "id": "6b49c9df-4b4d-4a12-ba1b-4623d59fff9d",
