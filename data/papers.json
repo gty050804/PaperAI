@@ -12,7 +12,7 @@
     "status": "reading",
     "readDate": "",
     "tags": [],
-    "summary": "本文提出了τ 0 -WM，一个统一的视频-动作世界模型，将策略学习、视频预测和动作评估集成在一个未来预测框架中。该模型基于共享的视频扩散主干，通过多视角观测、语言指令和机器人状态联合预测未来视觉潜在表示和连续动作块，并在真实机器人操作任务中表现出优越性能。",
+    "summary": "本文提出了τ 0 -WM，一个统一的视频-动作世界模型，将策略学习、视频预测和动作评估集成在一个未来预测框架中。该模型基于共享的视频扩散主干，通过多视角观测、语言指令和机器人状态联合预测未来视觉潜在表示和连续动作块，并在真实机器人操作任务中表现出优越性能。\n省流：想出几个方案 → 预演后果 → 挑最好的未来 → 回头修正动作",
     "notes": "",
     "knowledgePoints": [
       {
@@ -31,12 +31,17 @@
         "explanation": "DiT（Diffusion Transformer）是一种去噪网络，是一种基于Transformer架构的扩散模型，用于生成高质量图像或视频。它结合了扩散模型的渐进式去噪过程和Transformer的强大序列建模能力，能够处理高维数据并生成细节丰富的输出。在视频生成任务中，DiT通过逐步预测和修正潜在表示来实现时间上连贯的视频预测。"
       }
     ],
-    "updatedAt": "2026-09-10T08:47:05.865Z",
+    "updatedAt": "2026-09-10T08:59:14.102Z",
     "illustrations": [
       {
         "id": "6b49c9df-4b4d-4a12-ba1b-4623d59fff9d",
-        "title": "",
+        "title": "Pipeline",
         "imagePath": "data/illustrations/5722d710-3e61-4f89-97a0-1c21abfdf755/6b49c9df-4b4d-4a12-ba1b-4623d59fff9d.png"
+      },
+      {
+        "id": "a2483e0f-f6de-49e4-b79b-1a7e77ed2309",
+        "title": "Architecture",
+        "imagePath": "data/illustrations/5722d710-3e61-4f89-97a0-1c21abfdf755/a2483e0f-f6de-49e4-b79b-1a7e77ed2309.png"
       }
     ],
     "createdAt": "2026-09-06T11:13:46.833Z"
