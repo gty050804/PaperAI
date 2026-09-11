@@ -517,6 +517,17 @@ function getFolderById(id) {
   return folders.find(f => f.id === id);
 }
 
+function getFolderPathLabel(folderId) {
+  if (!folderId) return '';
+  const folder = getFolderById(folderId);
+  if (!folder) return '';
+  if (folder.parentId) {
+    const parent = getFolderById(folder.parentId);
+    return parent?.name ? `${parent.name} / ${folder.name}` : folder.name;
+  }
+  return folder.name;
+}
+
 function getTopLevelFolders() {
   return folders.filter(f => !f.parentId);
 }
@@ -1152,6 +1163,40 @@ function renderNoteBlock(title, content, isHtml = false) {
 }
 
 let currentReaderPdfUrl = null;
+
+async function exportReaderLongImage() {
+  if (!requireAdmin()) return;
+  const paper = papers.find(p => p.id === currentReaderId);
+  if (!paper) return;
+
+  const btn = document.getElementById('reader-export-image');
+  const originalText = btn?.textContent || '导出长图';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '生成中…';
+  }
+
+  try {
+    await window.PaperAIExport.exportPaperLongImage(paper, {
+      escapeHtml,
+      getDisplayTitle,
+      formatMetaPlain,
+      renderNoteBlock,
+      renderKnowledgePointsHtml,
+      STATUS_LABELS,
+      getFolderPathLabel,
+      resolvePdfUrl,
+      resolveIllustrationUrl,
+    });
+  } catch (err) {
+    alert(`导出失败：${err.message || err}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+}
 
 async function downloadPdf(paper, pdfUrl) {
   if (!paper || !pdfUrl) return;
@@ -2243,6 +2288,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('reader-edit').addEventListener('click', () => {
     if (currentReaderId) editPaper(currentReaderId);
   });
+
+  document.getElementById('reader-export-image')?.addEventListener('click', exportReaderLongImage);
 
   document.getElementById('reader-delete').addEventListener('click', () => {
     if (currentReaderId) deletePaper(currentReaderId);

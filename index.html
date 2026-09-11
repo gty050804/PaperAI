@@ -15,7 +15,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=37">
+  <link rel="stylesheet" href="css/style.css?v=38">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -216,6 +216,7 @@
       <div class="reader-header">
         <button class="btn btn-ghost" id="btn-back-list">← 返回列表</button>
         <div class="reader-header-actions admin-only hidden">
+          <button class="btn btn-secondary" id="reader-export-image">导出长图</button>
           <button class="btn btn-secondary" id="reader-edit">编辑</button>
           <button class="btn btn-danger" id="reader-delete">删除</button>
         </div>
@@ -367,10 +368,12 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="js/config.js?v=25"></script>
   <script src="js/pdf-store.js?v=14"></script>
   <script src="js/illustration-store.js?v=25"></script>
   <script src="js/ai.js?v=14"></script>
-  <script src="js/app.js?v=37"></script>
+  <script src="js/export-image.js?v=1"></script>
+  <script src="js/app.js?v=38"></script>
 </body>
 </html>
