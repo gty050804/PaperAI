@@ -13,10 +13,26 @@
     "readDate": "2026-09-11",
     "tags": [],
     "summary": "VerseCrafter提出了一种基于4D几何控制的视频世界模型，通过静态背景点云和每对象3D高斯轨迹的统一表示，实现了对相机和多对象运动的精确控制。该方法能够生成高保真、视角一致的动态视频，并通过构建VerseControl4D数据集支持大规模训练。",
-    "notes": "",
+    "notes": "省流：把4D几何状态渲染成控制图，Background RGB & Depth负责表征相机轨迹，3D  Gaussian Trajectory & Depth负责表征物体形态，位置和朝向（椭球表征，N_par=6）。随后用一个轻量 GeoAdapter 注入冻结的 Wan2.1，生成遵循指定相机与物体运动的视频。",
     "knowledgePoints": [],
-    "updatedAt": "2026-09-10T09:51:08.615Z",
-    "illustrations": [],
+    "updatedAt": "2026-09-11T08:26:46.575Z",
+    "illustrations": [
+      {
+        "id": "6170c584-57f0-4b20-956e-e23c46b98b54",
+        "title": "Dataset",
+        "imagePath": "data/illustrations/bb07ff3b-5432-4151-bd4d-54cd2ac3934e/6170c584-57f0-4b20-956e-e23c46b98b54.png"
+      },
+      {
+        "id": "65ea8e55-c432-435f-a497-62575c05fabd",
+        "title": "Detailed Architecture of VerseCrafter",
+        "imagePath": "data/illustrations/bb07ff3b-5432-4151-bd4d-54cd2ac3934e/65ea8e55-c432-435f-a497-62575c05fabd.png"
+      },
+      {
+        "id": "29c6e2cc-ca24-4057-8e1b-3cdfdd3542b3",
+        "title": "Framework",
+        "imagePath": "data/illustrations/bb07ff3b-5432-4151-bd4d-54cd2ac3934e/29c6e2cc-ca24-4057-8e1b-3cdfdd3542b3.png"
+      }
+    ],
     "createdAt": "2026-09-10T09:51:08.615Z"
   },
   {
@@ -110,11 +126,11 @@
         "explanation": "SH Encoding（球谐编码）是一种用于表示和近似复杂函数（如光照或反射率）的数学方法。它通过将函数投影到一组正交的球谐基函数上，实现数据的低维表示。在计算机图形学中，SH Encoding常用于环境光照和漫反射的近似计算，能够高效地捕捉光照的方向性特征。其优势在于计算效率高且对旋转操作友好，适用于实时渲染和全局光照模拟。"
       }
     ],
-    "updatedAt": "2026-09-06T10:30:03.274Z",
+    "updatedAt": "2026-09-11T08:16:40.049Z",
     "illustrations": [
       {
         "id": "3d0f1d30-a016-4c3d-a6f8-4886e1b4f6e3",
-        "title": "",
+        "title": "Architecture of VidCRAFT3",
         "imagePath": "data/illustrations/0eaad17d-41c1-4eff-b9fd-cb4256c78957/3d0f1d30-a016-4c3d-a6f8-4886e1b4f6e3.png"
       }
     ],
@@ -156,12 +172,12 @@
         "explanation": "VACE（Video Appearance and Content Editing）模型是一种用于视频编辑的深度学习模型，专注于视频外观和内容的修改。它通过结合生成对抗网络（GAN）和扩散模型等技术，实现对视频中特定对象或场景的编辑，如风格转换、对象替换等。VACE模型通常需要大量视频数据进行训练，以学习视频帧间的时空一致性，确保编辑后的视频在时间维度上保持连贯性。"
       }
     ],
-    "updatedAt": "2026-09-06T10:31:49.573Z",
+    "updatedAt": "2026-09-11T08:17:12.848Z",
     "createdAt": "2026-09-01T09:02:48.307Z",
     "illustrations": [
       {
         "id": "6a09d81d-76f4-4374-bba7-df1f3af3afd8",
-        "title": "",
+        "title": "Training Paradigm",
         "imagePath": "data/illustrations/5daaec00-8089-424c-a7a2-b97df886466a/6a09d81d-76f4-4374-bba7-df1f3af3afd8.png"
       }
     ]
