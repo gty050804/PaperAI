@@ -1,5 +1,25 @@
 [
   {
+    "id": "12f55852-ea4d-4a0d-9399-84c5ad5d580c",
+    "title": "TriVLA: A Triple-System-Based Unified Vision-Language-Action Model with Episodic World Modeling for General Robot Control",
+    "authors": "Zhenyang Liu, Yongchong Gu, Sixiao Zheng, Yanwei Fu, Xiangyang Xue, Yu-Gang Jiang",
+    "year": 2025,
+    "venue": "ACMMM",
+    "url": "https://arxiv.org/abs/2507.01424",
+    "pdfUrl": "https://arxiv.org/pdf/2507.01424.pdf",
+    "sourceCodeUrl": "zhenyangliu.github.io/TriVLA",
+    "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
+    "status": "reading",
+    "readDate": "2026-09-12",
+    "tags": [],
+    "summary": "该论文提出了一种基于三重系统架构的统一视觉-语言-动作模型TriVLA，通过引入受认知神经科学启发的情景世界模型，使机器人能够积累、回忆和预测序列化经验。实验表明，TriVLA在标准基准测试和真实世界操作任务中均优于基线模型，展示了其在长时程规划和开放式意图理解方面的优势。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-12T09:08:38.023Z",
+    "illustrations": [],
+    "createdAt": "2026-09-12T09:08:16.404Z"
+  },
+  {
     "id": "99dca698-26b9-4d9f-9222-2d77fa1b25bf",
     "title": "EgoSound: Benchmarking Sound Understanding in Egocentric Videos",
     "authors": "Bingwen Zhu, Yuqian Fu, Qiaole Dong, Guolei Sun, Tianwen Qian, Yuzheng Wu, Danda Pani Paudel, Xiangyang Xue, Yanwei Fu",
