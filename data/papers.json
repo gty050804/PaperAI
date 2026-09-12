@@ -1,5 +1,25 @@
 [
   {
+    "id": "84326036-d8cc-4a93-9552-991173213c5b",
+    "title": "EgoSound: Benchmarking Sound Understanding in Egocentric Videos",
+    "authors": "Bingwen Zhu, Yuqian Fu, Qiaole Dong, Guolei Sun, Tianwen Qian, Yuzheng Wu, Danda Pani Paudel, Xiangyang Xue, Yanwei Fu",
+    "year": 2026,
+    "venue": "CVPR",
+    "url": "https://arxiv.org/abs/2602.14122v2",
+    "pdfUrl": "https://arxiv.org/pdf/2602.14122v2.pdf",
+    "sourceCodeUrl": "https://groolegend.github.io/EgoSound/",
+    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "status": "reading",
+    "readDate": "2026-09-12",
+    "tags": [],
+    "summary": "EgoSound是首个系统评估多模态大语言模型(MLLMs)在自我中心视角下声音理解能力的基准，整合了Ego4D和EgoBlind数据集，包含900个视频和7315个QA对，涵盖七类声音相关任务。该研究揭示了当前模型在细粒度空间和因果推理方面的局限性，为推进多感官自我中心智能建立了挑战性基准。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-12T06:54:32.858Z",
+    "illustrations": [],
+    "createdAt": "2026-09-12T06:54:32.858Z"
+  },
+  {
     "id": "bb07ff3b-5432-4151-bd4d-54cd2ac3934e",
     "title": "VerseCrafter: Dynamic Realistic Video World Model with 4D Geometric Control",
     "authors": "Sixiao Zheng, Minghao Yin, Wenbo Hu, Xiaoyu Li, Ying Shan, Yanwei Fu",
@@ -9,13 +29,17 @@
     "pdfUrl": "https://arxiv.org/pdf/2601.05138v2.pdf",
     "sourceCodeUrl": "",
     "folderId": "2c657fec-269c-4686-9926-71cecd167750",
-    "status": "to-read",
+    "status": "finished",
     "readDate": "2026-09-11",
-    "tags": [],
+    "tags": [
+      "dataset",
+      "world model",
+      "4D motion control"
+    ],
     "summary": "VerseCrafter提出了一种基于4D几何控制的视频世界模型，通过静态背景点云和每对象3D高斯轨迹的统一表示，实现了对相机和多对象运动的精确控制。该方法能够生成高保真、视角一致的动态视频，并通过构建VerseControl4D数据集支持大规模训练。",
     "notes": "省流：把4D几何状态渲染成控制图，Background RGB & Depth负责表征相机轨迹，3D  Gaussian Trajectory & Depth负责表征物体形态，位置和朝向（椭球表征，N_par=6）。随后用一个轻量 GeoAdapter 注入冻结的 Wan2.1，生成遵循指定相机与物体运动的视频。",
     "knowledgePoints": [],
-    "updatedAt": "2026-09-11T08:26:46.575Z",
+    "updatedAt": "2026-09-12T08:09:36.242Z",
     "illustrations": [
       {
         "id": "6170c584-57f0-4b20-956e-e23c46b98b54",
@@ -34,6 +58,96 @@
       }
     ],
     "createdAt": "2026-09-10T09:51:08.615Z"
+  },
+  {
+    "id": "5daaec00-8089-424c-a7a2-b97df886466a",
+    "title": "FFP-300K: Scaling First-Frame Propagation for Generalizable Video Editing",
+    "authors": "Xijie Huang, Chengming Xu, Donghao Luo, Xiaobin Hu, Peng Tang, Xu Peng, Jiangning Zhang, Chengjie Wang, Yanwei Fu",
+    "year": 2026,
+    "venue": "CVPR",
+    "url": "https://arxiv.org/abs/2601.01720v3",
+    "pdfUrl": "https://arxiv.org/pdf/2601.01720v3.pdf",
+    "sourceCodeUrl": "ffp-300k.github.io",
+    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "status": "finished",
+    "readDate": "2026-08-31",
+    "tags": [
+      "dataset",
+      "AST-RoPE",
+      "self-distillation"
+    ],
+    "summary": "该论文提出了FFP-300K数据集，包含30万对720p分辨率、81帧长度的视频对，用于训练视频编辑模型。作者还提出了自适应时空RoPE（AST-RoPE）架构和自蒸馏策略，实现了无需运行时指导的高质量视频编辑，在EditVerseBench基准测试中显著优于现有方法。",
+    "notes": "",
+    "knowledgePoints": [
+      {
+        "term": "RoPE",
+        "link": "https://blog.csdn.net/v_july_v/article/details/134085503?ops_request_misc=elastic_search_misc&request_id=18b86e60525f0ca0cfa7986cc10700fe&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-2-134085503-null-null.142^v102^pc_search_result_base3&utm_term=RoPE&spm=1018.2226.3001.4187",
+        "explanation": "RoPE（Rotary Position Embedding）是一种位置编码方法，通过旋转矩阵将位置信息融入注意力机制中。相比传统的位置编码，RoPE能更好地处理长序列，并保持相对位置关系的对称性。在自注意力机制中，RoPE通过旋转查询和键向量来引入位置信息，从而提升模型对序列顺序的建模能力。"
+      },
+      {
+        "term": "LoRA微调",
+        "link": "https://blog.csdn.net/qq_45752541/article/details/140616087?ops_request_misc=elastic_search_misc&request_id=fdb9e3b807b258d1f33aa519062193d9&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-2-140616087-null-null.142^v102^pc_search_result_base3&utm_term=LoRA%E5%BE%AE%E8%B0%83&spm=1018.2226.3001.4187",
+        "explanation": "LoRA（Low-Rank Adaptation）是一种高效的微调方法，通过引入低秩矩阵来调整预训练模型的权重，而非直接微调所有参数。这种方法显著减少了计算和存储开销，同时保持了模型性能。LoRA特别适用于大规模预训练模型（如GPT、BERT）的适配任务，允许在有限资源下快速适应新任务。"
+      },
+      {
+        "term": "VACE模型",
+        "link": "https://blog.csdn.net/gitblog_00872/article/details/155870658?ops_request_misc=elastic_search_misc&request_id=5683ca1839069dc28f82de05edcca87a&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-2-155870658-null-null.142^v102^pc_search_result_base3&utm_term=VACE&spm=1018.2226.3001.4187",
+        "explanation": "VACE（Video Appearance and Content Editing）模型是一种用于视频编辑的深度学习模型，专注于视频外观和内容的修改。它通过结合生成对抗网络（GAN）和扩散模型等技术，实现对视频中特定对象或场景的编辑，如风格转换、对象替换等。VACE模型通常需要大量视频数据进行训练，以学习视频帧间的时空一致性，确保编辑后的视频在时间维度上保持连贯性。"
+      }
+    ],
+    "updatedAt": "2026-09-11T08:17:12.848Z",
+    "createdAt": "2026-09-01T09:02:48.307Z",
+    "illustrations": [
+      {
+        "id": "6a09d81d-76f4-4374-bba7-df1f3af3afd8",
+        "title": "Training Paradigm",
+        "imagePath": "data/illustrations/5daaec00-8089-424c-a7a2-b97df886466a/6a09d81d-76f4-4374-bba7-df1f3af3afd8.png"
+      }
+    ]
+  },
+  {
+    "id": "0eaad17d-41c1-4eff-b9fd-cb4256c78957",
+    "title": "VidCRAFT3: Camera, Object, and Lighting Control for Image-to-Video Generation",
+    "authors": "Sixiao Zheng, Zimian Peng, Yanpeng Zhou, Yi Zhu, Hang Xu, Xiangru Huang, Yanwei Fu",
+    "year": 2026,
+    "venue": "TVCG",
+    "url": "https://doi.org/10.1109/TVCG.2026.3688720",
+    "pdfUrl": null,
+    "sourceCodeUrl": "https://sixiaozheng.github.io/VidCRAFT3/",
+    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "status": "finished",
+    "readDate": "2026-09-06",
+    "tags": [
+      "dataset",
+      "diffusion models",
+      "image-to-video generation",
+      "camera control",
+      "motion control",
+      "lighting control"
+    ],
+    "summary": "VidCRAFT3提出了一种统一的图像到视频生成框架，能够同时控制相机运动、物体运动和光照方向。该框架通过显式建模几何、运动和光照之间的交叉因素交互，解决了现有方法独立处理这些因素导致的视觉不一致问题。此外，作者还构建了带有精确光照方向标注的VLD数据集，并提出三阶段渐进训练策略以解决联合标注数据稀缺的问题。",
+    "notes": "",
+    "knowledgePoints": [
+      {
+        "term": "VAE encoder",
+        "link": "",
+        "explanation": "VAE编码器是变分自编码器（Variational Autoencoder）中的组成部分，负责将输入数据映射到潜在空间。它通过学习数据的概率分布，将高维输入压缩为低维潜在表示，通常输出潜在变量的均值和方差。与普通自编码器不同，VAE编码器生成的是概率分布而非固定值，这使得解码时能通过采样生成多样化的输出。"
+      },
+      {
+        "term": "SH Encoding",
+        "link": "",
+        "explanation": "SH Encoding（球谐编码）是一种用于表示和近似复杂函数（如光照或反射率）的数学方法。它通过将函数投影到一组正交的球谐基函数上，实现数据的低维表示。在计算机图形学中，SH Encoding常用于环境光照和漫反射的近似计算，能够高效地捕捉光照的方向性特征。其优势在于计算效率高且对旋转操作友好，适用于实时渲染和全局光照模拟。"
+      }
+    ],
+    "updatedAt": "2026-09-11T08:16:40.049Z",
+    "illustrations": [
+      {
+        "id": "3d0f1d30-a016-4c3d-a6f8-4886e1b4f6e3",
+        "title": "Architecture of VidCRAFT3",
+        "imagePath": "data/illustrations/0eaad17d-41c1-4eff-b9fd-cb4256c78957/3d0f1d30-a016-4c3d-a6f8-4886e1b4f6e3.png"
+      }
+    ],
+    "createdAt": "2026-09-06T08:30:20.923Z"
   },
   {
     "id": "5722d710-3e61-4f89-97a0-1c21abfdf755",
@@ -91,95 +205,5 @@
       }
     ],
     "createdAt": "2026-09-06T11:13:46.833Z"
-  },
-  {
-    "id": "0eaad17d-41c1-4eff-b9fd-cb4256c78957",
-    "title": "VidCRAFT3: Camera, Object, and Lighting Control for Image-to-Video Generation",
-    "authors": "Sixiao Zheng, Zimian Peng, Yanpeng Zhou, Yi Zhu, Hang Xu, Xiangru Huang, Yanwei Fu",
-    "year": 2026,
-    "venue": "TVCG",
-    "url": "https://doi.org/10.1109/TVCG.2026.3688720",
-    "pdfUrl": null,
-    "sourceCodeUrl": "https://sixiaozheng.github.io/VidCRAFT3/",
-    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
-    "status": "finished",
-    "readDate": "2026-09-06",
-    "tags": [
-      "dataset",
-      "diffusion models",
-      "image-to-video generation",
-      "camera control",
-      "motion control",
-      "lighting control"
-    ],
-    "summary": "VidCRAFT3提出了一种统一的图像到视频生成框架，能够同时控制相机运动、物体运动和光照方向。该框架通过显式建模几何、运动和光照之间的交叉因素交互，解决了现有方法独立处理这些因素导致的视觉不一致问题。此外，作者还构建了带有精确光照方向标注的VLD数据集，并提出三阶段渐进训练策略以解决联合标注数据稀缺的问题。",
-    "notes": "",
-    "knowledgePoints": [
-      {
-        "term": "VAE encoder",
-        "link": "",
-        "explanation": "VAE编码器是变分自编码器（Variational Autoencoder）中的组成部分，负责将输入数据映射到潜在空间。它通过学习数据的概率分布，将高维输入压缩为低维潜在表示，通常输出潜在变量的均值和方差。与普通自编码器不同，VAE编码器生成的是概率分布而非固定值，这使得解码时能通过采样生成多样化的输出。"
-      },
-      {
-        "term": "SH Encoding",
-        "link": "",
-        "explanation": "SH Encoding（球谐编码）是一种用于表示和近似复杂函数（如光照或反射率）的数学方法。它通过将函数投影到一组正交的球谐基函数上，实现数据的低维表示。在计算机图形学中，SH Encoding常用于环境光照和漫反射的近似计算，能够高效地捕捉光照的方向性特征。其优势在于计算效率高且对旋转操作友好，适用于实时渲染和全局光照模拟。"
-      }
-    ],
-    "updatedAt": "2026-09-11T08:16:40.049Z",
-    "illustrations": [
-      {
-        "id": "3d0f1d30-a016-4c3d-a6f8-4886e1b4f6e3",
-        "title": "Architecture of VidCRAFT3",
-        "imagePath": "data/illustrations/0eaad17d-41c1-4eff-b9fd-cb4256c78957/3d0f1d30-a016-4c3d-a6f8-4886e1b4f6e3.png"
-      }
-    ],
-    "createdAt": "2026-09-06T08:30:20.923Z"
-  },
-  {
-    "id": "5daaec00-8089-424c-a7a2-b97df886466a",
-    "title": "FFP-300K: Scaling First-Frame Propagation for Generalizable Video Editing",
-    "authors": "Xijie Huang, Chengming Xu, Donghao Luo, Xiaobin Hu, Peng Tang, Xu Peng, Jiangning Zhang, Chengjie Wang, Yanwei Fu",
-    "year": 2026,
-    "venue": "CVPR",
-    "url": "https://arxiv.org/abs/2601.01720v3",
-    "pdfUrl": "https://arxiv.org/pdf/2601.01720v3.pdf",
-    "sourceCodeUrl": "ffp-300k.github.io",
-    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
-    "status": "finished",
-    "readDate": "2026-08-31",
-    "tags": [
-      "dataset",
-      "AST-RoPE",
-      "self-distillation"
-    ],
-    "summary": "该论文提出了FFP-300K数据集，包含30万对720p分辨率、81帧长度的视频对，用于训练视频编辑模型。作者还提出了自适应时空RoPE（AST-RoPE）架构和自蒸馏策略，实现了无需运行时指导的高质量视频编辑，在EditVerseBench基准测试中显著优于现有方法。",
-    "notes": "",
-    "knowledgePoints": [
-      {
-        "term": "RoPE",
-        "link": "https://blog.csdn.net/v_july_v/article/details/134085503?ops_request_misc=elastic_search_misc&request_id=18b86e60525f0ca0cfa7986cc10700fe&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-2-134085503-null-null.142^v102^pc_search_result_base3&utm_term=RoPE&spm=1018.2226.3001.4187",
-        "explanation": "RoPE（Rotary Position Embedding）是一种位置编码方法，通过旋转矩阵将位置信息融入注意力机制中。相比传统的位置编码，RoPE能更好地处理长序列，并保持相对位置关系的对称性。在自注意力机制中，RoPE通过旋转查询和键向量来引入位置信息，从而提升模型对序列顺序的建模能力。"
-      },
-      {
-        "term": "LoRA微调",
-        "link": "https://blog.csdn.net/qq_45752541/article/details/140616087?ops_request_misc=elastic_search_misc&request_id=fdb9e3b807b258d1f33aa519062193d9&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-2-140616087-null-null.142^v102^pc_search_result_base3&utm_term=LoRA%E5%BE%AE%E8%B0%83&spm=1018.2226.3001.4187",
-        "explanation": "LoRA（Low-Rank Adaptation）是一种高效的微调方法，通过引入低秩矩阵来调整预训练模型的权重，而非直接微调所有参数。这种方法显著减少了计算和存储开销，同时保持了模型性能。LoRA特别适用于大规模预训练模型（如GPT、BERT）的适配任务，允许在有限资源下快速适应新任务。"
-      },
-      {
-        "term": "VACE模型",
-        "link": "https://blog.csdn.net/gitblog_00872/article/details/155870658?ops_request_misc=elastic_search_misc&request_id=5683ca1839069dc28f82de05edcca87a&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-2-155870658-null-null.142^v102^pc_search_result_base3&utm_term=VACE&spm=1018.2226.3001.4187",
-        "explanation": "VACE（Video Appearance and Content Editing）模型是一种用于视频编辑的深度学习模型，专注于视频外观和内容的修改。它通过结合生成对抗网络（GAN）和扩散模型等技术，实现对视频中特定对象或场景的编辑，如风格转换、对象替换等。VACE模型通常需要大量视频数据进行训练，以学习视频帧间的时空一致性，确保编辑后的视频在时间维度上保持连贯性。"
-      }
-    ],
-    "updatedAt": "2026-09-11T08:17:12.848Z",
-    "createdAt": "2026-09-01T09:02:48.307Z",
-    "illustrations": [
-      {
-        "id": "6a09d81d-76f4-4374-bba7-df1f3af3afd8",
-        "title": "Training Paradigm",
-        "imagePath": "data/illustrations/5daaec00-8089-424c-a7a2-b97df886466a/6a09d81d-76f4-4374-bba7-df1f3af3afd8.png"
-      }
-    ]
   }
 ]
