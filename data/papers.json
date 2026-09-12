@@ -1,6 +1,6 @@
 [
   {
-    "id": "84326036-d8cc-4a93-9552-991173213c5b",
+    "id": "99dca698-26b9-4d9f-9222-2d77fa1b25bf",
     "title": "EgoSound: Benchmarking Sound Understanding in Egocentric Videos",
     "authors": "Bingwen Zhu, Yuqian Fu, Qiaole Dong, Guolei Sun, Tianwen Qian, Yuzheng Wu, Danda Pani Paudel, Xiangyang Xue, Yanwei Fu",
     "year": 2026,
@@ -8,16 +8,32 @@
     "url": "https://arxiv.org/abs/2602.14122v2",
     "pdfUrl": "https://arxiv.org/pdf/2602.14122v2.pdf",
     "sourceCodeUrl": "https://groolegend.github.io/EgoSound/",
-    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
-    "status": "reading",
+    "folderId": "846b3a50-9610-4086-bacb-22d371e0954f",
+    "status": "finished",
     "readDate": "2026-09-12",
-    "tags": [],
-    "summary": "EgoSound是首个系统评估多模态大语言模型(MLLMs)在自我中心视角下声音理解能力的基准，整合了Ego4D和EgoBlind数据集，包含900个视频和7315个QA对，涵盖七类声音相关任务。该研究揭示了当前模型在细粒度空间和因果推理方面的局限性，为推进多感官自我中心智能建立了挑战性基准。",
-    "notes": "",
+    "tags": [
+      "dataset",
+      "benchmark",
+      "sound",
+      "MLLM"
+    ],
+    "summary": "EgoSound是首个系统评估多模态大语言模型(MLLMs)在自我中心视角下声音理解能力的基准数据集。它整合了Ego4D和EgoBlind两个数据集，包含900个视频和7315个高质量问答对，涵盖声音特性、空间定位、因果推理等七类任务。实验表明当前MLLMs在细粒度听觉推理上仍有局限，该基准为推进多感官自我中心智能建立了挑战性标准。",
+    "notes": "省流：无新架构，加了sound含7类Q&A的新benchmark。",
     "knowledgePoints": [],
-    "updatedAt": "2026-09-12T06:54:32.858Z",
-    "illustrations": [],
-    "createdAt": "2026-09-12T06:54:32.858Z"
+    "updatedAt": "2026-09-12T08:17:53.980Z",
+    "illustrations": [
+      {
+        "id": "9eaaf531-a264-48e5-b963-c9dec6f9460d",
+        "title": "Pipeline",
+        "imagePath": "data/illustrations/99dca698-26b9-4d9f-9222-2d77fa1b25bf/9eaaf531-a264-48e5-b963-c9dec6f9460d.png"
+      },
+      {
+        "id": "2d7a4731-3d38-4d95-9c39-ce7161b964aa",
+        "title": "Task Taxonomy & Statistics",
+        "imagePath": "data/illustrations/99dca698-26b9-4d9f-9222-2d77fa1b25bf/2d7a4731-3d38-4d95-9c39-ce7161b964aa.png"
+      }
+    ],
+    "createdAt": "2026-09-12T08:15:53.739Z"
   },
   {
     "id": "bb07ff3b-5432-4151-bd4d-54cd2ac3934e",
