@@ -49,11 +49,31 @@ async function waitForImages(container) {
   }));
 }
 
+function formatExportHeaderMeta(paper) {
+  const authors = (paper.authors || '').trim();
+  const parts = [];
+  if (paper.year) parts.push(String(paper.year));
+  if (paper.venue) parts.push(paper.venue);
+  if (paper.readDate) parts.push(`阅读于 ${paper.readDate}`);
+  return { authors, details: parts.join(' · ') };
+}
+
+function prepareExportTextLayout(sheet) {
+  sheet.querySelectorAll(
+    '.paper-export-title, .paper-export-authors, .paper-export-meta, .paper-export-section-title, .paper-export-prose .note-block p, .kp-explanation'
+  ).forEach(el => {
+    el.style.display = 'block';
+    el.style.overflow = 'visible';
+    const height = el.scrollHeight;
+    el.style.minHeight = `${height}px`;
+    el.style.height = `${height}px`;
+  });
+}
+
 function buildExportSheetHtml(paper, helpers, sections) {
   const {
     escapeHtml,
     getDisplayTitle,
-    formatMetaPlain,
     renderNoteBlock,
     renderKnowledgePointsHtml,
     STATUS_LABELS,
@@ -61,7 +81,7 @@ function buildExportSheetHtml(paper, helpers, sections) {
   } = helpers;
 
   const title = getDisplayTitle(paper);
-  const meta = formatMetaPlain(paper);
+  const { authors, details } = formatExportHeaderMeta(paper);
   const folderLabel = getFolderPathLabel(paper.folderId);
   const tagsHtml = (paper.tags || []).length
     ? `<div class="paper-export-tags">${paper.tags.map(t => `<span class="paper-export-tag">${escapeHtml(t)}</span>`).join('')}</div>`
@@ -91,8 +111,11 @@ function buildExportSheetHtml(paper, helpers, sections) {
     <div class="paper-export-sheet">
       <header class="paper-export-header">
         <div class="paper-export-brand">PaperAI · 论文阅读笔记</div>
-        <h1 class="paper-export-title">${escapeHtml(title)}</h1>
-        ${meta ? `<p class="paper-export-meta">${escapeHtml(meta)}</p>` : ''}
+        <div class="paper-export-title-block">
+          <div class="paper-export-title">${escapeHtml(title)}</div>
+        </div>
+        ${authors ? `<p class="paper-export-authors">${escapeHtml(authors)}</p>` : ''}
+        ${details ? `<p class="paper-export-meta">${escapeHtml(details)}</p>` : ''}
         <div class="paper-export-badges">
           <span class="paper-export-badge">${escapeHtml(STATUS_LABELS[paper.status] || paper.status || '')}</span>
           ${folderLabel ? `<span class="paper-export-badge paper-export-badge-muted">${escapeHtml(folderLabel)}</span>` : ''}
@@ -207,7 +230,12 @@ async function exportPaperLongImage(paper, helpers) {
     await document.fonts.ready;
     await waitForImages(container);
 
-    const canvas = await html2canvas(container.firstElementChild, {
+    const sheet = container.firstElementChild;
+    prepareExportTextLayout(sheet);
+    // Allow layout to settle after explicit heights are applied.
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    const canvas = await html2canvas(sheet, {
       backgroundColor: '#ffffff',
       scale: 2,
       useCORS: true,

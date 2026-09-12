@@ -1210,6 +1210,9 @@ html.immersive .panel-header {
 }
 
 .paper-export-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
   padding: 2rem 2rem 1.5rem;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -1219,28 +1222,51 @@ html.immersive .panel-header {
   font-weight: 600;
   color: #64748b;
   letter-spacing: 0.02em;
-  margin-bottom: 0.875rem;
+  margin: 0;
+}
+
+.paper-export-title-block {
+  display: block;
+  overflow: visible;
 }
 
 .paper-export-title {
+  display: block;
   font-size: 1.625rem;
   font-weight: 700;
-  line-height: 1.35;
-  margin: 0 0 0.625rem;
+  line-height: 1.55;
+  margin: 0;
+  padding: 0;
   color: #0f172a;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.paper-export-authors {
+  display: block;
+  font-size: 0.9375rem;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .paper-export-meta {
-  font-size: 0.9375rem;
-  color: #475569;
-  margin: 0 0 0.875rem;
+  display: block;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .paper-export-badges {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin: 0;
 }
 
 .paper-export-badge {
