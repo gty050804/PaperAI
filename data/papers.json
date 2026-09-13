@@ -8,12 +8,17 @@
     "url": "https://arxiv.org/abs/2507.01424",
     "pdfUrl": "https://arxiv.org/pdf/2507.01424.pdf",
     "sourceCodeUrl": "zhenyangliu.github.io/TriVLA",
-    "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
+    "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
     "status": "finished",
     "readDate": "2026-09-12",
-    "tags": [],
+    "tags": [
+      "VLA",
+      "world model",
+      "SVD",
+      "flow matching"
+    ],
     "summary": "该论文提出了一种基于三重系统架构的统一视觉-语言-动作模型TriVLA，通过引入受认知神经科学启发的情景世界模型，使机器人能够积累、回忆和预测序列化经验。实验表明，TriVLA在标准基准测试和真实世界操作任务中均优于基线模型，展示了其在长时程规划和开放式意图理解方面的优势。",
-    "notes": "",
+    "notes": "省流：一篇把VLA和World Model结合起来的工作，算是world-model-enhanced-VLA，把world model对未来的预测用cross-attention引入VLA。方法的话是引入了3个system，Episodic Multimodal Perception负责VL，Episodic Dynamics Perception负责Prediction，Low-level Policy Learning负责A。（也是缝合怪的感觉）",
     "knowledgePoints": [
       {
         "term": "Time Noise",
@@ -26,8 +31,19 @@
         "explanation": "SVD是一种基于扩散模型的视频生成技术，通过逐步去噪过程从随机噪声生成高质量视频序列。它扩展了图像扩散模型至时序域，利用时空注意力机制保持帧间一致性，通常采用潜在空间操作降低计算成本。关键创新包括运动动态建模和长期依赖捕捉，适用于可控视频合成任务。"
       }
     ],
-    "updatedAt": "2026-09-13T10:24:50.803Z",
-    "illustrations": [],
+    "updatedAt": "2026-09-13T12:30:27.795Z",
+    "illustrations": [
+      {
+        "id": "6d3fc162-0f02-472e-8eb8-270bfa2e81b5",
+        "title": "Comparison between dual-system architectures and our episodic world model-guided TriVLA",
+        "imagePath": "data/illustrations/12f55852-ea4d-4a0d-9399-84c5ad5d580c/6d3fc162-0f02-472e-8eb8-270bfa2e81b5.png"
+      },
+      {
+        "id": "a56f357c-765b-4b11-88aa-595172d2c15c",
+        "title": "Pipeline",
+        "imagePath": "data/illustrations/12f55852-ea4d-4a0d-9399-84c5ad5d580c/a56f357c-765b-4b11-88aa-595172d2c15c.png"
+      }
+    ],
     "createdAt": "2026-09-12T09:08:16.404Z"
   },
   {
