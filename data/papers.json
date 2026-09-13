@@ -1,5 +1,25 @@
 [
   {
+    "id": "828d188b-be36-45e8-92f5-5f018741cf7d",
+    "title": "OCRA: Object-Centric Learning with 3D and Tactile Priors for Human-to-Robot Action Transfer",
+    "authors": "Kuanning Wang, Ke Fan, Yuqian Fu, Siyu Lin, Hu Luo, Daniel Seita, Yanwei Fu, Yu-Gang Jiang, Xiangyang Xue",
+    "year": 2026,
+    "venue": "ICRA",
+    "url": "https://arxiv.org/abs/2603.14401",
+    "pdfUrl": "https://arxiv.org/pdf/2603.14401.pdf",
+    "sourceCodeUrl": "",
+    "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
+    "status": "reading",
+    "readDate": "2026-09-14",
+    "tags": [],
+    "summary": "本文提出了OCRA框架，通过结合多视角RGB视频、3D场景重建和触觉先验，实现了从人类演示视频到机器人动作的鲁棒迁移。该框架利用3D基础模型VGGT和触觉数据集提取丰富的物体中心表示，并通过ResFiLM模块进行多模态融合，最终通过扩散策略生成精确的操控动作。实验表明OCRA在视觉和视觉-触觉任务上均显著优于现有基线方法。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-13T13:52:08.180Z",
+    "illustrations": [],
+    "createdAt": "2026-09-13T13:52:08.180Z"
+  },
+  {
     "id": "12f55852-ea4d-4a0d-9399-84c5ad5d580c",
     "title": "TriVLA: A Triple-System-Based Unified Vision-Language-Action Model with Episodic World Modeling for General Robot Control",
     "authors": "Zhenyang Liu, Yongchong Gu, Sixiao Zheng, Yanwei Fu, Xiangyang Xue, Yu-Gang Jiang",
