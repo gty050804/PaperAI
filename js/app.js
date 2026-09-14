@@ -754,7 +754,7 @@ function renderFolders() {
   }
 
   if (items.length === 0) {
-    container.innerHTML = '<p class="folder-empty">暂无分类，站主可点击「新建分类」创建论文分类</p>';
+    container.innerHTML = '<p class="folder-empty">加载中</p>';
     return;
   }
 
