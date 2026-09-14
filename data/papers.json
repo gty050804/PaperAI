@@ -42,7 +42,7 @@
         "explanation": "FiLM（Feature-wise Linear Modulation） 是一种把外部条件信息注入神经网络中间层的方法，核心思想是：用条件信号生成缩放（scale）和平移（shift）参数（通常用MLP或者ConvNet这样的小网络生成），对网络中间特征做逐通道的仿射变换。"
       }
     ],
-    "updatedAt": "2026-09-14T07:06:16.793Z",
+    "updatedAt": "2026-09-14T07:14:02.143Z",
     "illustrations": [
       {
         "id": "c97ec03a-97ed-46e1-8f3b-5eb75da3c239",
