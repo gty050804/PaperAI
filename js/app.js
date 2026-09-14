@@ -1491,7 +1491,7 @@ function getKnowledgePointsFromForm() {
     .map(row => ({
       term: row.querySelector('.kp-row-term')?.value.trim() || '',
       link: row.querySelector('.kp-row-link')?.value.trim() || '',
-      explanation: (row.querySelector('.kp-row-explanation')?.value.trim() || '').slice(0, 200),
+      explanation: row.querySelector('.kp-row-explanation')?.value.trim() || '',
     }))
     .filter(kp => kp.term);
 }
@@ -1531,7 +1531,7 @@ async function explainKnowledgePointRows(rows) {
       const row = payload[index]?.row;
       if (!row) return;
       const area = row.querySelector('.kp-row-explanation');
-      if (area && item.explanation) area.value = item.explanation.slice(0, 200);
+      if (area && item.explanation) area.value = item.explanation;
     });
     setKpExplainStatus('解释已生成', 'success');
   } catch (err) {
