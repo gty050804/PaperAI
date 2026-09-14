@@ -96,6 +96,37 @@ function getIllustrationPendingKey(paperId, illustrationId) {
   return `${paperId}:${illustrationId}`;
 }
 
+function getRemoteIllustrationRecord(paperId, illustrationId) {
+  const remotePapers = readCachedJson(PAPERS_REMOTE_CACHE_KEY) || [];
+  const remotePaper = remotePapers.find(p => p.id === paperId);
+  return remotePaper?.illustrations?.find(item => item.id === illustrationId) || null;
+}
+
+async function shouldUploadIllustration(paperId, item) {
+  if (!item?.imagePath) return false;
+
+  const key = getIllustrationPendingKey(paperId, item.id);
+  if (pendingIllustrations.has(key)) return true;
+
+  const remoteItem = getRemoteIllustrationRecord(paperId, item.id);
+  if (remoteItem?.imagePath === item.imagePath) return false;
+
+  const blob = await window.IllustrationStore.getIllustrationFromStore(key);
+  return !!blob;
+}
+
+async function cleanupPublishedIllustrationStore() {
+  for (const paper of papers) {
+    for (const item of paper.illustrations || []) {
+      if (!item.imagePath) continue;
+      const key = getIllustrationPendingKey(paper.id, item.id);
+      pendingIllustrations.delete(key);
+      revokeIllustrationBlob(key);
+      await window.IllustrationStore.deleteIllustrationFromStore(key);
+    }
+  }
+}
+
 function getIllustrationExtension(file) {
   const name = file?.name || '';
   const match = name.match(/\.([a-z0-9]+)$/i);
@@ -2098,12 +2129,13 @@ async function publishToGithub() {
     let uploadedIllustrations = 0;
     for (const paper of papers) {
       for (const item of paper.illustrations || []) {
-        if (!item.imagePath) continue;
+        if (!await shouldUploadIllustration(paper.id, item)) continue;
+
         const key = getIllustrationPendingKey(paper.id, item.id);
-        const blob = pendingIllustrations.has(key)
-          ? pendingIllustrations.get(key)
-          : await window.IllustrationStore.getIllustrationFromStore(key);
+        const blob = pendingIllustrations.get(key)
+          ?? await window.IllustrationStore.getIllustrationFromStore(key);
         if (!blob) continue;
+
         const buffer = await blob.arrayBuffer();
         const base64 = arrayBufferToBase64(buffer);
         await uploadGithubFile(
@@ -2138,8 +2170,10 @@ async function publishToGithub() {
     }
 
     pendingPdfs.clear();
-    pendingIllustrations.clear();
+    await cleanupPublishedIllustrationStore();
     clearAllIllustrationBlobs();
+    writeRemoteCache(PAPERS_REMOTE_CACHE_KEY, papers);
+    writeRemoteCache(FOLDERS_REMOTE_CACHE_KEY, folders);
     clearLocalDraft();
     hasUnpublishedChanges = false;
 
