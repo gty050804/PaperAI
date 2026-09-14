@@ -9,11 +9,17 @@
     "pdfUrl": "https://arxiv.org/pdf/2603.14401.pdf",
     "sourceCodeUrl": "",
     "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
-    "status": "reading",
+    "status": "finished",
     "readDate": "2026-09-14",
-    "tags": [],
+    "tags": [
+      "VA",
+      "tactile",
+      "object-centric",
+      "ResFiLM",
+      "MAE"
+    ],
     "summary": "本文提出了OCRA框架，通过结合多视角RGB视频、3D场景重建和触觉先验，实现了从人类演示视频到机器人动作的鲁棒迁移。该框架利用3D基础模型VGGT和触觉数据集提取丰富的物体中心表示，并通过ResFiLM模块进行多模态融合，最终通过扩散策略生成精确的操控动作。实验表明OCRA在视觉和视觉-触觉任务上均显著优于现有基线方法。",
-    "notes": "",
+    "notes": "省流：用了个ResFiLM把tactile信息和视觉信息整合到一块喂给Diffusion Policy了，还额外预训练了一个MAE用来编码触觉信号。",
     "knowledgePoints": [
       {
         "term": "VGGT",
@@ -36,8 +42,14 @@
         "explanation": "FiLM（Feature-wise Linear Modulation） 是一种把外部条件信息注入神经网络中间层的方法，核心思想是：用条件信号生成缩放（scale）和平移（shift）参数（通常用MLP或者ConvNet这样的小网络生成），对网络中间特征做逐通道的仿射变换。"
       }
     ],
-    "updatedAt": "2026-09-14T06:51:08.957Z",
-    "illustrations": [],
+    "updatedAt": "2026-09-14T07:06:16.793Z",
+    "illustrations": [
+      {
+        "id": "c97ec03a-97ed-46e1-8f3b-5eb75da3c239",
+        "title": "Framework",
+        "imagePath": "data/illustrations/828d188b-be36-45e8-92f5-5f018741cf7d/c97ec03a-97ed-46e1-8f3b-5eb75da3c239.png"
+      }
+    ],
     "createdAt": "2026-09-13T13:52:08.180Z"
   },
   {
