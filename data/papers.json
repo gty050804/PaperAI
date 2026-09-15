@@ -1,5 +1,50 @@
 [
   {
+    "id": "25059472-eea5-4737-95d0-43ba08080af3",
+    "title": "SwiftVideo: A Unified Framework for Few-Step Video Generation through Trajectory-Distribution Alignment",
+    "authors": "Yanxiao Sun, Jiafu Wu, Yun Cao, Chengming Xu, Yabiao Wang, Weijian Cao, Donghao Luo, Chengjie Wang, Yanwei Fu",
+    "year": 2025,
+    "venue": "AAAI",
+    "url": "https://arxiv.org/abs/2508.06082v2",
+    "pdfUrl": "https://arxiv.org/pdf/2508.06082v2.pdf",
+    "sourceCodeUrl": "",
+    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "status": "finished",
+    "readDate": "2026-09-15",
+    "tags": [
+      "AIGC",
+      "flow matching",
+      "GAN",
+      "CCD",
+      "ODE",
+      "Teacher-Student Distillation",
+      "Post training"
+    ],
+    "summary": "本文提出了SwiftVideo，一个统一的蒸馏框架，通过结合轨迹保持和分布匹配策略，实现了高质量的视频生成同时大幅减少推理步骤。该方法引入了连续时间一致性蒸馏确保ODE轨迹精确保持，并提出双视角对齐（分布对齐和轨迹对齐）以增强视觉保真度和少步生成质量。实验表明，该方法在OpenVid-1M基准测试中显著优于现有方法。",
+    "notes": "省流：这篇没法省流，东西比较多，感觉拆开来能发好几篇论文了。首先是CCD，目标是用teacher-student distillation减少flow matching的迭代步数，baseline是ODE，但ODE会出现偏离目标轨迹的情况，于是乎本文采用切线法，将多次迭代的瞬时速度转变为平均速度，具体公式可以看论文，偏数学，还是比较优雅的；DA用了个GAN对抗网络，保证生成的视频足够逼真；TA把模型拷贝了一份，一份模型冻结（参考模型），一份训练，类似于LLM里面偏好对的方法，把少步生成和多步生成的组成一对，如果多步生成比少步生成更好，dpo loss就更低，但可能出现多步生成和少步生成都更差了，但少步生成变差得更多，所以加上reflow loss，使多步生成不比参考模型差。",
+    "knowledgePoints": [
+      {
+        "term": "CCD (continuous-time consistency distillation)",
+        "link": "",
+        "explanation": "一种将预训练视频生成模型蒸馏为少步生成器的方法：不再依赖 ODE 求解器在离散时间步上采样相邻点，而是直接对一致性函数沿概率流 ODE 轨迹求切线，作为连续时间下的训练监督，从而在避免离散化误差的同时精确保持原 ODE 轨迹。"
+      },
+      {
+        "term": "LORA",
+        "link": "",
+        "explanation": "LORA（Low-Rank Adaptation）是一种用于大型预训练模型的高效微调技术。它通过在模型的权重矩阵中引入低秩矩阵来减少可训练参数的数量，从而在保持模型性能的同时显著降低计算和存储开销。LORA特别适用于资源受限的场景，如移动设备或边缘计算。"
+      }
+    ],
+    "updatedAt": "2026-09-15T07:33:18.431Z",
+    "illustrations": [
+      {
+        "id": "42b5d4e8-ec7a-451f-99c9-77c482c68c60",
+        "title": "Overview",
+        "imagePath": "data/illustrations/25059472-eea5-4737-95d0-43ba08080af3/42b5d4e8-ec7a-451f-99c9-77c482c68c60.png"
+      }
+    ],
+    "createdAt": "2026-09-14T09:41:06.797Z"
+  },
+  {
     "id": "828d188b-be36-45e8-92f5-5f018741cf7d",
     "title": "OCRA: Object-Centric Learning with 3D and Tactile Priors for Human-to-Robot Action Transfer",
     "authors": "Kuanning Wang, Ke Fan, Yuqian Fu, Siyu Lin, Hu Luo, Daniel Seita, Yanwei Fu, Yu-Gang Jiang, Xiangyang Xue",
