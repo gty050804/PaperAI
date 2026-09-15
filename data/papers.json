@@ -1,5 +1,25 @@
 [
   {
+    "id": "fe058690-d562-48e9-b535-67c7e3f31f72",
+    "title": "Disentangle Identity, Cooperate Emotion: Correlation-Aware Emotional Talking Portrait Generation",
+    "authors": "Weipeng Tan, Chuming Lin, Chengming Xu, FeiFan Xu, Xiaobin Hu, Xiaozhong Ji, Junwei Zhu, Chengjie Wang, Yanwei Fu",
+    "year": 2025,
+    "venue": "ACMMM",
+    "url": "https://doi.org/10.1145/3746027.3755286",
+    "pdfUrl": null,
+    "sourceCodeUrl": "",
+    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "status": "to-read",
+    "readDate": "2026-09-16",
+    "tags": [],
+    "summary": "该论文提出了DICE-Talk框架，通过解耦身份与情感特征并利用跨模态注意力机制，实现了保留说话者身份的同时生成丰富情感表达的谈话头像。方法包含三个关键创新：身份无关的情感高斯分布表示、基于相关性的情感条件模块，以及潜在空间情感分类目标，在MEAD和HDTF数据集上表现出优于现有方法的情感准确性和唇同步性能。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-15T09:32:36.937Z",
+    "illustrations": [],
+    "createdAt": "2026-09-15T09:32:36.937Z"
+  },
+  {
     "id": "25059472-eea5-4737-95d0-43ba08080af3",
     "title": "SwiftVideo: A Unified Framework for Few-Step Video Generation through Trajectory-Distribution Alignment",
     "authors": "Yanxiao Sun, Jiafu Wu, Yun Cao, Chengming Xu, Yabiao Wang, Weijian Cao, Donghao Luo, Chengjie Wang, Yanwei Fu",
