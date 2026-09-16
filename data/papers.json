@@ -1,5 +1,25 @@
 [
   {
+    "id": "803282d8-0e9e-4016-8f73-93c182abb29d",
+    "title": "ST4VLA: Spatially Guided Training for Vision-Language-Action Model",
+    "authors": "Jinhui Ye, Fangjing Wang, Ning Gao, Junqiu Yu, Yangkun Zhu, Bin Wang, Jinyu Zhang, Weiyang Jin, Yanwei Fu, Feng Zheng, Yilun Chen, Jiangmiao Pang",
+    "year": 2026,
+    "venue": "ICLR",
+    "url": "https://arxiv.org/abs/2602.10109",
+    "pdfUrl": "https://arxiv.org/pdf/2602.10109.pdf",
+    "sourceCodeUrl": "https://internrobotics.github.io/internvla-m1.github.io",
+    "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
+    "status": "reading",
+    "readDate": "2026-09-17",
+    "tags": [],
+    "summary": "该论文提出了ST4VLA框架，通过空间引导训练将视觉语言模型扩展到具身任务中，解决了传统模型在将指令转化为低级运动动作时的不足。ST4VLA采用两阶段训练策略：空间基础预训练和空间引导动作后训练，显著提升了在Google Robot和WidowX Robot等平台上的性能，并在未见过的物体和长时程任务中表现出更强的泛化能力。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-16T07:55:32.732Z",
+    "illustrations": [],
+    "createdAt": "2026-09-16T07:55:32.732Z"
+  },
+  {
     "id": "12a7a692-6328-411a-b4bb-3f41af559c86",
     "title": "SCOOP’D: Learning Mixed-Liquid-Solid Scooping via Sim2Real Generative Policy",
     "authors": "Kuanning Wang, Yongchong Gu, Yuqian Fu, Zeyu Shangguan, Sicheng He, Xiangyang Xue, Yanwei Fu, Daniel Seita",
