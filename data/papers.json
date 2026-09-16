@@ -9,14 +9,32 @@
     "pdfUrl": "https://arxiv.org/pdf/2510.11566.pdf",
     "sourceCodeUrl": "https://scoopdiff.github.io/",
     "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
-    "status": "reading",
+    "status": "finished",
     "readDate": "2026-09-16",
-    "tags": [],
+    "tags": [
+      "dataset",
+      "benchmark",
+      "scooping",
+      "diffusion policy",
+      "1D CNN"
+    ],
     "summary": "该论文提出了一种名为SCOOP’D的方法，通过Sim2Real学习范式，利用扩散策略从仿真演示中学习机器人舀取混合液体和固体物体的技能。该方法在OmniGibson仿真环境中收集了6480个演示样本，并通过两个扩散策略模型分别学习预舀取姿态和精细舀取动作，在465次真实世界试验中实现了零样本迁移和超过80%的成功率。",
-    "notes": "",
-    "knowledgePoints": [],
-    "updatedAt": "2026-09-16T05:27:08.887Z",
-    "illustrations": [],
+    "notes": "省流：开辟新赛道——舀东西。两个diffusion，一个确定预舀取位置，一个用于精细操作，输入输出维数都很低，故用1D CNN作为backbone。方法论没啥创新的，主要任务比较新。",
+    "knowledgePoints": [
+      {
+        "term": "1D-CNN-based diffusion policy",
+        "link": "",
+        "explanation": "1D-CNN-based diffusion policy是一种基于一维卷积神经网络（1D-CNN）的扩散策略方法。该方法利用1D-CNN处理时间序列数据，通过逐步扩散噪声来生成动作序列。在机器人控制任务中，它能够从仿真演示中学习复杂的动作策略，并实现高效的策略迁移。1D-CNN的局部感受野使其适合捕捉时间序列中的局部模式，而扩散过程则通过逐步去噪生成稳定的动作序列。"
+      }
+    ],
+    "updatedAt": "2026-09-16T07:21:57.208Z",
+    "illustrations": [
+      {
+        "id": "03b5901d-73ae-4111-a451-e9aabc97c5dc",
+        "title": "Method",
+        "imagePath": "data/illustrations/12a7a692-6328-411a-b4bb-3f41af559c86/03b5901d-73ae-4111-a451-e9aabc97c5dc.png"
+      }
+    ],
     "createdAt": "2026-09-16T05:27:08.887Z"
   },
   {
