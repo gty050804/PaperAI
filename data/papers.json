@@ -9,14 +9,36 @@
     "pdfUrl": null,
     "sourceCodeUrl": "",
     "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
-    "status": "to-read",
+    "status": "finished",
     "readDate": "2026-09-16",
-    "tags": [],
+    "tags": [
+      "emotion control",
+      "diffusion model",
+      "talking head generation",
+      "cross attention"
+    ],
     "summary": "该论文提出了DICE-Talk框架，通过解耦身份与情感特征并利用跨模态注意力机制，实现了保留说话者身份的同时生成丰富情感表达的谈话头像。方法包含三个关键创新：身份无关的情感高斯分布表示、基于相关性的情感条件模块，以及潜在空间情感分类目标，在MEAD和HDTF数据集上表现出优于现有方法的情感准确性和唇同步性能。",
-    "notes": "",
-    "knowledgePoints": [],
-    "updatedAt": "2026-09-15T09:32:36.937Z",
-    "illustrations": [],
+    "notes": "省流：先用 Embedder 从参考视频提取高斯分布的情绪先验，再用 Emo. Bank增强情绪关联，最后在 UNet 里按 Spatial→Audio→Emotion 三层注入条件去噪，并用情绪判别器保证情绪准确。核心是身份与情绪解耦。扩散模型用 L=Ldenoising+λLcls+Lvq，分别管去噪、情绪准确、情绪字典；Embedder 单独用 Lcon​ 做对比学习，让情绪嵌入聚类。",
+    "knowledgePoints": [
+      {
+        "term": "denoising loss",
+        "link": "",
+        "explanation": "去噪损失是一种用于训练生成模型或自编码器的损失函数，旨在衡量模型在去除输入数据中的噪声或无关信息方面的能力。它通常通过比较原始干净数据与模型处理后的输出数据之间的差异来计算，帮助模型学习保留有用特征的同时过滤噪声。"
+      },
+      {
+        "term": "stop-gradient ([sg])",
+        "link": "",
+        "explanation": "stop-gradient（[sg]）是一种在深度学习训练中使用的技术，用于阻止梯度在计算图中的特定部分反向传播。通过在计算图中插入停止梯度操作，可以固定某些参数的梯度为零，从而在优化过程中不更新这些参数。这一技术常用于解耦不同模块的训练，例如在生成对抗网络（GAN）中固定生成器的参数以单独训练判别器，或在多任务学习中控制不同任务间的梯度流动。"
+      }
+    ],
+    "updatedAt": "2026-09-16T03:35:50.124Z",
+    "illustrations": [
+      {
+        "id": "96f8971c-49be-4886-b7d6-025d24febff2",
+        "title": "Framework",
+        "imagePath": "data/illustrations/fe058690-d562-48e9-b535-67c7e3f31f72/96f8971c-49be-4886-b7d6-025d24febff2.png"
+      }
+    ],
     "createdAt": "2026-09-15T09:32:36.937Z"
   },
   {
@@ -37,8 +59,8 @@
       "GAN",
       "CCD",
       "ODE",
-      "Teacher-Student Distillation",
-      "Post training"
+      "teacher-student distillation",
+      "post training"
     ],
     "summary": "本文提出了SwiftVideo，一个统一的蒸馏框架，通过结合轨迹保持和分布匹配策略，实现了高质量的视频生成同时大幅减少推理步骤。该方法引入了连续时间一致性蒸馏确保ODE轨迹精确保持，并提出双视角对齐（分布对齐和轨迹对齐）以增强视觉保真度和少步生成质量。实验表明，该方法在OpenVid-1M基准测试中显著优于现有方法。",
     "notes": "省流：这篇没法省流，东西比较多，感觉拆开来能发好几篇论文了。首先是CCD，目标是用teacher-student distillation减少flow matching的迭代步数，baseline是ODE，但ODE会出现偏离目标轨迹的情况，于是乎本文采用切线法，将多次迭代的瞬时速度转变为平均速度，具体公式可以看论文，偏数学，还是比较优雅的；DA用了个GAN对抗网络，保证生成的视频足够逼真；TA把模型拷贝了一份，一份模型冻结（参考模型），一份训练，类似于LLM里面偏好对的方法，把少步生成和多步生成的组成一对，如果多步生成比少步生成更好，dpo loss就更低，但可能出现多步生成和少步生成都更差了，但少步生成变差得更多，所以加上reflow loss，使多步生成不比参考模型差。",
@@ -54,7 +76,7 @@
         "explanation": "LORA（Low-Rank Adaptation）是一种用于大型预训练模型的高效微调技术。它通过在模型的权重矩阵中引入低秩矩阵来减少可训练参数的数量，从而在保持模型性能的同时显著降低计算和存储开销。LORA特别适用于资源受限的场景，如移动设备或边缘计算。"
       }
     ],
-    "updatedAt": "2026-09-15T07:33:18.431Z",
+    "updatedAt": "2026-09-16T03:27:57.886Z",
     "illustrations": [
       {
         "id": "42b5d4e8-ec7a-451f-99c9-77c482c68c60",
