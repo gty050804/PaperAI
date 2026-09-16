@@ -1,5 +1,25 @@
 [
   {
+    "id": "12a7a692-6328-411a-b4bb-3f41af559c86",
+    "title": "SCOOP’D: Learning Mixed-Liquid-Solid Scooping via Sim2Real Generative Policy",
+    "authors": "Kuanning Wang, Yongchong Gu, Yuqian Fu, Zeyu Shangguan, Sicheng He, Xiangyang Xue, Yanwei Fu, Daniel Seita",
+    "year": 2025,
+    "venue": "ICRA",
+    "url": "https://arxiv.org/abs/2510.11566",
+    "pdfUrl": "https://arxiv.org/pdf/2510.11566.pdf",
+    "sourceCodeUrl": "https://scoopdiff.github.io/",
+    "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
+    "status": "reading",
+    "readDate": "2026-09-16",
+    "tags": [],
+    "summary": "该论文提出了一种名为SCOOP’D的方法，通过Sim2Real学习范式，利用扩散策略从仿真演示中学习机器人舀取混合液体和固体物体的技能。该方法在OmniGibson仿真环境中收集了6480个演示样本，并通过两个扩散策略模型分别学习预舀取姿态和精细舀取动作，在465次真实世界试验中实现了零样本迁移和超过80%的成功率。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-16T05:27:08.887Z",
+    "illustrations": [],
+    "createdAt": "2026-09-16T05:27:08.887Z"
+  },
+  {
     "id": "fe058690-d562-48e9-b535-67c7e3f31f72",
     "title": "Disentangle Identity, Cooperate Emotion: Correlation-Aware Emotional Talking Portrait Generation",
     "authors": "Weipeng Tan, Chuming Lin, Chengming Xu, FeiFan Xu, Xiaobin Hu, Xiaozhong Ji, Junwei Zhu, Chengjie Wang, Yanwei Fu",
