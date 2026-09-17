@@ -9,14 +9,32 @@
     "pdfUrl": "https://arxiv.org/pdf/2602.10109.pdf",
     "sourceCodeUrl": "https://internrobotics.github.io/internvla-m1.github.io",
     "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
-    "status": "reading",
+    "status": "finished",
     "readDate": "2026-09-17",
-    "tags": [],
+    "tags": [
+      "VLM",
+      "VLA",
+      "DiT",
+      "space priors",
+      "spatial prompt",
+      "ICLR"
+    ],
     "summary": "该论文提出了ST4VLA框架，通过空间引导训练将视觉语言模型扩展到具身任务中，解决了传统模型在将指令转化为低级运动动作时的不足。ST4VLA采用两阶段训练策略：空间基础预训练和空间引导动作后训练，显著提升了在Google Robot和WidowX Robot等平台上的性能，并在未见过的物体和长时程任务中表现出更强的泛化能力。",
-    "notes": "",
+    "notes": "省流：设计了两个系统，因为以往VLA的端到端联合训练会让VLM的空间感知能力崩塌；本文的方法是先预训练VLM学习空间先验（比如[box] [point] [trace]这些），然后将observation、instruction和spatial prompt输入VLM（可微调），VLM输出编码空间推理的latent planning tokens，再输入DiT-Actor中作为条件生成动作。",
     "knowledgePoints": [],
-    "updatedAt": "2026-09-16T07:55:32.732Z",
-    "illustrations": [],
+    "updatedAt": "2026-09-17T09:46:41.897Z",
+    "illustrations": [
+      {
+        "id": "b0d46821-3064-45aa-82b4-a56c36ad6d41",
+        "title": "Training Pipeline",
+        "imagePath": "data/illustrations/803282d8-0e9e-4016-8f73-93c182abb29d/b0d46821-3064-45aa-82b4-a56c36ad6d41.png"
+      },
+      {
+        "id": "8475e45a-65f3-45fa-9463-2cb4786862dd",
+        "title": "Overview",
+        "imagePath": "data/illustrations/803282d8-0e9e-4016-8f73-93c182abb29d/8475e45a-65f3-45fa-9463-2cb4786862dd.png"
+      }
+    ],
     "createdAt": "2026-09-16T07:55:32.732Z"
   },
   {
