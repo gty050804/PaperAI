@@ -1,5 +1,25 @@
 [
   {
+    "id": "4e62b955-8bfd-4af3-8185-f0057cdfb2d8",
+    "title": "World-Action Models for Robot Learning and Control: A Survey",
+    "authors": "Zuxing Lu, Hongjia Zhai, Guanzhi Wang, Huajian Zeng, Jiaqi Yang, Jingyu Liu, Lei Cheng, Yuantai Zhang, Yuheng Qiu, Zezhou Cheng, Ivan Laptev, Danfei Xu, Benjamin Riviere, Giuseppe Loianno, Eric Xing, Xingxing Zuo",
+    "year": 2026,
+    "venue": "JOURNAL OF LATEX CLASS FILES",
+    "url": "https://arxiv.org/abs/2609.16074",
+    "pdfUrl": "https://arxiv.org/pdf/2609.16074.pdf",
+    "sourceCodeUrl": "https://rcl-robotics.github.io/Awesome-World-Action-Models",
+    "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
+    "status": "reading",
+    "readDate": "",
+    "tags": [],
+    "summary": "该论文综述了世界-动作模型（WAMs）在机器人学习和控制中的应用，提出了一个将未来状态预测与可执行动作生成相结合的框架。文章通过统一分类法整理了现有方法，并讨论了在操作、导航和自动驾驶等领域的应用，以及评估协议和未来研究方向。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-18T13:06:24.147Z",
+    "illustrations": [],
+    "createdAt": "2026-09-18T13:06:24.147Z"
+  },
+  {
     "id": "803282d8-0e9e-4016-8f73-93c182abb29d",
     "title": "ST4VLA: Spatially Guided Training for Vision-Language-Action Model",
     "authors": "Jinhui Ye, Fangjing Wang, Ning Gao, Junqiu Yu, Yangkun Zhu, Bin Wang, Jinyu Zhang, Weiyang Jin, Yanwei Fu, Feng Zheng, Yilun Chen, Jiangmiao Pang",
