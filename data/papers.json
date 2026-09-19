@@ -1,5 +1,52 @@
 [
   {
+    "id": "03d772f4-d698-4b08-8784-9e68de567c91",
+    "title": "World4RL: Diffusion World Models for Policy Refinement with Reinforcement Learning for Robotic Manipulation",
+    "authors": "Zhennan Jiang, Kai Liu, Yuxin Qin, Shuai Tian, Yupeng Zheng, Mingcai Zhou, Chao Yu, Haoran Li, Dongbin Zhao",
+    "year": 2026,
+    "venue": "RA-L",
+    "url": "https://arxiv.org/abs/2509.19080v2",
+    "pdfUrl": "https://arxiv.org/pdf/2509.19080v2.pdf",
+    "sourceCodeUrl": "",
+    "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
+    "status": "finished",
+    "readDate": "2026-09-19",
+    "tags": [
+      "WAM",
+      "RL",
+      "PPO",
+      "RA-L"
+    ],
+    "summary": "本文提出了World4RL框架，利用扩散世界模型作为高保真模拟器，在想象环境中优化预训练的机器人操作策略。该框架通过两阶段训练（预训练扩散世界模型和策略优化）实现端到端策略优化，设计了针对机器人操作的双热点动作编码方案，并在仿真和真实实验中显著提高了成功率。",
+    "notes": "把扩散世界模型（WM）和 RL 结合起来：在预训练阶段，先用真实数据分别训练好一个扩散转移模型作为世界模型、一个二分类奖励分类器，以及一个用行为克隆得到的初始策略网络；在策略优化阶段，冻结世界模型和奖励分类器，把它们当作一个免费的想象环境，让策略在其中交互生成合成的 rollout 数据 {x_t,a_t,r_t,x~_t+1}，然后基于这些稀疏奖励，用 PPO 继续微调策略网络，并同步训练一个价值网络来估计优势函数。",
+    "knowledgePoints": [
+      {
+        "term": "PPO",
+        "link": "https://blog.csdn.net/qq_51399582/article/details/144650295?ops_request_misc=&request_id=&biz_id=102&utm_term=PPO&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-8-144650295.142^v102^pc_search_result_base3&spm=1018.2226.3001.4187",
+        "explanation": "PPO（Proximal Policy Optimization）是一种强化学习算法，属于策略梯度方法。它通过限制策略更新的幅度来确保训练的稳定性，避免因过大更新导致的性能崩溃。PPO使用裁剪机制来约束新旧策略之间的差异，从而在保证样本效率的同时维持稳定的训练过程。该算法广泛应用于机器人控制、游戏AI等领域。"
+      },
+      {
+        "term": "MDP",
+        "link": "",
+        "explanation": "马尔可夫决策过程（Markov Decision Process, MDP）是强化学习中的经典数学模型，用于描述序贯决策问题。MDP由状态空间、动作空间、状态转移概率、奖励函数和折扣因子组成，其核心特性是马尔可夫性，即下一状态仅依赖于当前状态和动作。MDP为策略优化提供了理论框架，是值迭代、策略迭代等算法的基础。"
+      }
+    ],
+    "updatedAt": "2026-09-19T13:23:02.324Z",
+    "illustrations": [
+      {
+        "id": "ab33a65e-7648-4cfa-a4ed-07851a9eb0f2",
+        "title": "Overview",
+        "imagePath": "data/illustrations/03d772f4-d698-4b08-8784-9e68de567c91/ab33a65e-7648-4cfa-a4ed-07851a9eb0f2.png"
+      },
+      {
+        "id": "953fd195-ac78-4d64-b54c-9dfa30cede23",
+        "title": "Algorithm",
+        "imagePath": "data/illustrations/03d772f4-d698-4b08-8784-9e68de567c91/953fd195-ac78-4d64-b54c-9dfa30cede23.png"
+      }
+    ],
+    "createdAt": "2026-09-19T08:20:57.445Z"
+  },
+  {
     "id": "4e62b955-8bfd-4af3-8185-f0057cdfb2d8",
     "title": "World-Action Models for Robot Learning and Control: A Survey",
     "authors": "Zuxing Lu, Hongjia Zhai, Guanzhi Wang, Huajian Zeng, Jiaqi Yang, Jingyu Liu, Lei Cheng, Yuantai Zhang, Yuheng Qiu, Zezhou Cheng, Ivan Laptev, Danfei Xu, Benjamin Riviere, Giuseppe Loianno, Eric Xing, Xingxing Zuo",
