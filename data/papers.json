@@ -9,14 +9,55 @@
     "pdfUrl": "https://arxiv.org/pdf/2609.16074.pdf",
     "sourceCodeUrl": "https://rcl-robotics.github.io/Awesome-World-Action-Models",
     "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
-    "status": "reading",
-    "readDate": "",
-    "tags": [],
+    "status": "finished",
+    "readDate": "2026-09-19",
+    "tags": [
+      "survey",
+      "world model",
+      "WAM"
+    ],
     "summary": "该论文综述了世界-动作模型（WAMs）在机器人学习和控制中的应用，提出了一个将未来状态预测与可执行动作生成相结合的框架。文章通过统一分类法整理了现有方法，并讨论了在操作、导航和自动驾驶等领域的应用，以及评估协议和未来研究方向。",
-    "notes": "",
-    "knowledgePoints": [],
-    "updatedAt": "2026-09-18T13:06:24.147Z",
-    "illustrations": [],
+    "notes": "省流：对当下WAM进行了分类和总结：\n一、 模型组件\n1、 语言接口\n2、 视觉编码器\n3、 预测骨干\n4、 动作编码器\n二、 转移建模范式\n1、 联合建模（模型同时输出预测的observation和action，预测的是联合概率分布）\n2、 逆动力学（先预测未来的observation，再反推动作）\n三、 架构结构\n| 编号 | 结构 | 转移范式 | 代表思路 |\n| a | End-to-end | Joint | 统一模型同时输出视频和动作 |\n|b | End-to-end | Inverse Dynamics | 统一网络内部先视频后动作 |\n| b | Dual systems | Joint | 视频专家和动作专家并行协作，常用 MoT |\n| d | Dual systems | Inverse Dynamics | 视频专家独立生成未来，动作专家随后反推 |\n四、 训练阶段\n1、 Pre-training\n\\1 时空表示学习\n\\2 动作表示学习\n\\3 视频-动作对齐\n2、 Post-training\n\\1 数据微调（LoRA等）\n\\2 数据增强\n\\3 强化学习\n五、 数据模态与规模\n1、 数据模态\n    Language Conditioning（语言条件）\n    Multi-view Videos（多视角视频）\n    3D Geometric Structure（三维几何结构）\n    Contact & Auditory（接触与听觉）\n    Proprioceptive State（本体感知状态）\n2、 数据规模\n\\1  底层：海量低质量数据，如web images，完成空间先验学习\n\\2  中层：中量中等质量数据，如ego-centric demos，学习动作意图\n\\3  顶层：少量高质量数据，如embodied trajs，学习动作接地",
+    "knowledgePoints": [
+      {
+        "term": "Grounding Signal（动作接地）",
+        "link": "",
+        "explanation": "动作接地指将抽象的高层指令或语义信息映射到具体的物理动作或控制信号的过程。在机器人学习中，它确保生成的指令可被实际执行，通常涉及传感器数据与动作空间的关联。"
+      }
+    ],
+    "updatedAt": "2026-09-19T08:14:07.239Z",
+    "illustrations": [
+      {
+        "id": "5c89ab56-32e8-4bf4-9fa8-db91e4f226a3",
+        "title": "Conceptual overview of four foundational threads behind WAMs",
+        "imagePath": "data/illustrations/4e62b955-8bfd-4af3-8185-f0057cdfb2d8/5c89ab56-32e8-4bf4-9fa8-db91e4f226a3.png"
+      },
+      {
+        "id": "01bbbfa6-6217-4af8-9c70-97827f84469a",
+        "title": "Component-level taxonomy for World-Action Models",
+        "imagePath": "data/illustrations/4e62b955-8bfd-4af3-8185-f0057cdfb2d8/01bbbfa6-6217-4af8-9c70-97827f84469a.png"
+      },
+      {
+        "id": "7d1c73f6-7d30-490d-a2f3-313708ce59f4",
+        "title": "Transition Modeling Paradigms",
+        "imagePath": "data/illustrations/4e62b955-8bfd-4af3-8185-f0057cdfb2d8/7d1c73f6-7d30-490d-a2f3-313708ce59f4.png"
+      },
+      {
+        "id": "f8e59884-ff93-405d-8ab2-416b4e95f745",
+        "title": "Taxonomy of WAM Architectures",
+        "imagePath": "data/illustrations/4e62b955-8bfd-4af3-8185-f0057cdfb2d8/f8e59884-ff93-405d-8ab2-416b4e95f745.png"
+      },
+      {
+        "id": "713da8fb-ef17-4491-9fa3-2b9706b6f6b6",
+        "title": "Policy training pipeline for WAMs",
+        "imagePath": "data/illustrations/4e62b955-8bfd-4af3-8185-f0057cdfb2d8/713da8fb-ef17-4491-9fa3-2b9706b6f6b6.png"
+      },
+      {
+        "id": "466d4a44-53c4-411f-9a39-71b836a3ec90",
+        "title": "Data modality and scaling structure for World-Action Models",
+        "imagePath": "data/illustrations/4e62b955-8bfd-4af3-8185-f0057cdfb2d8/466d4a44-53c4-411f-9a39-71b836a3ec90.png"
+      }
+    ],
     "createdAt": "2026-09-18T13:06:24.147Z"
   },
   {
