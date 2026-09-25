@@ -1,4 +1,49 @@
 const EXPORT_SHEET_WIDTH = 900;
+const HONKAI_EMOJI_DIR = 'assets/emoji/honkai_starrail';
+const EMOJI_GAP_SLOTS = ['after-header', 'after-pdf', 'after-notes', 'after-illustrations'];
+
+let emojiMetaCache = null;
+
+function resolveAssetUrl(relativePath) {
+  if (!relativePath || relativePath.startsWith('http') || relativePath.startsWith('blob:')) {
+    return relativePath;
+  }
+  const base = window.location.pathname.replace(/[^/]*$/, '');
+  return `${base}${relativePath.replace(/^\//, '')}`;
+}
+
+async function loadEmojiMeta() {
+  if (emojiMetaCache) return emojiMetaCache;
+  try {
+    const res = await fetch(`${resolveAssetUrl(`${HONKAI_EMOJI_DIR}/meta.json`)}?t=${Date.now()}`);
+    if (res.ok) {
+      emojiMetaCache = await res.json();
+      return emojiMetaCache;
+    }
+  } catch {
+    // fall through to default
+  }
+  emojiMetaCache = { count: 429, ext: 'jpg' };
+  return emojiMetaCache;
+}
+
+function pickRandomEmojiUrl(meta) {
+  const count = Math.max(1, meta?.count || 1);
+  const ext = meta?.ext || 'jpg';
+  const index = Math.floor(Math.random() * count) + 1;
+  const filename = `${String(index).padStart(3, '0')}.${ext}`;
+  return resolveAssetUrl(`${HONKAI_EMOJI_DIR}/${filename}`);
+}
+
+function buildEmojiGapHtml(chosenSlot, slot, emojiUrl) {
+  if (!emojiUrl || chosenSlot !== slot) return '';
+  const offset = 12 + Math.floor(Math.random() * 76);
+  return `
+    <div class="paper-export-emoji-gap" style="--emoji-offset:${offset}%">
+      <img class="paper-export-emoji" src="${emojiUrl}" alt="" crossorigin="anonymous">
+    </div>
+  `;
+}
 
 function ensurePdfJsReady() {
   if (!window.pdfjsLib) throw new Error('PDF 解析库未加载');
@@ -123,7 +168,11 @@ function buildExportSheetHtml(paper, helpers, sections) {
         ${tagsHtml}
       </header>
 
+      ${buildEmojiGapHtml(sections.emojiSlot, 'after-header', sections.emojiUrl)}
+
       ${pdfSection}
+
+      ${buildEmojiGapHtml(sections.emojiSlot, 'after-pdf', sections.emojiUrl)}
 
       <section class="paper-export-section">
         <h2 class="paper-export-section-title">笔记</h2>
@@ -142,6 +191,8 @@ function buildExportSheetHtml(paper, helpers, sections) {
         <h2 class="paper-export-section-title">图解</h2>
         <div class="paper-export-illustrations">${illustrationsHtml}</div>
       </section>
+
+      ${buildEmojiGapHtml(sections.emojiSlot, 'after-illustrations', sections.emojiUrl)}
 
       <section class="paper-export-section">
         <h2 class="paper-export-section-title">知识点</h2>
@@ -217,12 +268,18 @@ async function exportPaperLongImage(paper, helpers) {
     helpers.escapeHtml,
   );
 
+  const emojiMeta = await loadEmojiMeta();
+  const emojiUrl = pickRandomEmojiUrl(emojiMeta);
+  const emojiSlot = EMOJI_GAP_SLOTS[Math.floor(Math.random() * EMOJI_GAP_SLOTS.length)];
+
   const container = document.createElement('div');
   container.className = 'paper-export-root';
   container.innerHTML = buildExportSheetHtml(paper, helpers, {
     pdfDataUrl,
     pdfError,
     illustrationsHtml,
+    emojiUrl,
+    emojiSlot,
   });
   document.body.appendChild(container);
 
