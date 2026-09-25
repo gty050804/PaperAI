@@ -1202,6 +1202,7 @@ html.immersive .panel-header {
 }
 
 .paper-export-sheet {
+  position: relative;
   width: 900px;
   background: #ffffff;
   color: #1e293b;

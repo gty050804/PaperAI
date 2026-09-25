@@ -45,67 +45,105 @@ function loadImageElement(url) {
   });
 }
 
-function isBlankPixel(r, g, b, a) {
-  if (a < 128) return true;
-  return r >= 238 && g >= 238 && b >= 238;
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 
-function isRegionBlank(imageData, canvasWidth, x, y, w, h) {
-  const data = imageData.data;
-  let blank = 0;
-  let total = 0;
-  const step = 5;
+function pickDomEmojiPlacement(sheet) {
+  const sheetRect = sheet.getBoundingClientRect();
+  const emojiW = EMOJI_MAX_CSS_PX;
+  const emojiH = EMOJI_MAX_CSS_PX;
+  const candidates = [];
 
-  for (let py = y; py < y + h; py += step) {
-    for (let px = x; px < x + w; px += step) {
-      if (px < 0 || py < 0 || px >= canvasWidth) continue;
-      const idx = (py * canvasWidth + px) * 4;
-      if (idx + 3 >= data.length) continue;
-      if (isBlankPixel(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) blank++;
-      total++;
+  sheet.querySelectorAll('.paper-export-empty').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.width >= emojiW + 32 && rect.height >= emojiH + 12) {
+      candidates.push({
+        x: rect.left - sheetRect.left + (rect.width - emojiW) / 2,
+        y: rect.top - sheetRect.top + (rect.height - emojiH) / 2,
+      });
     }
+  });
+
+  sheet.querySelectorAll('.paper-export-section').forEach(section => {
+    const sectionRect = section.getBoundingClientRect();
+    const inner = section.querySelector(
+      '.paper-export-prose, .paper-export-illustrations, .paper-export-knowledge, .paper-export-pdf, .paper-export-empty'
+    );
+    if (!inner) return;
+
+    const innerRect = inner.getBoundingClientRect();
+    const spaceBelow = sectionRect.bottom - innerRect.bottom;
+    if (spaceBelow >= emojiH * 0.45) {
+      candidates.push({
+        x: sectionRect.right - sheetRect.left - emojiW - 36,
+        y: innerRect.bottom - sheetRect.top + Math.max(6, (spaceBelow - emojiH) / 2),
+      });
+    }
+
+    const spaceRight = sectionRect.right - innerRect.right;
+    if (spaceRight >= emojiW * 0.55 && innerRect.height >= emojiH + 16) {
+      candidates.push({
+        x: innerRect.right - sheetRect.left + Math.max(8, (spaceRight - emojiW) / 2),
+        y: innerRect.top - sheetRect.top + Math.min(innerRect.height * 0.25, innerRect.height - emojiH - 8),
+      });
+    }
+  });
+
+  const header = sheet.querySelector('.paper-export-header');
+  if (header) {
+    const headerRect = header.getBoundingClientRect();
+    candidates.push({
+      x: headerRect.right - sheetRect.left - emojiW - 40,
+      y: headerRect.top - sheetRect.top + Math.max(24, headerRect.height * 0.35),
+    });
   }
 
-  return total > 0 && blank / total >= 0.93;
+  if (!candidates.length) return null;
+
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  return {
+    x: clamp(pick.x, 20, sheetRect.width - emojiW - 20),
+    y: clamp(pick.y, 20, sheetRect.height - emojiH - 20),
+  };
 }
 
-function findBlankPlacement(canvas, emojiW, emojiH) {
-  const ctx = canvas.getContext('2d');
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const margin = Math.round(24 * (canvas.width / EXPORT_SHEET_WIDTH));
-  const footerReserve = Math.round(72 * (canvas.width / EXPORT_SHEET_WIDTH));
-  const maxY = canvas.height - emojiH - margin - footerReserve;
-  const maxX = canvas.width - emojiW - margin;
-
-  if (maxY <= margin || maxX <= margin) return null;
-
-  for (let attempt = 0; attempt < 100; attempt++) {
-    const x = margin + Math.floor(Math.random() * (maxX - margin));
-    const y = margin + Math.floor(Math.random() * (maxY - margin));
-    if (isRegionBlank(imageData, canvas.width, x, y, emojiW, emojiH)) {
-      return { x, y };
-    }
+function getFallbackEmojiPlacement(sheet) {
+  const sheetRect = sheet.getBoundingClientRect();
+  const sections = [...sheet.querySelectorAll('.paper-export-section')];
+  if (sections.length > 0) {
+    const section = sections[Math.floor(Math.random() * sections.length)];
+    const rect = section.getBoundingClientRect();
+    return {
+      x: clamp(rect.right - sheetRect.left - EMOJI_MAX_CSS_PX - 36, 20, sheetRect.width - EMOJI_MAX_CSS_PX - 20),
+      y: clamp(rect.top - sheetRect.top + 56, 20, sheetRect.height - EMOJI_MAX_CSS_PX - 20),
+    };
   }
-
-  return null;
+  return { x: sheetRect.width - EMOJI_MAX_CSS_PX - 48, y: 120 };
 }
 
-async function overlayRandomEmoji(canvas, emojiUrl) {
-  const img = await loadImageElement(emojiUrl);
-  const pixelScale = canvas.width / EXPORT_SHEET_WIDTH;
-  const maxSize = Math.round(EMOJI_MAX_CSS_PX * pixelScale);
+async function injectEmojiOverlay(sheet, emojiUrl) {
+  await loadImageElement(emojiUrl);
+  const pos = pickDomEmojiPlacement(sheet) || getFallbackEmojiPlacement(sheet);
 
-  let drawW = img.naturalWidth;
-  let drawH = img.naturalHeight;
-  const fit = Math.min(maxSize / drawW, maxSize / drawH, 1);
-  drawW = Math.max(1, Math.round(drawW * fit));
-  drawH = Math.max(1, Math.round(drawH * fit));
+  const img = document.createElement('img');
+  img.className = 'paper-export-emoji-overlay';
+  img.src = emojiUrl;
+  img.alt = '';
+  img.crossOrigin = 'anonymous';
+  img.style.cssText = [
+    'position:absolute',
+    `left:${Math.round(pos.x)}px`,
+    `top:${Math.round(pos.y)}px`,
+    `width:${EMOJI_MAX_CSS_PX}px`,
+    `height:${EMOJI_MAX_CSS_PX}px`,
+    'object-fit:contain',
+    'pointer-events:none',
+    'z-index:5',
+  ].join(';');
 
-  const placement = findBlankPlacement(canvas, drawW, drawH);
-  if (!placement) return;
-
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, placement.x, placement.y, drawW, drawH);
+  sheet.appendChild(img);
+  return img;
 }
 
 function ensurePdfJsReady() {
@@ -343,8 +381,14 @@ async function exportPaperLongImage(paper, helpers) {
 
     const sheet = container.firstElementChild;
     prepareExportTextLayout(sheet);
-    // Allow layout to settle after explicit heights are applied.
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    try {
+      await injectEmojiOverlay(sheet, emojiUrl);
+      await waitForImages(sheet);
+    } catch (err) {
+      console.warn('表情包加载失败:', err);
+    }
 
     const canvas = await html2canvas(sheet, {
       backgroundColor: '#ffffff',
@@ -355,12 +399,6 @@ async function exportPaperLongImage(paper, helpers) {
       width: EXPORT_SHEET_WIDTH,
       windowWidth: EXPORT_SHEET_WIDTH,
     });
-
-    try {
-      await overlayRandomEmoji(canvas, emojiUrl);
-    } catch (err) {
-      console.warn('表情包叠加失败:', err);
-    }
 
     const safeTitle = helpers.getDisplayTitle(paper).replace(/[<>:"/\\|?*]/g, '_').slice(0, 80);
     await downloadCanvas(canvas, `${safeTitle || 'paper'}-long.png`);
