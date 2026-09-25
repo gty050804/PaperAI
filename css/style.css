@@ -1420,27 +1420,6 @@ html.immersive .panel-header {
   text-align: right;
 }
 
-.paper-export-emoji-gap {
-  position: relative;
-  height: 132px;
-  background: #ffffff;
-  border-bottom: 1px solid #f1f5f9;
-  overflow: visible;
-}
-
-.paper-export-emoji {
-  position: absolute;
-  left: var(--emoji-offset, 50%);
-  top: 50%;
-  transform: translate(-50%, -50%);
-  max-width: 112px;
-  max-height: 112px;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  pointer-events: none;
-}
-
 .reader-illustrations-content {
   padding: 1rem 1.25rem 1.25rem;
 }

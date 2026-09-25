@@ -1,6 +1,6 @@
 const EXPORT_SHEET_WIDTH = 900;
 const HONKAI_EMOJI_DIR = 'assets/emoji/honkai_starrail';
-const EMOJI_GAP_SLOTS = ['after-header', 'after-pdf', 'after-notes', 'after-illustrations'];
+const EMOJI_MAX_CSS_PX = 112;
 
 let emojiMetaCache = null;
 
@@ -35,14 +35,77 @@ function pickRandomEmojiUrl(meta) {
   return resolveAssetUrl(`${HONKAI_EMOJI_DIR}/${filename}`);
 }
 
-function buildEmojiGapHtml(chosenSlot, slot, emojiUrl) {
-  if (!emojiUrl || chosenSlot !== slot) return '';
-  const offset = 12 + Math.floor(Math.random() * 76);
-  return `
-    <div class="paper-export-emoji-gap" style="--emoji-offset:${offset}%">
-      <img class="paper-export-emoji" src="${emojiUrl}" alt="" crossorigin="anonymous">
-    </div>
-  `;
+function loadImageElement(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('无法加载表情包'));
+    img.src = url;
+  });
+}
+
+function isBlankPixel(r, g, b, a) {
+  if (a < 128) return true;
+  return r >= 238 && g >= 238 && b >= 238;
+}
+
+function isRegionBlank(imageData, canvasWidth, x, y, w, h) {
+  const data = imageData.data;
+  let blank = 0;
+  let total = 0;
+  const step = 5;
+
+  for (let py = y; py < y + h; py += step) {
+    for (let px = x; px < x + w; px += step) {
+      if (px < 0 || py < 0 || px >= canvasWidth) continue;
+      const idx = (py * canvasWidth + px) * 4;
+      if (idx + 3 >= data.length) continue;
+      if (isBlankPixel(data[idx], data[idx + 1], data[idx + 2], data[idx + 3])) blank++;
+      total++;
+    }
+  }
+
+  return total > 0 && blank / total >= 0.93;
+}
+
+function findBlankPlacement(canvas, emojiW, emojiH) {
+  const ctx = canvas.getContext('2d');
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const margin = Math.round(24 * (canvas.width / EXPORT_SHEET_WIDTH));
+  const footerReserve = Math.round(72 * (canvas.width / EXPORT_SHEET_WIDTH));
+  const maxY = canvas.height - emojiH - margin - footerReserve;
+  const maxX = canvas.width - emojiW - margin;
+
+  if (maxY <= margin || maxX <= margin) return null;
+
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const x = margin + Math.floor(Math.random() * (maxX - margin));
+    const y = margin + Math.floor(Math.random() * (maxY - margin));
+    if (isRegionBlank(imageData, canvas.width, x, y, emojiW, emojiH)) {
+      return { x, y };
+    }
+  }
+
+  return null;
+}
+
+async function overlayRandomEmoji(canvas, emojiUrl) {
+  const img = await loadImageElement(emojiUrl);
+  const pixelScale = canvas.width / EXPORT_SHEET_WIDTH;
+  const maxSize = Math.round(EMOJI_MAX_CSS_PX * pixelScale);
+
+  let drawW = img.naturalWidth;
+  let drawH = img.naturalHeight;
+  const fit = Math.min(maxSize / drawW, maxSize / drawH, 1);
+  drawW = Math.max(1, Math.round(drawW * fit));
+  drawH = Math.max(1, Math.round(drawH * fit));
+
+  const placement = findBlankPlacement(canvas, drawW, drawH);
+  if (!placement) return;
+
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, placement.x, placement.y, drawW, drawH);
 }
 
 function ensurePdfJsReady() {
@@ -168,11 +231,7 @@ function buildExportSheetHtml(paper, helpers, sections) {
         ${tagsHtml}
       </header>
 
-      ${buildEmojiGapHtml(sections.emojiSlot, 'after-header', sections.emojiUrl)}
-
       ${pdfSection}
-
-      ${buildEmojiGapHtml(sections.emojiSlot, 'after-pdf', sections.emojiUrl)}
 
       <section class="paper-export-section">
         <h2 class="paper-export-section-title">笔记</h2>
@@ -191,8 +250,6 @@ function buildExportSheetHtml(paper, helpers, sections) {
         <h2 class="paper-export-section-title">图解</h2>
         <div class="paper-export-illustrations">${illustrationsHtml}</div>
       </section>
-
-      ${buildEmojiGapHtml(sections.emojiSlot, 'after-illustrations', sections.emojiUrl)}
 
       <section class="paper-export-section">
         <h2 class="paper-export-section-title">知识点</h2>
@@ -270,7 +327,6 @@ async function exportPaperLongImage(paper, helpers) {
 
   const emojiMeta = await loadEmojiMeta();
   const emojiUrl = pickRandomEmojiUrl(emojiMeta);
-  const emojiSlot = EMOJI_GAP_SLOTS[Math.floor(Math.random() * EMOJI_GAP_SLOTS.length)];
 
   const container = document.createElement('div');
   container.className = 'paper-export-root';
@@ -278,8 +334,6 @@ async function exportPaperLongImage(paper, helpers) {
     pdfDataUrl,
     pdfError,
     illustrationsHtml,
-    emojiUrl,
-    emojiSlot,
   });
   document.body.appendChild(container);
 
@@ -301,6 +355,12 @@ async function exportPaperLongImage(paper, helpers) {
       width: EXPORT_SHEET_WIDTH,
       windowWidth: EXPORT_SHEET_WIDTH,
     });
+
+    try {
+      await overlayRandomEmoji(canvas, emojiUrl);
+    } catch (err) {
+      console.warn('表情包叠加失败:', err);
+    }
 
     const safeTitle = helpers.getDisplayTitle(paper).replace(/[<>:"/\\|?*]/g, '_').slice(0, 80);
     await downloadCanvas(canvas, `${safeTitle || 'paper'}-long.png`);
