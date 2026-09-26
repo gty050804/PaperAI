@@ -4,7 +4,7 @@
     "title": "Yume1.5 : A Text-Controlled Interactive World Generation Model",
     "authors": "Xiaofeng Mao, Zhen Li, Chuanhao Li, Xiaojie Xu, Kaining Ying, Tong He, Jiangmiao Pang, Yu Qiao, Kaipeng Zhang",
     "year": 2025,
-    "venue": "",
+    "venue": "CVPR",
     "url": "https://arxiv.org/abs/2512.22096",
     "pdfUrl": "https://arxiv.org/pdf/2512.22096.pdf",
     "sourceCodeUrl": "https://github.com/stdstu12/YUME",
@@ -21,7 +21,7 @@
         "explanation": "ROPE（Rotary Position Embedding）是一种用于Transformer模型的位置编码方法。它通过旋转矩阵将位置信息嵌入到词向量中，能够更好地处理长序列数据。ROPE通过引入相对位置信息，增强了模型对序列中位置关系的建模能力，同时保持了计算效率。"
       }
     ],
-    "updatedAt": "2026-09-26T14:07:15.020Z",
+    "updatedAt": "2026-09-26T14:08:33.265Z",
     "illustrations": [],
     "createdAt": "2026-09-26T12:14:36.228Z"
   },
@@ -30,7 +30,7 @@
     "title": "Alaya-EVOKE: From Linear-Scaling Supervision to Endless World",
     "authors": "Yuanyang Yin, Gongxuan Wang, Yifan Zhan, Chuanhao Li, Kaipeng Zhang, Feng Zhao",
     "year": 2026,
-    "venue": "",
+    "venue": "Technical Report",
     "url": "https://arxiv.org/abs/2608.13546",
     "pdfUrl": "https://arxiv.org/pdf/2608.13546.pdf",
     "sourceCodeUrl": "https://github.com/SII-YuanyangYin/Evoke",
@@ -69,7 +69,7 @@
         "explanation": "CFG-free（无分类器引导）是扩散模型里常用的一种引导技术，通过把\"无条件生成\"和\"有条件生成\"的结果做加权组合，来增强对文本、相机姿态等条件的遵循程度。\n但 CFG 有个代价：每次去噪需要跑两次模型（一次有条件、一次无条件），计算量翻倍。Evoke 这里用的是 CFG-free，也就是不用 CFG。这样每一步去噪只需要一次模型前向传播，进一步降低推理成本。"
       }
     ],
-    "updatedAt": "2026-09-26T11:05:05.087Z",
+    "updatedAt": "2026-09-26T14:08:52.672Z",
     "illustrations": [
       {
         "id": "f5079a9c-0066-41c2-bd7a-2e6f3ec99a69",
