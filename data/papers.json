@@ -1,5 +1,25 @@
 [
   {
+    "id": "57c7d95c-2c10-4e97-a6e2-22078b09ec07",
+    "title": "Yume1.5 : A Text-Controlled Interactive World Generation Model",
+    "authors": "Xiaofeng Mao, Zhen Li, Chuanhao Li, Xiaojie Xu, Kaining Ying, Tong He, Jiangmiao Pang, Yu Qiao, Kaipeng Zhang",
+    "year": 2025,
+    "venue": "",
+    "url": "https://arxiv.org/abs/2512.22096",
+    "pdfUrl": "https://arxiv.org/pdf/2512.22096.pdf",
+    "sourceCodeUrl": "https://github.com/stdstu12/YUME",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
+    "status": "to-read",
+    "readDate": "",
+    "tags": [],
+    "summary": "Yume1.5 是一个创新的文本控制交互式世界生成框架，支持通过键盘输入探索生成的虚拟世界。该框架通过整合统一上下文压缩与线性注意力实现长视频生成，采用双向注意力蒸馏和增强文本嵌入方案加速实时流式处理，并实现了基于文本的世界事件生成方法。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-26T12:14:36.228Z",
+    "illustrations": [],
+    "createdAt": "2026-09-26T12:14:36.228Z"
+  },
+  {
     "id": "14572a86-0c42-478e-8053-cf5391b40c53",
     "title": "Alaya-EVOKE: From Linear-Scaling Supervision to Endless World",
     "authors": "Yuanyang Yin, Gongxuan Wang, Yifan Zhan, Chuanhao Li, Kaipeng Zhang, Feng Zhao",
