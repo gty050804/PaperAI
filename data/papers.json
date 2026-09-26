@@ -9,13 +9,19 @@
     "pdfUrl": "https://arxiv.org/pdf/2512.22096.pdf",
     "sourceCodeUrl": "https://github.com/stdstu12/YUME",
     "folderId": "2c657fec-269c-4686-9926-71cecd167750",
-    "status": "to-read",
+    "status": "reading",
     "readDate": "",
     "tags": [],
     "summary": "Yume1.5 是一个创新的文本控制交互式世界生成框架，支持通过键盘输入探索生成的虚拟世界。该框架通过整合统一上下文压缩与线性注意力实现长视频生成，采用双向注意力蒸馏和增强文本嵌入方案加速实时流式处理，并实现了基于文本的世界事件生成方法。",
     "notes": "",
-    "knowledgePoints": [],
-    "updatedAt": "2026-09-26T12:14:36.228Z",
+    "knowledgePoints": [
+      {
+        "term": "ROPE",
+        "link": "",
+        "explanation": "ROPE（Rotary Position Embedding）是一种用于Transformer模型的位置编码方法。它通过旋转矩阵将位置信息嵌入到词向量中，能够更好地处理长序列数据。ROPE通过引入相对位置信息，增强了模型对序列中位置关系的建模能力，同时保持了计算效率。"
+      }
+    ],
+    "updatedAt": "2026-09-26T14:07:15.020Z",
     "illustrations": [],
     "createdAt": "2026-09-26T12:14:36.228Z"
   },
