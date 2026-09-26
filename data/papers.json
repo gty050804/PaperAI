@@ -9,20 +9,63 @@
     "pdfUrl": "https://arxiv.org/pdf/2608.13546.pdf",
     "sourceCodeUrl": "https://github.com/SII-YuanyangYin/Evoke",
     "folderId": "2c657fec-269c-4686-9926-71cecd167750",
-    "status": "to-read",
+    "status": "finished",
     "readDate": "2026-09-20",
-    "tags": [],
+    "tags": [
+      "world model",
+      "interactive",
+      "teacher-student distillation",
+      "world state bank",
+      "linear attention",
+      "dynamic conditioning"
+    ],
     "summary": "Alaya-EVOKE (Evoke) 提出了一种新的交互式世界模型，通过将持久世界状态外部化并重新设计教师模型来实现长时程交互生成。该方法使用外部相机索引的世界状态库维护场景几何，保持去噪器上下文在会话增长时有界，同时教师模型采用稀疏注意力机制和线性增长的内存计算，支持长时程监督。最终的三步学生模型在单H200上实现了2.11秒生成1.5秒片段，并在WBench上达到最先进性能。",
-    "notes": "",
+    "notes": "省流：核心贡献：1、 world state bank，在外部存储场景几何信息作为生成条件，维护内容一致性；  2、 长程蒸馏教师，作为注意力来源的帧包括全局第一帧，附近帧，精选远程帧和线性注意力的summary tokens，该机制在保留远程监督能力的同时将原来O(n^2)的注意力复杂度变成了O(n)，降低了计算量；  3、有界循环，迭代生成，推理时chunk-wise generation，训练时长程监督，但梯度回传时chunk之间有detach，减少计算开销。",
     "knowledgePoints": [
       {
         "term": "KL散度",
         "link": "",
         "explanation": "KL散度（Kullback-Leibler Divergence），又称相对熵，是衡量两个概率分布差异的非对称性度量。给定真实分布P和近似分布Q，KL散度定义为P相对于Q的期望对数差，数学表达式为D_KL(P||Q)=∑P(x)log(P(x)/Q(x))。其值非负，当且仅当P=Q时为零。常用于机器学习中的变分推断、生成模型优化（如VAE）及信息论中的编码效率分析。"
+      },
+      {
+        "term": "DMD loss",
+        "link": "",
+        "explanation": "DMD损失（Dynamic Mode Decomposition loss）的核心目标是让一个高效的学生生成器，学会一个预训练扩散模型（教师）所代表的数据分布，是一种用于动态模式分解的损失函数，常用于时间序列预测和动态系统建模。它通过最小化预测模式与实际模式之间的差异，帮助模型学习系统的动态特性。DMD损失通常结合线性代数方法，如奇异值分解（SVD），以提取系统的主要动态模式。"
+      },
+      {
+        "term": "fidelity measure",
+        "link": "",
+        "explanation": "保真度度量是评估生成内容与真实数据之间相似程度的量化指标。在计算机视觉和生成模型中，常用于衡量生成图像、视频或场景与目标分布的接近程度，通常基于像素级差异（如PSNR）、特征空间距离（如LPIPS）或人类感知相似性。高保真度表示生成结果在视觉或语义上与参考数据高度一致。（其他指标包括coverage recall（内容一致性），stability（性质一致性）等）"
+      },
+      {
+        "term": "CFG-free (Classifier-free guidance)",
+        "link": "",
+        "explanation": "CFG-free（无分类器引导）是扩散模型里常用的一种引导技术，通过把\"无条件生成\"和\"有条件生成\"的结果做加权组合，来增强对文本、相机姿态等条件的遵循程度。\n但 CFG 有个代价：每次去噪需要跑两次模型（一次有条件、一次无条件），计算量翻倍。Evoke 这里用的是 CFG-free，也就是不用 CFG。这样每一步去噪只需要一次模型前向传播，进一步降低推理成本。"
       }
     ],
-    "updatedAt": "2026-09-25T07:58:46.522Z",
-    "illustrations": [],
+    "updatedAt": "2026-09-26T11:05:05.087Z",
+    "illustrations": [
+      {
+        "id": "f5079a9c-0066-41c2-bd7a-2e6f3ec99a69",
+        "title": "Pipeline",
+        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/f5079a9c-0066-41c2-bd7a-2e6f3ec99a69.png"
+      },
+      {
+        "id": "9f7fd66a-a55e-4490-ac31-ab6b7ae4acc1",
+        "title": "Architecture",
+        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/9f7fd66a-a55e-4490-ac31-ab6b7ae4acc1.png"
+      },
+      {
+        "id": "06a84888-a44c-436c-bf50-9d1ae8041915",
+        "title": "Effect of World State Bank",
+        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/06a84888-a44c-436c-bf50-9d1ae8041915.png"
+      },
+      {
+        "id": "0126550f-e20d-426d-bff4-dbdd1b77631a",
+        "title": "Prompt Switching",
+        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/0126550f-e20d-426d-bff4-dbdd1b77631a.png"
+      }
+    ],
     "createdAt": "2026-09-19T13:41:46.900Z"
   },
   {
@@ -172,132 +215,89 @@
     "createdAt": "2026-09-16T07:55:32.732Z"
   },
   {
-    "id": "12a7a692-6328-411a-b4bb-3f41af559c86",
-    "title": "SCOOP’D: Learning Mixed-Liquid-Solid Scooping via Sim2Real Generative Policy",
-    "authors": "Kuanning Wang, Yongchong Gu, Yuqian Fu, Zeyu Shangguan, Sicheng He, Xiangyang Xue, Yanwei Fu, Daniel Seita",
-    "year": 2025,
-    "venue": "ICRA",
-    "url": "https://arxiv.org/abs/2510.11566",
-    "pdfUrl": "https://arxiv.org/pdf/2510.11566.pdf",
-    "sourceCodeUrl": "https://scoopdiff.github.io/",
-    "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
+    "id": "99dca698-26b9-4d9f-9222-2d77fa1b25bf",
+    "title": "EgoSound: Benchmarking Sound Understanding in Egocentric Videos",
+    "authors": "Bingwen Zhu, Yuqian Fu, Qiaole Dong, Guolei Sun, Tianwen Qian, Yuzheng Wu, Danda Pani Paudel, Xiangyang Xue, Yanwei Fu",
+    "year": 2026,
+    "venue": "CVPR",
+    "url": "https://arxiv.org/abs/2602.14122v2",
+    "pdfUrl": "https://arxiv.org/pdf/2602.14122v2.pdf",
+    "sourceCodeUrl": "https://groolegend.github.io/EgoSound/",
+    "folderId": "846b3a50-9610-4086-bacb-22d371e0954f",
     "status": "finished",
-    "readDate": "2026-09-16",
+    "readDate": "2026-09-12",
     "tags": [
       "dataset",
       "benchmark",
-      "scooping",
-      "diffusion policy",
-      "1D CNN",
-      "ICRA"
+      "sound",
+      "MLLM",
+      "CVPR"
     ],
-    "summary": "该论文提出了一种名为SCOOP’D的方法，通过Sim2Real学习范式，利用扩散策略从仿真演示中学习机器人舀取混合液体和固体物体的技能。该方法在OmniGibson仿真环境中收集了6480个演示样本，并通过两个扩散策略模型分别学习预舀取姿态和精细舀取动作，在465次真实世界试验中实现了零样本迁移和超过80%的成功率。",
-    "notes": "省流：开辟新赛道——舀东西。两个diffusion，一个确定预舀取位置，一个用于精细操作，输入输出维数都很低，故用1D CNN作为backbone。方法论没啥创新的，主要任务比较新。",
-    "knowledgePoints": [
-      {
-        "term": "1D-CNN-based diffusion policy",
-        "link": "",
-        "explanation": "1D-CNN-based diffusion policy是一种基于一维卷积神经网络（1D-CNN）的扩散策略方法。该方法利用1D-CNN处理时间序列数据，通过逐步扩散噪声来生成动作序列。在机器人控制任务中，它能够从仿真演示中学习复杂的动作策略，并实现高效的策略迁移。1D-CNN的局部感受野使其适合捕捉时间序列中的局部模式，而扩散过程则通过逐步去噪生成稳定的动作序列。"
-      }
-    ],
-    "updatedAt": "2026-09-16T07:50:32.703Z",
+    "summary": "EgoSound是首个系统评估多模态大语言模型(MLLMs)在自我中心视角下声音理解能力的基准数据集。它整合了Ego4D和EgoBlind两个数据集，包含900个视频和7315个高质量问答对，涵盖声音特性、空间定位、因果推理等七类任务。实验表明当前MLLMs在细粒度听觉推理上仍有局限，该基准为推进多感官自我中心智能建立了挑战性标准。",
+    "notes": "省流：无新架构，加了sound含7类Q&A的新benchmark。",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-16T07:51:12.263Z",
     "illustrations": [
       {
-        "id": "03b5901d-73ae-4111-a451-e9aabc97c5dc",
-        "title": "Method",
-        "imagePath": "data/illustrations/12a7a692-6328-411a-b4bb-3f41af559c86/03b5901d-73ae-4111-a451-e9aabc97c5dc.png"
+        "id": "9eaaf531-a264-48e5-b963-c9dec6f9460d",
+        "title": "Pipeline",
+        "imagePath": "data/illustrations/99dca698-26b9-4d9f-9222-2d77fa1b25bf/9eaaf531-a264-48e5-b963-c9dec6f9460d.png"
+      },
+      {
+        "id": "2d7a4731-3d38-4d95-9c39-ce7161b964aa",
+        "title": "Task Taxonomy & Statistics",
+        "imagePath": "data/illustrations/99dca698-26b9-4d9f-9222-2d77fa1b25bf/2d7a4731-3d38-4d95-9c39-ce7161b964aa.png"
       }
     ],
-    "createdAt": "2026-09-16T05:27:08.887Z"
+    "createdAt": "2026-09-12T08:15:53.739Z"
   },
   {
-    "id": "fe058690-d562-48e9-b535-67c7e3f31f72",
-    "title": "Disentangle Identity, Cooperate Emotion: Correlation-Aware Emotional Talking Portrait Generation",
-    "authors": "Weipeng Tan, Chuming Lin, Chengming Xu, FeiFan Xu, Xiaobin Hu, Xiaozhong Ji, Junwei Zhu, Chengjie Wang, Yanwei Fu",
+    "id": "12f55852-ea4d-4a0d-9399-84c5ad5d580c",
+    "title": "TriVLA: A Triple-System-Based Unified Vision-Language-Action Model with Episodic World Modeling for General Robot Control",
+    "authors": "Zhenyang Liu, Yongchong Gu, Sixiao Zheng, Yanwei Fu, Xiangyang Xue, Yu-Gang Jiang",
     "year": 2025,
     "venue": "ACMMM",
-    "url": "https://doi.org/10.1145/3746027.3755286",
-    "pdfUrl": null,
-    "sourceCodeUrl": "",
-    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "url": "https://arxiv.org/abs/2507.01424",
+    "pdfUrl": "https://arxiv.org/pdf/2507.01424.pdf",
+    "sourceCodeUrl": "zhenyangliu.github.io/TriVLA",
+    "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
     "status": "finished",
-    "readDate": "2026-09-16",
+    "readDate": "2026-09-12",
     "tags": [
-      "emotion control",
-      "diffusion model",
-      "talking head generation",
-      "cross attention",
+      "VLA",
+      "world model",
+      "SVD",
+      "flow matching",
       "ACMMM"
     ],
-    "summary": "该论文提出了DICE-Talk框架，通过解耦身份与情感特征并利用跨模态注意力机制，实现了保留说话者身份的同时生成丰富情感表达的谈话头像。方法包含三个关键创新：身份无关的情感高斯分布表示、基于相关性的情感条件模块，以及潜在空间情感分类目标，在MEAD和HDTF数据集上表现出优于现有方法的情感准确性和唇同步性能。",
-    "notes": "省流：先用 Embedder 从参考视频提取高斯分布的情绪先验，再用 Emo. Bank增强情绪关联，最后在 UNet 里按 Spatial→Audio→Emotion 三层注入条件去噪，并用情绪判别器保证情绪准确。核心是身份与情绪解耦。扩散模型用 L=Ldenoising+λLcls+Lvq，分别管去噪、情绪准确、情绪字典；Embedder 单独用 Lcon​ 做对比学习，让情绪嵌入聚类。",
+    "summary": "该论文提出了一种基于三重系统架构的统一视觉-语言-动作模型TriVLA，通过引入受认知神经科学启发的情景世界模型，使机器人能够积累、回忆和预测序列化经验。实验表明，TriVLA在标准基准测试和真实世界操作任务中均优于基线模型，展示了其在长时程规划和开放式意图理解方面的优势。",
+    "notes": "省流：一篇把VLA和World Model结合起来的工作，算是world-model-enhanced-VLA，把world model对未来的预测用cross-attention引入VLA。方法的话是引入了3个system，Episodic Multimodal Perception负责VL，Episodic Dynamics Perception负责Prediction，Low-level Policy Learning负责A。（也是缝合怪的感觉）",
     "knowledgePoints": [
       {
-        "term": "denoising loss",
+        "term": "Time Noise",
         "link": "",
-        "explanation": "去噪损失是一种用于训练生成模型或自编码器的损失函数，旨在衡量模型在去除输入数据中的噪声或无关信息方面的能力。它通常通过比较原始干净数据与模型处理后的输出数据之间的差异来计算，帮助模型学习保留有用特征的同时过滤噪声。"
+        "explanation": "Time Noise 在 TriVLA 里指的是扩散/流匹配过程中的\"时间步噪声条件\"，更常见的叫法是 timestep embedding（时间步嵌入） 或 noise level embedding（噪声级别嵌入）。它不是\"噪声本身\"，而是一个告诉模型'当前处于去噪过程第几步、噪声还剩多少'的信号。"
       },
       {
-        "term": "stop-gradient ([sg])",
+        "term": "SVD(Stable Video Diffusion)",
         "link": "",
-        "explanation": "stop-gradient（[sg]）是一种在深度学习训练中使用的技术，用于阻止梯度在计算图中的特定部分反向传播。通过在计算图中插入停止梯度操作，可以固定某些参数的梯度为零，从而在优化过程中不更新这些参数。这一技术常用于解耦不同模块的训练，例如在生成对抗网络（GAN）中固定生成器的参数以单独训练判别器，或在多任务学习中控制不同任务间的梯度流动。"
+        "explanation": "SVD是一种基于扩散模型的视频生成技术，通过逐步去噪过程从随机噪声生成高质量视频序列。它扩展了图像扩散模型至时序域，利用时空注意力机制保持帧间一致性，通常采用潜在空间操作降低计算成本。关键创新包括运动动态建模和长期依赖捕捉，适用于可控视频合成任务。"
       }
     ],
-    "updatedAt": "2026-09-16T07:48:02.337Z",
+    "updatedAt": "2026-09-16T07:50:57.334Z",
     "illustrations": [
       {
-        "id": "96f8971c-49be-4886-b7d6-025d24febff2",
-        "title": "Framework",
-        "imagePath": "data/illustrations/fe058690-d562-48e9-b535-67c7e3f31f72/96f8971c-49be-4886-b7d6-025d24febff2.png"
-      }
-    ],
-    "createdAt": "2026-09-15T09:32:36.937Z"
-  },
-  {
-    "id": "25059472-eea5-4737-95d0-43ba08080af3",
-    "title": "SwiftVideo: A Unified Framework for Few-Step Video Generation through Trajectory-Distribution Alignment",
-    "authors": "Yanxiao Sun, Jiafu Wu, Yun Cao, Chengming Xu, Yabiao Wang, Weijian Cao, Donghao Luo, Chengjie Wang, Yanwei Fu",
-    "year": 2025,
-    "venue": "AAAI",
-    "url": "https://arxiv.org/abs/2508.06082v2",
-    "pdfUrl": "https://arxiv.org/pdf/2508.06082v2.pdf",
-    "sourceCodeUrl": "",
-    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
-    "status": "finished",
-    "readDate": "2026-09-15",
-    "tags": [
-      "AIGC",
-      "flow matching",
-      "GAN",
-      "CCD",
-      "ODE",
-      "teacher-student distillation",
-      "post training",
-      "AAAI"
-    ],
-    "summary": "本文提出了SwiftVideo，一个统一的蒸馏框架，通过结合轨迹保持和分布匹配策略，实现了高质量的视频生成同时大幅减少推理步骤。该方法引入了连续时间一致性蒸馏确保ODE轨迹精确保持，并提出双视角对齐（分布对齐和轨迹对齐）以增强视觉保真度和少步生成质量。实验表明，该方法在OpenVid-1M基准测试中显著优于现有方法。",
-    "notes": "省流：这篇没法省流，东西比较多，感觉拆开来能发好几篇论文了。首先是CCD，目标是用teacher-student distillation减少flow matching的迭代步数，baseline是ODE，但ODE会出现偏离目标轨迹的情况，于是乎本文采用切线法，将多次迭代的瞬时速度转变为平均速度，具体公式可以看论文，偏数学，还是比较优雅的；DA用了个GAN对抗网络，保证生成的视频足够逼真；TA把模型拷贝了一份，一份模型冻结（参考模型），一份训练，类似于LLM里面偏好对的方法，把少步生成和多步生成的组成一对，如果多步生成比少步生成更好，dpo loss就更低，但可能出现多步生成和少步生成都更差了，但少步生成变差得更多，所以加上reflow loss，使多步生成不比参考模型差。",
-    "knowledgePoints": [
-      {
-        "term": "CCD (continuous-time consistency distillation)",
-        "link": "",
-        "explanation": "一种将预训练视频生成模型蒸馏为少步生成器的方法：不再依赖 ODE 求解器在离散时间步上采样相邻点，而是直接对一致性函数沿概率流 ODE 轨迹求切线，作为连续时间下的训练监督，从而在避免离散化误差的同时精确保持原 ODE 轨迹。"
+        "id": "6d3fc162-0f02-472e-8eb8-270bfa2e81b5",
+        "title": "Comparison between dual-system architectures and our episodic world model-guided TriVLA",
+        "imagePath": "data/illustrations/12f55852-ea4d-4a0d-9399-84c5ad5d580c/6d3fc162-0f02-472e-8eb8-270bfa2e81b5.png"
       },
       {
-        "term": "LORA",
-        "link": "",
-        "explanation": "LORA（Low-Rank Adaptation）是一种用于大型预训练模型的高效微调技术。它通过在模型的权重矩阵中引入低秩矩阵来减少可训练参数的数量，从而在保持模型性能的同时显著降低计算和存储开销。LORA特别适用于资源受限的场景，如移动设备或边缘计算。"
+        "id": "a56f357c-765b-4b11-88aa-595172d2c15c",
+        "title": "Pipeline",
+        "imagePath": "data/illustrations/12f55852-ea4d-4a0d-9399-84c5ad5d580c/a56f357c-765b-4b11-88aa-595172d2c15c.png"
       }
     ],
-    "updatedAt": "2026-09-16T07:48:19.189Z",
-    "illustrations": [
-      {
-        "id": "42b5d4e8-ec7a-451f-99c9-77c482c68c60",
-        "title": "Overview",
-        "imagePath": "data/illustrations/25059472-eea5-4737-95d0-43ba08080af3/42b5d4e8-ec7a-451f-99c9-77c482c68c60.png"
-      }
-    ],
-    "createdAt": "2026-09-14T09:41:06.797Z"
+    "createdAt": "2026-09-12T09:08:16.404Z"
   },
   {
     "id": "828d188b-be36-45e8-92f5-5f018741cf7d",
@@ -354,89 +354,101 @@
     "createdAt": "2026-09-13T13:52:08.180Z"
   },
   {
-    "id": "12f55852-ea4d-4a0d-9399-84c5ad5d580c",
-    "title": "TriVLA: A Triple-System-Based Unified Vision-Language-Action Model with Episodic World Modeling for General Robot Control",
-    "authors": "Zhenyang Liu, Yongchong Gu, Sixiao Zheng, Yanwei Fu, Xiangyang Xue, Yu-Gang Jiang",
+    "id": "12a7a692-6328-411a-b4bb-3f41af559c86",
+    "title": "SCOOP’D: Learning Mixed-Liquid-Solid Scooping via Sim2Real Generative Policy",
+    "authors": "Kuanning Wang, Yongchong Gu, Yuqian Fu, Zeyu Shangguan, Sicheng He, Xiangyang Xue, Yanwei Fu, Daniel Seita",
     "year": 2025,
-    "venue": "ACMMM",
-    "url": "https://arxiv.org/abs/2507.01424",
-    "pdfUrl": "https://arxiv.org/pdf/2507.01424.pdf",
-    "sourceCodeUrl": "zhenyangliu.github.io/TriVLA",
+    "venue": "ICRA",
+    "url": "https://arxiv.org/abs/2510.11566",
+    "pdfUrl": "https://arxiv.org/pdf/2510.11566.pdf",
+    "sourceCodeUrl": "https://scoopdiff.github.io/",
     "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
     "status": "finished",
-    "readDate": "2026-09-12",
-    "tags": [
-      "VLA",
-      "world model",
-      "SVD",
-      "flow matching",
-      "ACMMM"
-    ],
-    "summary": "该论文提出了一种基于三重系统架构的统一视觉-语言-动作模型TriVLA，通过引入受认知神经科学启发的情景世界模型，使机器人能够积累、回忆和预测序列化经验。实验表明，TriVLA在标准基准测试和真实世界操作任务中均优于基线模型，展示了其在长时程规划和开放式意图理解方面的优势。",
-    "notes": "省流：一篇把VLA和World Model结合起来的工作，算是world-model-enhanced-VLA，把world model对未来的预测用cross-attention引入VLA。方法的话是引入了3个system，Episodic Multimodal Perception负责VL，Episodic Dynamics Perception负责Prediction，Low-level Policy Learning负责A。（也是缝合怪的感觉）",
-    "knowledgePoints": [
-      {
-        "term": "Time Noise",
-        "link": "",
-        "explanation": "Time Noise 在 TriVLA 里指的是扩散/流匹配过程中的\"时间步噪声条件\"，更常见的叫法是 timestep embedding（时间步嵌入） 或 noise level embedding（噪声级别嵌入）。它不是\"噪声本身\"，而是一个告诉模型'当前处于去噪过程第几步、噪声还剩多少'的信号。"
-      },
-      {
-        "term": "SVD(Stable Video Diffusion)",
-        "link": "",
-        "explanation": "SVD是一种基于扩散模型的视频生成技术，通过逐步去噪过程从随机噪声生成高质量视频序列。它扩展了图像扩散模型至时序域，利用时空注意力机制保持帧间一致性，通常采用潜在空间操作降低计算成本。关键创新包括运动动态建模和长期依赖捕捉，适用于可控视频合成任务。"
-      }
-    ],
-    "updatedAt": "2026-09-16T07:50:57.334Z",
-    "illustrations": [
-      {
-        "id": "6d3fc162-0f02-472e-8eb8-270bfa2e81b5",
-        "title": "Comparison between dual-system architectures and our episodic world model-guided TriVLA",
-        "imagePath": "data/illustrations/12f55852-ea4d-4a0d-9399-84c5ad5d580c/6d3fc162-0f02-472e-8eb8-270bfa2e81b5.png"
-      },
-      {
-        "id": "a56f357c-765b-4b11-88aa-595172d2c15c",
-        "title": "Pipeline",
-        "imagePath": "data/illustrations/12f55852-ea4d-4a0d-9399-84c5ad5d580c/a56f357c-765b-4b11-88aa-595172d2c15c.png"
-      }
-    ],
-    "createdAt": "2026-09-12T09:08:16.404Z"
-  },
-  {
-    "id": "99dca698-26b9-4d9f-9222-2d77fa1b25bf",
-    "title": "EgoSound: Benchmarking Sound Understanding in Egocentric Videos",
-    "authors": "Bingwen Zhu, Yuqian Fu, Qiaole Dong, Guolei Sun, Tianwen Qian, Yuzheng Wu, Danda Pani Paudel, Xiangyang Xue, Yanwei Fu",
-    "year": 2026,
-    "venue": "CVPR",
-    "url": "https://arxiv.org/abs/2602.14122v2",
-    "pdfUrl": "https://arxiv.org/pdf/2602.14122v2.pdf",
-    "sourceCodeUrl": "https://groolegend.github.io/EgoSound/",
-    "folderId": "846b3a50-9610-4086-bacb-22d371e0954f",
-    "status": "finished",
-    "readDate": "2026-09-12",
+    "readDate": "2026-09-16",
     "tags": [
       "dataset",
       "benchmark",
-      "sound",
-      "MLLM",
-      "CVPR"
+      "scooping",
+      "diffusion policy",
+      "1D CNN",
+      "ICRA"
     ],
-    "summary": "EgoSound是首个系统评估多模态大语言模型(MLLMs)在自我中心视角下声音理解能力的基准数据集。它整合了Ego4D和EgoBlind两个数据集，包含900个视频和7315个高质量问答对，涵盖声音特性、空间定位、因果推理等七类任务。实验表明当前MLLMs在细粒度听觉推理上仍有局限，该基准为推进多感官自我中心智能建立了挑战性标准。",
-    "notes": "省流：无新架构，加了sound含7类Q&A的新benchmark。",
-    "knowledgePoints": [],
-    "updatedAt": "2026-09-16T07:51:12.263Z",
-    "illustrations": [
+    "summary": "该论文提出了一种名为SCOOP’D的方法，通过Sim2Real学习范式，利用扩散策略从仿真演示中学习机器人舀取混合液体和固体物体的技能。该方法在OmniGibson仿真环境中收集了6480个演示样本，并通过两个扩散策略模型分别学习预舀取姿态和精细舀取动作，在465次真实世界试验中实现了零样本迁移和超过80%的成功率。",
+    "notes": "省流：开辟新赛道——舀东西。两个diffusion，一个确定预舀取位置，一个用于精细操作，输入输出维数都很低，故用1D CNN作为backbone。方法论没啥创新的，主要任务比较新。",
+    "knowledgePoints": [
       {
-        "id": "9eaaf531-a264-48e5-b963-c9dec6f9460d",
-        "title": "Pipeline",
-        "imagePath": "data/illustrations/99dca698-26b9-4d9f-9222-2d77fa1b25bf/9eaaf531-a264-48e5-b963-c9dec6f9460d.png"
-      },
-      {
-        "id": "2d7a4731-3d38-4d95-9c39-ce7161b964aa",
-        "title": "Task Taxonomy & Statistics",
-        "imagePath": "data/illustrations/99dca698-26b9-4d9f-9222-2d77fa1b25bf/2d7a4731-3d38-4d95-9c39-ce7161b964aa.png"
+        "term": "1D-CNN-based diffusion policy",
+        "link": "",
+        "explanation": "1D-CNN-based diffusion policy是一种基于一维卷积神经网络（1D-CNN）的扩散策略方法。该方法利用1D-CNN处理时间序列数据，通过逐步扩散噪声来生成动作序列。在机器人控制任务中，它能够从仿真演示中学习复杂的动作策略，并实现高效的策略迁移。1D-CNN的局部感受野使其适合捕捉时间序列中的局部模式，而扩散过程则通过逐步去噪生成稳定的动作序列。"
       }
     ],
-    "createdAt": "2026-09-12T08:15:53.739Z"
+    "updatedAt": "2026-09-16T07:50:32.703Z",
+    "illustrations": [
+      {
+        "id": "03b5901d-73ae-4111-a451-e9aabc97c5dc",
+        "title": "Method",
+        "imagePath": "data/illustrations/12a7a692-6328-411a-b4bb-3f41af559c86/03b5901d-73ae-4111-a451-e9aabc97c5dc.png"
+      }
+    ],
+    "createdAt": "2026-09-16T05:27:08.887Z"
+  },
+  {
+    "id": "5722d710-3e61-4f89-97a0-1c21abfdf755",
+    "title": "τ0 -WM: A Unified Video-Action World Model for Robotic Manipulation",
+    "authors": "Pengfei Zhou, Shengcong Chen, Di Chen, Jiaxu Wang, Rongjun Jin, Bingwen Zhu, Yike Pan, Songen Gu, Kuanning Wang, Shufeng Nan, Xingyu Qiu, Chenhao Qiu, Pu Yang, Yunuo Cai, Jianxiong Gao, Yifan Li, Yanwei Fu, Xiangyu Yue, Zhi Chen, Jianlan Luo",
+    "year": 2026,
+    "venue": "CoRL",
+    "url": "https://arxiv.org/abs/2606.01027v2",
+    "pdfUrl": "https://arxiv.org/pdf/2606.01027v2.pdf",
+    "sourceCodeUrl": "https://tau0-wm.github.io/",
+    "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
+    "status": "finished",
+    "readDate": "",
+    "tags": [
+      "dataset",
+      "WAM",
+      "VAM",
+      "ACVS",
+      "CoRL"
+    ],
+    "summary": "本文提出了τ 0 -WM，一个统一的视频-动作世界模型，将策略学习、视频预测和动作评估集成在一个未来预测框架中。该模型基于共享的视频扩散主干，通过多视角观测、语言指令和机器人状态联合预测未来视觉潜在表示和连续动作块，并在真实机器人操作任务中表现出优越性能。",
+    "notes": "省流：想出几个方案 → 预演后果 → 挑最好的未来 → 回头修正动作",
+    "knowledgePoints": [
+      {
+        "term": "UMI-style demonstration",
+        "link": "",
+        "explanation": "UMI-style demonstration 是一种机器人学习中的演示方法，通过人类直接操作机器人来收集示范数据。这种方法允许机器人记录人类操作时的动作序列和传感器数据，用于后续的策略学习或模仿学习。UMI（User-guided Manipulation Interface）强调用户友好性和直观性，常用于复杂操作任务的示范收集。"
+      },
+      {
+        "term": "flow matching",
+        "link": "",
+        "explanation": "流匹配是一种用于生成模型的方法，通过匹配概率流来学习数据分布。它通过优化一个连续时间动态系统，使得从噪声分布到数据分布的转换路径最小化特定的损失函数。这种方法在生成高质量样本和稳定训练方面表现出色，常用于图像和视频生成任务。"
+      },
+      {
+        "term": "DiT",
+        "link": "",
+        "explanation": "DiT（Diffusion Transformer）是一种去噪网络，是一种基于Transformer架构的扩散模型，用于生成高质量图像或视频。它结合了扩散模型的渐进式去噪过程和Transformer的强大序列建模能力，能够处理高维数据并生成细节丰富的输出。在视频生成任务中，DiT通过逐步预测和修正潜在表示来实现时间上连贯的视频预测。"
+      },
+      {
+        "term": "AdaLN调制",
+        "link": "",
+        "explanation": "AdaLN（Adaptive Layer Normalization）调制是一种自适应层归一化技术，通过动态调整归一化层的参数（如缩放因子和平移项）来适应不同输入或任务需求。它常用于生成模型或世界模型中，以增强模型对不同条件（如语言指令或环境状态）的适应能力。AdaLN通过条件信息（如嵌入向量）生成归一化参数，使模型能更灵活地处理多样化输入。"
+      }
+    ],
+    "updatedAt": "2026-09-16T07:50:14.835Z",
+    "illustrations": [
+      {
+        "id": "6b49c9df-4b4d-4a12-ba1b-4623d59fff9d",
+        "title": "Pipeline",
+        "imagePath": "data/illustrations/5722d710-3e61-4f89-97a0-1c21abfdf755/6b49c9df-4b4d-4a12-ba1b-4623d59fff9d.png"
+      },
+      {
+        "id": "a2483e0f-f6de-49e4-b79b-1a7e77ed2309",
+        "title": "Architecture",
+        "imagePath": "data/illustrations/5722d710-3e61-4f89-97a0-1c21abfdf755/a2483e0f-f6de-49e4-b79b-1a7e77ed2309.png"
+      }
+    ],
+    "createdAt": "2026-09-06T11:13:46.833Z"
   },
   {
     "id": "bb07ff3b-5432-4151-bd4d-54cd2ac3934e",
@@ -572,61 +584,92 @@
     "createdAt": "2026-09-06T08:30:20.923Z"
   },
   {
-    "id": "5722d710-3e61-4f89-97a0-1c21abfdf755",
-    "title": "τ0 -WM: A Unified Video-Action World Model for Robotic Manipulation",
-    "authors": "Pengfei Zhou, Shengcong Chen, Di Chen, Jiaxu Wang, Rongjun Jin, Bingwen Zhu, Yike Pan, Songen Gu, Kuanning Wang, Shufeng Nan, Xingyu Qiu, Chenhao Qiu, Pu Yang, Yunuo Cai, Jianxiong Gao, Yifan Li, Yanwei Fu, Xiangyu Yue, Zhi Chen, Jianlan Luo",
-    "year": 2026,
-    "venue": "CoRL",
-    "url": "https://arxiv.org/abs/2606.01027v2",
-    "pdfUrl": "https://arxiv.org/pdf/2606.01027v2.pdf",
-    "sourceCodeUrl": "https://tau0-wm.github.io/",
-    "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
+    "id": "25059472-eea5-4737-95d0-43ba08080af3",
+    "title": "SwiftVideo: A Unified Framework for Few-Step Video Generation through Trajectory-Distribution Alignment",
+    "authors": "Yanxiao Sun, Jiafu Wu, Yun Cao, Chengming Xu, Yabiao Wang, Weijian Cao, Donghao Luo, Chengjie Wang, Yanwei Fu",
+    "year": 2025,
+    "venue": "AAAI",
+    "url": "https://arxiv.org/abs/2508.06082v2",
+    "pdfUrl": "https://arxiv.org/pdf/2508.06082v2.pdf",
+    "sourceCodeUrl": "",
+    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
     "status": "finished",
-    "readDate": "",
+    "readDate": "2026-09-15",
     "tags": [
-      "dataset",
-      "WAM",
-      "VAM",
-      "ACVS",
-      "CoRL"
+      "AIGC",
+      "flow matching",
+      "GAN",
+      "CCD",
+      "ODE",
+      "teacher-student distillation",
+      "post training",
+      "AAAI"
     ],
-    "summary": "本文提出了τ 0 -WM，一个统一的视频-动作世界模型，将策略学习、视频预测和动作评估集成在一个未来预测框架中。该模型基于共享的视频扩散主干，通过多视角观测、语言指令和机器人状态联合预测未来视觉潜在表示和连续动作块，并在真实机器人操作任务中表现出优越性能。",
-    "notes": "省流：想出几个方案 → 预演后果 → 挑最好的未来 → 回头修正动作",
+    "summary": "本文提出了SwiftVideo，一个统一的蒸馏框架，通过结合轨迹保持和分布匹配策略，实现了高质量的视频生成同时大幅减少推理步骤。该方法引入了连续时间一致性蒸馏确保ODE轨迹精确保持，并提出双视角对齐（分布对齐和轨迹对齐）以增强视觉保真度和少步生成质量。实验表明，该方法在OpenVid-1M基准测试中显著优于现有方法。",
+    "notes": "省流：这篇没法省流，东西比较多，感觉拆开来能发好几篇论文了。首先是CCD，目标是用teacher-student distillation减少flow matching的迭代步数，baseline是ODE，但ODE会出现偏离目标轨迹的情况，于是乎本文采用切线法，将多次迭代的瞬时速度转变为平均速度，具体公式可以看论文，偏数学，还是比较优雅的；DA用了个GAN对抗网络，保证生成的视频足够逼真；TA把模型拷贝了一份，一份模型冻结（参考模型），一份训练，类似于LLM里面偏好对的方法，把少步生成和多步生成的组成一对，如果多步生成比少步生成更好，dpo loss就更低，但可能出现多步生成和少步生成都更差了，但少步生成变差得更多，所以加上reflow loss，使多步生成不比参考模型差。",
     "knowledgePoints": [
       {
-        "term": "UMI-style demonstration",
+        "term": "CCD (continuous-time consistency distillation)",
         "link": "",
-        "explanation": "UMI-style demonstration 是一种机器人学习中的演示方法，通过人类直接操作机器人来收集示范数据。这种方法允许机器人记录人类操作时的动作序列和传感器数据，用于后续的策略学习或模仿学习。UMI（User-guided Manipulation Interface）强调用户友好性和直观性，常用于复杂操作任务的示范收集。"
+        "explanation": "一种将预训练视频生成模型蒸馏为少步生成器的方法：不再依赖 ODE 求解器在离散时间步上采样相邻点，而是直接对一致性函数沿概率流 ODE 轨迹求切线，作为连续时间下的训练监督，从而在避免离散化误差的同时精确保持原 ODE 轨迹。"
       },
       {
-        "term": "flow matching",
+        "term": "LORA",
         "link": "",
-        "explanation": "流匹配是一种用于生成模型的方法，通过匹配概率流来学习数据分布。它通过优化一个连续时间动态系统，使得从噪声分布到数据分布的转换路径最小化特定的损失函数。这种方法在生成高质量样本和稳定训练方面表现出色，常用于图像和视频生成任务。"
-      },
-      {
-        "term": "DiT",
-        "link": "",
-        "explanation": "DiT（Diffusion Transformer）是一种去噪网络，是一种基于Transformer架构的扩散模型，用于生成高质量图像或视频。它结合了扩散模型的渐进式去噪过程和Transformer的强大序列建模能力，能够处理高维数据并生成细节丰富的输出。在视频生成任务中，DiT通过逐步预测和修正潜在表示来实现时间上连贯的视频预测。"
-      },
-      {
-        "term": "AdaLN调制",
-        "link": "",
-        "explanation": "AdaLN（Adaptive Layer Normalization）调制是一种自适应层归一化技术，通过动态调整归一化层的参数（如缩放因子和平移项）来适应不同输入或任务需求。它常用于生成模型或世界模型中，以增强模型对不同条件（如语言指令或环境状态）的适应能力。AdaLN通过条件信息（如嵌入向量）生成归一化参数，使模型能更灵活地处理多样化输入。"
+        "explanation": "LORA（Low-Rank Adaptation）是一种用于大型预训练模型的高效微调技术。它通过在模型的权重矩阵中引入低秩矩阵来减少可训练参数的数量，从而在保持模型性能的同时显著降低计算和存储开销。LORA特别适用于资源受限的场景，如移动设备或边缘计算。"
       }
     ],
-    "updatedAt": "2026-09-16T07:50:14.835Z",
+    "updatedAt": "2026-09-16T07:48:19.189Z",
     "illustrations": [
       {
-        "id": "6b49c9df-4b4d-4a12-ba1b-4623d59fff9d",
-        "title": "Pipeline",
-        "imagePath": "data/illustrations/5722d710-3e61-4f89-97a0-1c21abfdf755/6b49c9df-4b4d-4a12-ba1b-4623d59fff9d.png"
-      },
-      {
-        "id": "a2483e0f-f6de-49e4-b79b-1a7e77ed2309",
-        "title": "Architecture",
-        "imagePath": "data/illustrations/5722d710-3e61-4f89-97a0-1c21abfdf755/a2483e0f-f6de-49e4-b79b-1a7e77ed2309.png"
+        "id": "42b5d4e8-ec7a-451f-99c9-77c482c68c60",
+        "title": "Overview",
+        "imagePath": "data/illustrations/25059472-eea5-4737-95d0-43ba08080af3/42b5d4e8-ec7a-451f-99c9-77c482c68c60.png"
       }
     ],
-    "createdAt": "2026-09-06T11:13:46.833Z"
+    "createdAt": "2026-09-14T09:41:06.797Z"
+  },
+  {
+    "id": "fe058690-d562-48e9-b535-67c7e3f31f72",
+    "title": "Disentangle Identity, Cooperate Emotion: Correlation-Aware Emotional Talking Portrait Generation",
+    "authors": "Weipeng Tan, Chuming Lin, Chengming Xu, FeiFan Xu, Xiaobin Hu, Xiaozhong Ji, Junwei Zhu, Chengjie Wang, Yanwei Fu",
+    "year": 2025,
+    "venue": "ACMMM",
+    "url": "https://doi.org/10.1145/3746027.3755286",
+    "pdfUrl": null,
+    "sourceCodeUrl": "",
+    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "status": "finished",
+    "readDate": "2026-09-16",
+    "tags": [
+      "emotion control",
+      "diffusion model",
+      "talking head generation",
+      "cross attention",
+      "ACMMM"
+    ],
+    "summary": "该论文提出了DICE-Talk框架，通过解耦身份与情感特征并利用跨模态注意力机制，实现了保留说话者身份的同时生成丰富情感表达的谈话头像。方法包含三个关键创新：身份无关的情感高斯分布表示、基于相关性的情感条件模块，以及潜在空间情感分类目标，在MEAD和HDTF数据集上表现出优于现有方法的情感准确性和唇同步性能。",
+    "notes": "省流：先用 Embedder 从参考视频提取高斯分布的情绪先验，再用 Emo. Bank增强情绪关联，最后在 UNet 里按 Spatial→Audio→Emotion 三层注入条件去噪，并用情绪判别器保证情绪准确。核心是身份与情绪解耦。扩散模型用 L=Ldenoising+λLcls+Lvq，分别管去噪、情绪准确、情绪字典；Embedder 单独用 Lcon​ 做对比学习，让情绪嵌入聚类。",
+    "knowledgePoints": [
+      {
+        "term": "denoising loss",
+        "link": "",
+        "explanation": "去噪损失是一种用于训练生成模型或自编码器的损失函数，旨在衡量模型在去除输入数据中的噪声或无关信息方面的能力。它通常通过比较原始干净数据与模型处理后的输出数据之间的差异来计算，帮助模型学习保留有用特征的同时过滤噪声。"
+      },
+      {
+        "term": "stop-gradient ([sg])",
+        "link": "",
+        "explanation": "stop-gradient（[sg]）是一种在深度学习训练中使用的技术，用于阻止梯度在计算图中的特定部分反向传播。通过在计算图中插入停止梯度操作，可以固定某些参数的梯度为零，从而在优化过程中不更新这些参数。这一技术常用于解耦不同模块的训练，例如在生成对抗网络（GAN）中固定生成器的参数以单独训练判别器，或在多任务学习中控制不同任务间的梯度流动。"
+      }
+    ],
+    "updatedAt": "2026-09-16T07:48:02.337Z",
+    "illustrations": [
+      {
+        "id": "96f8971c-49be-4886-b7d6-025d24febff2",
+        "title": "Framework",
+        "imagePath": "data/illustrations/fe058690-d562-48e9-b535-67c7e3f31f72/96f8971c-49be-4886-b7d6-025d24febff2.png"
+      }
+    ],
+    "createdAt": "2026-09-15T09:32:36.937Z"
   }
 ]
