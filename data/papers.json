@@ -1,5 +1,25 @@
 [
   {
+    "id": "95bf9df9-1ad7-44d2-ba7a-644621f0812f",
+    "title": "ActiveVLA: Injecting Active Perception into Vision-Language-Action Models for Precise 3D Robotic Manipulation",
+    "authors": "Zhenyang Liu, Yongchong Gu, Yikai Wang, Xiangyang Xue, Yanwei Fu",
+    "year": 2026,
+    "venue": "",
+    "url": "https://arxiv.org/abs/2601.08325",
+    "pdfUrl": "https://arxiv.org/pdf/2601.08325.pdf",
+    "sourceCodeUrl": "",
+    "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
+    "status": "reading",
+    "readDate": "2026-09-28",
+    "tags": [],
+    "summary": "该论文提出了ActiveVLA框架，通过将主动感知能力注入视觉-语言-动作模型，使机器人能够自适应调整视角和分辨率，实现精确的3D操作。实验表明，ActiveVLA在多个仿真基准测试中优于现有方法，并能无缝迁移到真实世界场景。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-27T11:36:29.046Z",
+    "illustrations": [],
+    "createdAt": "2026-09-27T11:35:54.143Z"
+  },
+  {
     "id": "57c7d95c-2c10-4e97-a6e2-22078b09ec07",
     "title": "Yume1.5 : A Text-Controlled Interactive World Generation Model",
     "authors": "Xiaofeng Mao, Zhen Li, Chuanhao Li, Xiaojie Xu, Kaining Ying, Tong He, Jiangmiao Pang, Yu Qiao, Kaipeng Zhang",
