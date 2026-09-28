@@ -15,7 +15,8 @@
       "VLA",
       "multi-view",
       "heatmap",
-      "active perception"
+      "active perception",
+      "CVPR"
     ],
     "summary": "该论文提出了ActiveVLA框架，通过将主动感知能力注入视觉-语言-动作模型，使机器人能够自适应调整视角和分辨率，实现精确的3D操作。实验表明，ActiveVLA在多个仿真基准测试中优于现有方法，并能无缝迁移到真实世界场景。",
     "notes": "核心创新通俗来讲是引入了一种可以切换相机位姿，使得待抓取物体或任务关键区域能够更好地被展现出来的方法。具体方法如下：\n\n整个 Pipeline 分成两部分。\n\n第一部分是粗筛。先用 PaliGemma 这个 VLM 根据正交视角输出 image tokens，然后依次 rearrange，再通过 Convex Upsample 生成热力图；热力图中高亮部分所对应的 3D 位点和任务最相关。\n\n然后进入第二部分。第二部分的备选相机位置是以第一部分确定的关键 3D 区域为中心，在球面上基于正二十面体递归细分采样得到的一组候选视角点。评价标准为：\n\n 1、 是否遮挡；\n  2、距离是否合适；\n  3、视角多样性，也就是候选视角之间的角度差异越充分越好。\n\n然后再过一遍 PaliGemma，根据主动选择的视角和 zoom-in 后的图像确定更加精细的 3D 抓取位置 t∗。最后再接一个 Action Decoder，输入全局信息和局部信息，其中局部信息通过 ROI-aware sampler 获得，经过 MLP 得到 rotation、gripper state 和 collision flag 等动作输出。最终，t∗ 和 Action Decoder 的输出一起组成完整的机器人动作。",
@@ -31,7 +32,7 @@
         "explanation": "FoV（Field of View，视场角）指相机或传感器在特定时刻能够捕捉到的场景范围，通常以角度表示。在机器人视觉中，FoV决定了机器人单次观测能获取的环境信息量，直接影响感知精度与操作效率。（本文中在做Zoom-in的时候，不是截图，而是改变相机的FoV，从而保持了分辨率一致。）"
       }
     ],
-    "updatedAt": "2026-09-28T13:10:54.764Z",
+    "updatedAt": "2026-09-28T13:43:18.297Z",
     "illustrations": [
       {
         "id": "b3b5f5be-6045-4303-aca1-561d49718e6a",
