@@ -19,7 +19,6 @@ const THEME_LABELS = {
   dark: '深色模式',
   immersive: '沉浸模式',
 };
-let themeBeforeImmersive = 'light';
 
 /** Top-level cover tiles: label1–label4 in folder order; extras use placeholder. */
 const FOLDER_COVER_LABELS = [
@@ -1168,22 +1167,12 @@ function getCurrentTheme() {
 function updateThemeToggleUI(theme) {
   const btn = document.getElementById('btn-theme-toggle');
   if (!btn) return;
-  if (theme === 'immersive') {
-    const backLabel = THEME_LABELS[themeBeforeImmersive] || THEME_LABELS.light;
-    btn.title = `沉浸模式 · 点击返回${backLabel}`;
-    btn.setAttribute('aria-label', `沉浸模式，点击返回${backLabel}`);
-    return;
-  }
   const label = THEME_LABELS[theme] || THEME_LABELS.light;
   btn.title = label;
   btn.setAttribute('aria-label', `当前：${label}，点击切换`);
 }
 
 function applyTheme(theme) {
-  const current = getCurrentTheme();
-  if (theme === 'immersive' && current !== 'immersive') {
-    themeBeforeImmersive = current === 'light' || current === 'dark' ? current : 'light';
-  }
   const root = document.documentElement;
   root.classList.remove('dark', 'immersive');
   if (theme === 'dark') root.classList.add('dark');
@@ -1193,12 +1182,7 @@ function applyTheme(theme) {
 }
 
 function toggleTheme() {
-  const current = getCurrentTheme();
-  if (current === 'immersive') {
-    applyTheme(themeBeforeImmersive);
-    return;
-  }
-  const idx = THEME_CYCLE.indexOf(current);
+  const idx = THEME_CYCLE.indexOf(getCurrentTheme());
   const next = THEME_CYCLE[(idx + 1) % THEME_CYCLE.length];
   applyTheme(next);
 }
