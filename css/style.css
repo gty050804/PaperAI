@@ -108,54 +108,69 @@ html.folder-open:not(.immersive) body::after {
   display: none;
 }
 
-html.immersive .paper-card,
-html.immersive .form-card,
-html.immersive .reader-panel,
-html.immersive .stat-card,
-html.immersive .modal-content,
-html.immersive .folder-tile:not(.folder-cover-tile) {
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+/* Titles on category background — light: dark text + white halo; dark: white + black halo */
+html.folder-open:not(.dark):not(.immersive) .reader-title,
+html.folder-open:not(.dark):not(.immersive) .paper-title,
+html.folder-open:not(.dark):not(.immersive) .current-folder-label {
+  text-shadow:
+    0 0 6px rgba(255, 255, 255, 0.95),
+    0 0 14px rgba(255, 255, 255, 0.7),
+    0 1px 2px rgba(255, 255, 255, 0.85);
 }
 
-html.immersive .paper-card,
-html.immersive .folder-tile:not(.folder-cover-tile) {
-  background: color-mix(in srgb, hsl(220 15% 10%) 48%, transparent);
-  border-color: rgba(255, 255, 255, 0.16);
-}
-
-html.immersive .folder-cover-tile {
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-html.immersive .folder-cover-tile.is-placeholder {
-  background: color-mix(in srgb, hsl(220 15% 10%) 62%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-html.immersive .current-folder-label,
-html.immersive .paper-title,
-html.immersive .paper-meta,
-html.immersive .paper-summary,
-html.immersive .reader-title,
-html.immersive .reader-meta,
-html.immersive .folder-tile-name,
-html.immersive .folder-tile-count {
+html.folder-open.dark:not(.immersive) .reader-title,
+html.folder-open.dark:not(.immersive) .paper-title,
+html.folder-open.dark:not(.immersive) .current-folder-label {
   color: #fff;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  text-shadow:
+    0 0 6px rgba(0, 0, 0, 0.9),
+    0 0 14px rgba(0, 0, 0, 0.65),
+    0 1px 3px rgba(0, 0, 0, 0.75);
 }
 
-html.immersive .paper-meta,
-html.immersive .paper-summary,
-html.immersive .reader-meta,
-html.immersive .folder-tile-count {
-  color: rgba(255, 255, 255, 0.88);
+/* Immersive: full-screen wallpaper only, plus theme toggle */
+html.immersive .main,
+html.immersive .footer,
+html.immersive .header .logo,
+html.immersive .nav .nav-btn:not(.theme-toggle) {
+  display: none !important;
 }
 
-html.immersive .panel-header {
-  background: color-mix(in srgb, var(--bg) 75%, transparent);
+html.immersive .header {
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 100%;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  pointer-events: none;
+}
+
+html.immersive .header.header--scrolled {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.immersive .header-inner {
+  justify-content: flex-end;
+  padding: 1rem 1.25rem;
+  pointer-events: none;
+}
+
+html.immersive .theme-toggle {
+  pointer-events: auto;
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
