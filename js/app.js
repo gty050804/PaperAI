@@ -20,7 +20,7 @@ const THEME_LABELS = {
   immersive: '沉浸模式',
 };
 
-/** Top-level cover tiles: label1–label4 in folder order; extras use placeholder. */
+/** Full-res labels for page background; thumbs for homepage cover tiles. */
 const FOLDER_COVER_LABELS = [
   'assets/label1.png',
   'assets/label2.png',
@@ -28,8 +28,16 @@ const FOLDER_COVER_LABELS = [
   'assets/label4.png',
 ];
 
-function getFolderCoverLabelUrl(coverIndex) {
-  return FOLDER_COVER_LABELS[coverIndex] ?? null;
+const FOLDER_COVER_LABELS_THUMB = [
+  'assets/label1-thumb.jpg',
+  'assets/label2-thumb.jpg',
+  'assets/label3-thumb.jpg',
+  'assets/label4-thumb.jpg',
+];
+
+function getFolderCoverLabelUrl(coverIndex, { thumb = false } = {}) {
+  const list = thumb ? FOLDER_COVER_LABELS_THUMB : FOLDER_COVER_LABELS;
+  return list[coverIndex] ?? null;
 }
 
 function getFolderCoverLabelUrlByFolderId(folderId) {
@@ -808,7 +816,7 @@ function renderFolders() {
   container.innerHTML = items.map(item => {
     const isNew = item.id === lastCreatedFolderId;
     const isUncategorized = item.id === UNCategorized_ID;
-    const coverUrl = isUncategorized ? null : getFolderCoverLabelUrl(coverIndex++);
+    const coverUrl = isUncategorized ? null : getFolderCoverLabelUrl(coverIndex++, { thumb: true });
     const placeholderClass = !coverUrl ? ' is-placeholder' : '';
     const coverImg = coverUrl
       ? `<img class="folder-cover-img" src="${escapeHtml(coverUrl)}" alt="" loading="lazy" decoding="async">`

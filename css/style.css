@@ -111,7 +111,8 @@ html.folder-open:not(.immersive) body::after {
 /* Titles on category background — light: dark text + white halo; dark: white + black halo */
 html.folder-open:not(.dark):not(.immersive) .reader-title,
 html.folder-open:not(.dark):not(.immersive) .paper-title,
-html.folder-open:not(.dark):not(.immersive) .current-folder-label {
+html.folder-open:not(.dark):not(.immersive) .current-folder-label,
+html.folder-open:not(.dark):not(.immersive) #btn-back-folders {
   text-shadow:
     0 0 6px rgba(255, 255, 255, 0.95),
     0 0 14px rgba(255, 255, 255, 0.7),
@@ -120,12 +121,17 @@ html.folder-open:not(.dark):not(.immersive) .current-folder-label {
 
 html.folder-open.dark:not(.immersive) .reader-title,
 html.folder-open.dark:not(.immersive) .paper-title,
-html.folder-open.dark:not(.immersive) .current-folder-label {
+html.folder-open.dark:not(.immersive) .current-folder-label,
+html.folder-open.dark:not(.immersive) #btn-back-folders {
   color: #fff;
   text-shadow:
     0 0 6px rgba(0, 0, 0, 0.9),
     0 0 14px rgba(0, 0, 0, 0.65),
     0 1px 3px rgba(0, 0, 0, 0.75);
+}
+
+html.folder-open:not(.immersive) #btn-back-folders:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* Immersive: full-screen wallpaper only, plus theme toggle */
