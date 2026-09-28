@@ -779,19 +779,13 @@ function renderFolders() {
     const coverImg = coverUrl
       ? `<img class="folder-cover-img" src="${escapeHtml(coverUrl)}" alt="" loading="lazy" decoding="async">`
       : '';
-    const placeholderMeta = !coverUrl ? `
-          <span class="folder-cover-placeholder">
-            <span class="folder-tile-name">${escapeHtml(item.label)}</span>
-            <span class="folder-tile-count">${item.count} 篇论文</span>
-          </span>
-        ` : '';
     return `
       <div class="folder-tile-wrap folder-cover-wrap${currentFolderId === item.id ? ' active' : ''}${isNew ? ' is-new' : ''}"
            data-folder-id="${escapeHtml(item.id)}">
         <button type="button" class="folder-tile folder-cover-tile${placeholderClass}" aria-label="${escapeHtml(item.label)}，${item.count} 篇论文">
           ${coverImg}
-          ${placeholderMeta}
-          ${coverUrl ? `<span class="folder-cover-badge">${item.count} 篇</span>` : ''}
+          <span class="folder-cover-title">${escapeHtml(item.label)}</span>
+          <span class="folder-cover-badge">${item.count} 篇</span>
         </button>
         ${isAdmin && !isUncategorized ? `
           <span class="folder-tile-actions admin-only">
