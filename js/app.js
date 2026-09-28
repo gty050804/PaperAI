@@ -20,6 +20,18 @@ const THEME_LABELS = {
   immersive: '沉浸模式',
 };
 
+/** Top-level cover tiles: label1–label4 in folder order; extras use placeholder. */
+const FOLDER_COVER_LABELS = [
+  'assets/label1.png',
+  'assets/label2.png',
+  'assets/label3.png',
+  'assets/label4.png',
+];
+
+function getFolderCoverLabelUrl(coverIndex) {
+  return FOLDER_COVER_LABELS[coverIndex] ?? null;
+}
+
 let papers = [];
 let folders = [];
 let currentFolderId = null;
@@ -758,15 +770,28 @@ function renderFolders() {
     return;
   }
 
+  let coverIndex = 0;
   container.innerHTML = items.map(item => {
     const isNew = item.id === lastCreatedFolderId;
     const isUncategorized = item.id === UNCategorized_ID;
+    const coverUrl = isUncategorized ? null : getFolderCoverLabelUrl(coverIndex++);
+    const placeholderClass = !coverUrl ? ' is-placeholder' : '';
+    const coverImg = coverUrl
+      ? `<img class="folder-cover-img" src="${escapeHtml(coverUrl)}" alt="" loading="lazy" decoding="async">`
+      : '';
+    const placeholderMeta = !coverUrl ? `
+          <span class="folder-cover-placeholder">
+            <span class="folder-tile-name">${escapeHtml(item.label)}</span>
+            <span class="folder-tile-count">${item.count} 篇论文</span>
+          </span>
+        ` : '';
     return `
-      <div class="folder-tile-wrap${currentFolderId === item.id ? ' active' : ''}${isNew ? ' is-new' : ''}"
+      <div class="folder-tile-wrap folder-cover-wrap${currentFolderId === item.id ? ' active' : ''}${isNew ? ' is-new' : ''}"
            data-folder-id="${escapeHtml(item.id)}">
-        <button type="button" class="folder-tile" aria-label="${escapeHtml(item.label)}，${item.count} 篇论文">
-          <span class="folder-tile-name">${escapeHtml(item.label)}</span>
-          <span class="folder-tile-count">${item.count} 篇论文</span>
+        <button type="button" class="folder-tile folder-cover-tile${placeholderClass}" aria-label="${escapeHtml(item.label)}，${item.count} 篇论文">
+          ${coverImg}
+          ${placeholderMeta}
+          ${coverUrl ? `<span class="folder-cover-badge">${item.count} 篇</span>` : ''}
         </button>
         ${isAdmin && !isUncategorized ? `
           <span class="folder-tile-actions admin-only">
