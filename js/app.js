@@ -32,6 +32,30 @@ function getFolderCoverLabelUrl(coverIndex) {
   return FOLDER_COVER_LABELS[coverIndex] ?? null;
 }
 
+function getFolderCoverLabelUrlByFolderId(folderId) {
+  if (!folderId || folderId === UNCategorized_ID) return null;
+  const folder = getFolderById(folderId);
+  if (!folder) return null;
+  const topLevelId = folder.parentId || folder.id;
+  const index = getTopLevelFolders().findIndex(f => f.id === topLevelId);
+  return index >= 0 ? getFolderCoverLabelUrl(index) : null;
+}
+
+function updatePageBackground() {
+  const root = document.documentElement;
+  if (currentFolderId == null) {
+    root.style.removeProperty('--page-bg-image');
+    return;
+  }
+  const activeFolderId = currentSubcategoryId || currentFolderId;
+  const coverUrl = getFolderCoverLabelUrlByFolderId(activeFolderId);
+  if (coverUrl) {
+    root.style.setProperty('--page-bg-image', `url('${coverUrl}')`);
+  } else {
+    root.style.removeProperty('--page-bg-image');
+  }
+}
+
 let papers = [];
 let folders = [];
 let currentFolderId = null;
@@ -656,10 +680,11 @@ function updatePapersPanelVisibility() {
 
   if (!open) {
     titleEl.textContent = '';
-    return;
+  } else {
+    renderCurrentFolderTitle();
   }
 
-  renderCurrentFolderTitle();
+  updatePageBackground();
 }
 
 function renderCurrentFolderTitle() {

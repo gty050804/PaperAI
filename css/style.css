@@ -21,6 +21,7 @@
   --radius: 8px;
   --radius-lg: 12px;
   --font: 'Source Sans 3', 'Noto Sans SC', system-ui, sans-serif;
+  --page-bg-image: url('../assets/background.jpg');
 }
 
 html.dark {
@@ -74,7 +75,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background: url('../assets/background.jpg') center / cover no-repeat;
+  background: var(--page-bg-image) center / cover no-repeat;
   transform: scale(1.04);
   filter: blur(6px);
 }
