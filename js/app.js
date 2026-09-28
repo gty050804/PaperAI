@@ -41,17 +41,26 @@ function getFolderCoverLabelUrlByFolderId(folderId) {
   return index >= 0 ? getFolderCoverLabelUrl(index) : null;
 }
 
+function assetUrlForCssBackground(assetPath) {
+  // --page-bg-image is consumed in css/style.css; url() resolves from that file.
+  const normalized = String(assetPath || '').replace(/^\.\//, '');
+  return `url('../${normalized}')`;
+}
+
 function updatePageBackground() {
   const root = document.documentElement;
   if (currentFolderId == null) {
+    root.classList.remove('folder-open');
     root.style.removeProperty('--page-bg-image');
     return;
   }
   const activeFolderId = currentSubcategoryId || currentFolderId;
   const coverUrl = getFolderCoverLabelUrlByFolderId(activeFolderId);
   if (coverUrl) {
-    root.style.setProperty('--page-bg-image', `url('${coverUrl}')`);
+    root.classList.add('folder-open');
+    root.style.setProperty('--page-bg-image', assetUrlForCssBackground(coverUrl));
   } else {
+    root.classList.remove('folder-open');
     root.style.removeProperty('--page-bg-image');
   }
 }

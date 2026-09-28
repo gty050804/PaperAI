@@ -94,12 +94,17 @@ html.dark body::after {
   background: color-mix(in srgb, var(--bg) 84%, transparent);
 }
 
-html.immersive body::before {
+html.immersive body::before,
+html.folder-open body::before {
   transform: none;
   filter: none;
 }
 
 html.immersive body::after {
+  display: none;
+}
+
+html.folder-open:not(.immersive) body::after {
   display: none;
 }
 
