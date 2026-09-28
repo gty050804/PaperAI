@@ -112,7 +112,8 @@ html.folder-open:not(.immersive) body::after {
 html.folder-open:not(.dark):not(.immersive) .reader-title,
 html.folder-open:not(.dark):not(.immersive) .paper-title,
 html.folder-open:not(.dark):not(.immersive) .current-folder-label,
-html.folder-open:not(.dark):not(.immersive) #btn-back-folders {
+html.folder-open:not(.dark):not(.immersive) #btn-back-folders,
+html.folder-open:not(.dark):not(.immersive) #btn-back-list {
   text-shadow:
     0 0 6px rgba(255, 255, 255, 0.95),
     0 0 14px rgba(255, 255, 255, 0.7),
@@ -122,7 +123,8 @@ html.folder-open:not(.dark):not(.immersive) #btn-back-folders {
 html.folder-open.dark:not(.immersive) .reader-title,
 html.folder-open.dark:not(.immersive) .paper-title,
 html.folder-open.dark:not(.immersive) .current-folder-label,
-html.folder-open.dark:not(.immersive) #btn-back-folders {
+html.folder-open.dark:not(.immersive) #btn-back-folders,
+html.folder-open.dark:not(.immersive) #btn-back-list {
   color: #fff;
   text-shadow:
     0 0 6px rgba(0, 0, 0, 0.9),
@@ -130,7 +132,8 @@ html.folder-open.dark:not(.immersive) #btn-back-folders {
     0 1px 3px rgba(0, 0, 0, 0.75);
 }
 
-html.folder-open:not(.immersive) #btn-back-folders:hover {
+html.folder-open:not(.immersive) #btn-back-folders:hover,
+html.folder-open:not(.immersive) #btn-back-list:hover {
   background: rgba(255, 255, 255, 0.12);
 }
 
