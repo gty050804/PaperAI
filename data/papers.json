@@ -1,5 +1,25 @@
 [
   {
+    "id": "ae30fb96-7510-4af6-9c54-f58188324d22",
+    "title": "PyVision-RL: Forging Open Agentic Vision Models via RL",
+    "authors": "Shitian Zhao, Shaoheng Lin, Ming Li, Haoquan Zhang, Wenshuo Peng, Kaipeng Zhang, Chen Wei",
+    "year": 2026,
+    "venue": "ICML",
+    "url": "https://arxiv.org/abs/2602.20739",
+    "pdfUrl": "https://arxiv.org/pdf/2602.20739.pdf",
+    "sourceCodeUrl": "https://github.com/agents-x-project/PyVision-RL",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
+    "status": "to-read",
+    "readDate": "2026-10-01",
+    "tags": [],
+    "summary": "该论文提出了PyVision-RL框架，通过强化学习训练开放权重的多模态模型，解决了交互崩溃问题并维持了多轮工具使用。特别地，PyVision-Video采用按需上下文构建策略，在视频理解任务中显著减少了视觉标记的使用，同时提升了推理效率。实验表明，该方法在图像和视频理解任务上均取得了优越的性能与效率平衡。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-09-29T14:28:02.576Z",
+    "illustrations": [],
+    "createdAt": "2026-09-29T14:28:02.576Z"
+  },
+  {
     "id": "ccae1e15-766a-43d2-b574-7cf590859c73",
     "title": "π0 : A Vision-Language-Action Flow Model for General Robot Control",
     "authors": "Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Lucy Xiaoyang Shi, James Tanner, Quan Vuong, Anna Walling, Haohuan Wang, Ury Zhilinsky",
