@@ -4,19 +4,40 @@
     "title": "π0 : A Vision-Language-Action Flow Model for General Robot Control",
     "authors": "Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Lucy Xiaoyang Shi, James Tanner, Quan Vuong, Anna Walling, Haohuan Wang, Ury Zhilinsky",
     "year": 2026,
-    "venue": "",
+    "venue": "RSS",
     "url": "https://arxiv.org/abs/2410.24164v4",
     "pdfUrl": "https://arxiv.org/pdf/2410.24164v4.pdf",
     "sourceCodeUrl": "",
     "folderId": "f7c8a902-2b3d-4e5f-a678-901234567891",
-    "status": "reading",
+    "status": "finished",
     "readDate": "2026-09-29",
-    "tags": [],
+    "tags": [
+      "dataset",
+      "blockwise causal attention",
+      "cross attention",
+      "self attention",
+      "flow matching",
+      "VLA",
+      "VLM",
+      "RSS"
+    ],
     "summary": "该论文提出了一种基于预训练视觉语言模型（VLM）和流匹配（flow matching）的新型通用机器人策略π 0，能够处理多种机器人平台和复杂任务。通过结合大规模多样化数据集和精细调整方法，该模型实现了高频率（50Hz）的灵巧操作技能，并在洗衣折叠、桌面清理等实际任务中展现了卓越的通用性和适应性。",
-    "notes": "",
-    "knowledgePoints": [],
-    "updatedAt": "2026-09-28T13:44:23.601Z",
-    "illustrations": [],
+    "notes": "省流：就是VLA的经典范式。先把一个VLM（PaliGemma）直接拿过来，因为它已经经过了大量网图的预训练。然后π0收集了一堆机器人数据，然后在VLM backbone后面接了一个action expert，用的是attention-based的flow-matching policy，直接顷刻炼化。整个架构采用的是blockwise causal attention，简单来说，token 被分成图像/语言、机器人状态、动作这几个 block；每个 block 内部可以做 self-attention，后面的 block 可以 attend 到前面的 block，但前面的 block 不能 attend 到后面的 block。因此 action tokens 可以读取图像，语言和机器人状态的上下文，同时也可以和其他 action tokens 交互。最后通过 flow matching，从噪声动作逐步生成干净的 action chunk，机械臂可以直接执行。",
+    "knowledgePoints": [
+      {
+        "term": "blockwise causal attention",
+        "link": "",
+        "explanation": "把输入 token 分成几个块，块内 token 可以双向互相看，块之间按顺序单向可见；在 π0中，图像/语言 block 不能看机器人状态和 action，qt不能看 action，而 action tokens 可以看图像、语言、状态以及其他 action tokens，从而在不破坏 VLM 表示的同时生成协调的连续动作 chunk。"
+      }
+    ],
+    "updatedAt": "2026-09-29T14:18:42.401Z",
+    "illustrations": [
+      {
+        "id": "7dbc9023-0f4f-4222-b0b9-5e9110458846",
+        "title": "Framework",
+        "imagePath": "data/illustrations/ccae1e15-766a-43d2-b574-7cf590859c73/7dbc9023-0f4f-4222-b0b9-5e9110458846.png"
+      }
+    ],
     "createdAt": "2026-09-28T13:44:12.138Z"
   },
   {
