@@ -1,5 +1,61 @@
 [
   {
+    "id": "dbb62ede-c0ef-4fd3-8302-548585fcb0f9",
+    "title": "Generative World Renderer at the Speed of Play",
+    "authors": "Guixu Lin, Zheng-Hui Huang, Siqi Yang, Ming-Hsuan Yang, Kaipeng Zhang, Zhixiang Wang",
+    "year": 2026,
+    "venue": "Technical Report",
+    "url": "https://arxiv.org/abs/2607.18703",
+    "pdfUrl": "https://arxiv.org/pdf/2607.18703.pdf",
+    "sourceCodeUrl": "",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
+    "status": "finished",
+    "readDate": "2026-10-09",
+    "tags": [
+      "world model",
+      "AIGC",
+      "teacher-student distillation",
+      "flow matching",
+      "GAN head",
+      "auto regressive",
+      "game engine",
+      "technical report"
+    ],
+    "summary": "该论文提出了AlayaRenderer-Flash，一种面向实时部署的生成式前向世界渲染器，将原始AlayaRenderer的渲染速度从0.56 FPS提升至31.54 FPS。通过将原始渲染器重新表述为多步自回归流式模型，并引入轻量级蒸馏编解码器，实现了高效潜在编码和帧重建，同时保留了教师模型的G-buffer和文本提示接口。",
+    "notes": "省流：本文的核心目的在于提高渲染实时性。引擎负责场景变化，模型负责风格化渲染。将引擎输出的5种属性（反照率、深度、法线、粗糙度、金属度）编码后与扩散模型的中间状态 xkxk​ 做拼接，然后做自注意力；text 通过交叉注意力注入。由于是游戏场景，模型生成须由双向参考改为自回归。实时性提高的手段主要有两点：1、教师-学生蒸馏，50步→4步；2、轻量级 Encoder 和 Decoder，将 Wan VAE 蒸馏到 TAEHV 架构的轻量级模型，更快。",
+    "knowledgePoints": [
+      {
+        "term": "MFD (Mean Flow Distillation)",
+        "link": "",
+        "explanation": "MFD（均值流蒸馏）是一种模型压缩技术，通过将复杂教师模型的知识迁移到轻量级学生模型中。它利用教师模型生成的中间特征流（如激活图或梯度）的统计均值作为监督信号，指导学生模型的训练。相比传统蒸馏方法，MFD减少了计算开销，同时保持了模型性能，适用于实时部署场景。"
+      },
+      {
+        "term": "CFG (classifier-free guidance)",
+        "link": "",
+        "explanation": "CFG（无分类器引导）是一种在生成模型中使用的技术，旨在提高生成样本的质量和多样性。它通过结合有条件（使用分类器）和无条件（不使用分类器）的生成路径，动态调整生成过程。这种方法减少了对外部分类器的依赖，同时保持了生成样本的多样性和可控性。CFG广泛应用于文本到图像生成等任务，显著提升了生成结果的准确性和多样性。\n要跑两次前向，一次带条件 (如prompt)，一次不带条件，两者的差值反应的就是条件的作用，乘以一个大于1的系数w，使其更加突出地服从条件指令。"
+      },
+      {
+        "term": "GAN head",
+        "link": "",
+        "explanation": "GAN head 是生成对抗网络（GAN）中的一个组件，通常指生成器或判别器的最后一层网络结构。它负责将中间特征转换为最终的输出，如图像或判别结果。在生成器中，GAN head 将潜在空间的表示解码为高维数据（如图像）；在判别器中，则将输入数据映射为判别分数。GAN head 的设计直接影响生成或判别的质量与效率。高频细节修复常用。"
+      },
+      {
+        "term": "TAEHV架构",
+        "link": "",
+        "explanation": "TAEHV架构是一种高效的生成式渲染框架，通过结合自回归模型和轻量级编解码器，实现快速潜在编码和帧重建。该架构优化了传统渲染流程，支持实时部署，同时保持高质量的G-buffer输出和文本提示接口兼容性。"
+      }
+    ],
+    "updatedAt": "2026-10-09T10:12:31.891Z",
+    "illustrations": [
+      {
+        "id": "0fbe2816-a9d0-4712-bf14-05128c5687aa",
+        "title": "Overview",
+        "imagePath": "data/illustrations/dbb62ede-c0ef-4fd3-8302-548585fcb0f9/0fbe2816-a9d0-4712-bf14-05128c5687aa.png"
+      }
+    ],
+    "createdAt": "2026-10-09T09:45:16.896Z"
+  },
+  {
     "id": "ccae1e15-766a-43d2-b574-7cf590859c73",
     "title": "π0 : A Vision-Language-Action Flow Model for General Robot Control",
     "authors": "Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Lucy Xiaoyang Shi, James Tanner, Quan Vuong, Anna Walling, Haohuan Wang, Ury Zhilinsky",
@@ -156,7 +212,8 @@
       "teacher-student distillation",
       "world state bank",
       "linear attention",
-      "dynamic conditioning"
+      "dynamic conditioning",
+      "technical report"
     ],
     "summary": "Alaya-EVOKE (Evoke) 提出了一种新的交互式世界模型，通过将持久世界状态外部化并重新设计教师模型来实现长时程交互生成。该方法使用外部相机索引的世界状态库维护场景几何，保持去噪器上下文在会话增长时有界，同时教师模型采用稀疏注意力机制和线性增长的内存计算，支持长时程监督。最终的三步学生模型在单H200上实现了2.11秒生成1.5秒片段，并在WBench上达到最先进性能。",
     "notes": "省流：核心贡献：1、 world state bank，在外部存储场景几何信息作为生成条件，维护内容一致性；  2、 长程蒸馏教师，作为注意力来源的帧包括全局第一帧，附近帧，精选远程帧和线性注意力的summary tokens，该机制在保留远程监督能力的同时将原来O(n^2)的注意力复杂度变成了O(n)，降低了计算量；  3、有界循环，迭代生成，推理时chunk-wise generation，训练时长程监督，但梯度回传时chunk之间有detach，减少计算开销。",
@@ -182,7 +239,7 @@
         "explanation": "CFG-free（无分类器引导）是扩散模型里常用的一种引导技术，通过把\"无条件生成\"和\"有条件生成\"的结果做加权组合，来增强对文本、相机姿态等条件的遵循程度。\n但 CFG 有个代价：每次去噪需要跑两次模型（一次有条件、一次无条件），计算量翻倍。Evoke 这里用的是 CFG-free，也就是不用 CFG。这样每一步去噪只需要一次模型前向传播，进一步降低推理成本。"
       }
     ],
-    "updatedAt": "2026-09-26T14:08:52.672Z",
+    "updatedAt": "2026-10-09T10:12:53.545Z",
     "illustrations": [
       {
         "id": "f5079a9c-0066-41c2-bd7a-2e6f3ec99a69",
