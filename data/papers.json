@@ -9,20 +9,45 @@
     "pdfUrl": null,
     "sourceCodeUrl": "https://github.com/OpenMOSS/MOSS-Image",
     "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
-    "status": "to-read",
-    "readDate": "2026-10-17",
-    "tags": [],
+    "status": "finished",
+    "readDate": "2026-10-16",
+    "tags": [
+      "AIGC",
+      "DiT",
+      "RoPE",
+      "gated FFN",
+      "self-attention",
+      "prompt enhancer",
+      "layout specification",
+      "technical report"
+    ],
     "summary": "MOSS-Image 是一个开放生成系统，结合了高保真视觉合成与意图感知组合。该系统通过预训练一个5B单流扩散变换器（DiT）和开发意图感知代理提示增强（PE）模块，实现了文本丰富和布局一致的图像生成。在长文本渲染和布局控制方面，MOSS-Image 在开放权重模型中达到了最先进的性能。",
-    "notes": "",
+    "notes": "省流：\n1、 生成器与训练配方：训练了一个擅长中英文长文本和布局控制的 5B DiT，将自然语言和布局 JSON 统一作为文本条件；结合广泛保留数据、多粒度与结构化标注，以及逐步提高分辨率和文本长度上限的训练。\n2、 布局规划智能体：利用语言模型和检索，把简短需求转成包含具体文字、元素位置和排版的 JSON，交给 DiT 生成图像。\n3、 评测基准：提出 LLTB，通过 OCR 评测长文本渲染；提出 RLA，通过人类成对盲审评测完整设计，并比较提示策略和生成器的作用。",
     "knowledgePoints": [
       {
         "term": "progressive-resolution training",
         "link": "",
         "explanation": "渐进分辨率训练是一种深度学习训练策略，模型从低分辨率图像开始训练，随着训练进程逐步提高输入图像的分辨率。这种方法有助于模型先学习图像的整体结构和主要特征，再逐步细化局部细节（如文字信息等），提高训练效率和生成质量。在扩散模型等生成任务中尤为有效，能平衡计算成本与生成效果。"
+      },
+      {
+        "term": "RoPE",
+        "link": "",
+        "explanation": "RoPE（Rotary Position Embedding）是一种用于处理序列数据中位置信息的位置编码方法。它通过旋转矩阵将位置信息嵌入到词向量中，能够更好地捕捉序列中的相对位置关系。RoPE在自注意力机制中表现优异，尤其适用于长序列建模，因其能够保持相对位置不变性，同时计算效率较高。"
+      },
+      {
+        "term": "Muon-AdamW",
+        "link": "",
+        "explanation": "Muon-AdamW 是 AdamW 优化器的一种变体，专为大规模分布式训练设计。它通过引入动量（mu）的概念来改进参数更新策略，结合了 AdamW 的自适应学习率和权重衰减特性。Muon-AdamW 在保持训练稳定性的同时，能够有效处理高维参数空间中的稀疏梯度问题，适用于大规模预训练模型如扩散变换器（DiT）的优化。"
       }
     ],
-    "updatedAt": "2026-10-16T11:40:06.545Z",
-    "illustrations": [],
+    "updatedAt": "2026-10-16T14:10:27.292Z",
+    "illustrations": [
+      {
+        "id": "bd3e7a17-30c0-4ec8-83e7-aca7b74a9513",
+        "title": "Overview",
+        "imagePath": "data/illustrations/1764ed0b-17dd-4e20-8ec5-fa5515ce1c73/bd3e7a17-30c0-4ec8-83e7-aca7b74a9513.png"
+      }
+    ],
     "createdAt": "2026-10-16T10:34:13.752Z"
   },
   {
