@@ -1,5 +1,31 @@
 [
   {
+    "id": "1764ed0b-17dd-4e20-8ec5-fa5515ce1c73",
+    "title": "MOSS-Image Technical Report",
+    "authors": "MOSI.AI, MOSI Intelligence, SII, Fudan University, Shanghai Jiao Tong University",
+    "year": 2026,
+    "venue": "Technical Report",
+    "url": "https://github.com/OpenMOSS/MOSS-Image",
+    "pdfUrl": null,
+    "sourceCodeUrl": "https://github.com/OpenMOSS/MOSS-Image",
+    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "status": "to-read",
+    "readDate": "2026-10-17",
+    "tags": [],
+    "summary": "MOSS-Image 是一个开放生成系统，结合了高保真视觉合成与意图感知组合。该系统通过预训练一个5B单流扩散变换器（DiT）和开发意图感知代理提示增强（PE）模块，实现了文本丰富和布局一致的图像生成。在长文本渲染和布局控制方面，MOSS-Image 在开放权重模型中达到了最先进的性能。",
+    "notes": "",
+    "knowledgePoints": [
+      {
+        "term": "progressive-resolution training",
+        "link": "",
+        "explanation": "渐进分辨率训练是一种深度学习训练策略，模型从低分辨率图像开始训练，随着训练进程逐步提高输入图像的分辨率。这种方法有助于模型先学习图像的整体结构和主要特征，再逐步细化局部细节（如文字信息等），提高训练效率和生成质量。在扩散模型等生成任务中尤为有效，能平衡计算成本与生成效果。"
+      }
+    ],
+    "updatedAt": "2026-10-16T11:40:06.545Z",
+    "illustrations": [],
+    "createdAt": "2026-10-16T10:34:13.752Z"
+  },
+  {
     "id": "dbb62ede-c0ef-4fd3-8302-548585fcb0f9",
     "title": "Generative World Renderer at the Speed of Play",
     "authors": "Guixu Lin, Zheng-Hui Huang, Siqi Yang, Ming-Hsuan Yang, Kaipeng Zhang, Zhixiang Wang",
