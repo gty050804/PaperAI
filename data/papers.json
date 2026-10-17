@@ -1,5 +1,49 @@
 [
   {
+    "id": "6d13fb4f-3c3d-4339-a8a9-b84c5645eb7c",
+    "title": "Understanding World or Predicting Future? A Comprehensive Survey of World Models",
+    "authors": "JINGTAO DING, YUNKE ZHANG, YU SHANG, JIE FENG, YUHENG ZHANG, ZEFANG ZONG, YUAN YUAN, HONGYUAN SU, NIAN LI, JINGHUA PIAO, YUCHENG DENG, NICHOLAS SUKIENNIK, CHEN GAO, FENGLI XU, YONG LI",
+    "year": 2024,
+    "venue": "ACM Comput. Surv.",
+    "url": "https://arxiv.org/abs/2411.14499",
+    "pdfUrl": "https://arxiv.org/pdf/2411.14499.pdf",
+    "sourceCodeUrl": "https://github.com/tsinghua-fib-lab/World-Model",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
+    "status": "finished",
+    "readDate": "2026-10-18",
+    "tags": [
+      "world model",
+      "survey"
+    ],
+    "summary": "本文对世界模型进行了全面综述，系统地将世界模型分为两类：一类用于构建内部表示以理解世界机制，另一类用于预测未来状态以指导决策。文章还探讨了世界模型在生成游戏、自动驾驶、机器人和社会模拟等关键领域的应用，并指出了未来研究方向。",
+    "notes": "GPT总结（图太多了，而且不复杂，文字就可以说清楚，要看请看原文~）：\n世界模型通过理解环境的变化规律、预测未来状态来支持决策与规划。“理解世界”与“预测未来”是相互联系的两种功能。\n\n两条研究主线：\n\n1、 内部表示：将环境编码为潜在状态或知识表示，用于理解与决策，包括基于模型的强化学习和语言模型中的世界知识。\n2、 未来预测：模拟环境随时间和动作发生的变化，包括视频生成与可交互的具身环境。\n\n主要作用：预测动作后果、辅助规划、生成训练数据，以及提供智能体训练和策略评估的模拟环境。\n\n应用领域：生成式游戏、机器人、自动驾驶与城市智能、社会仿真。\n\n关键判断：生成逼真内容不等于掌握世界规律。可靠的世界模型还需要物理一致性、动作可控性、长期预测能力和对未见情境的泛化能力。\n\n主要挑战：物理规律与反事实推理、真实社会行为建模、评测标准、仿真到现实的迁移、计算效率，以及隐私与安全。\n\n世界模型不仅要模拟一个看起来真实的世界，更要预测行动的后果，帮助智能体做出更好的决策。",
+    "knowledgePoints": [
+      {
+        "term": "Model Predictive Control (MPC)",
+        "link": "",
+        "explanation": "模型预测控制（MPC）是一种先进的过程控制方法，通过动态系统模型预测未来行为，并在每个控制周期内求解优化问题以确定最优控制动作。MPC广泛应用于工业过程控制、自动驾驶和机器人等领域，其核心优势在于能够显式处理多变量系统的约束条件。"
+      },
+      {
+        "term": "Monte Carlo Tree Search (MCTS)",
+        "link": "",
+        "explanation": "蒙特卡洛树搜索是一种用于决策过程的启发式搜索算法，尤其适用于具有巨大状态空间的游戏和规划问题。它通过随机模拟来评估可能的行动，构建搜索树以平衡探索与利用。MCTS的核心步骤包括选择、扩展、模拟和反向传播。该算法因其在AlphaGo等人工智能系统中的成功应用而闻名。"
+      },
+      {
+        "term": "PDDL",
+        "link": "",
+        "explanation": "PDDL（Planning Domain Definition Language）是一种用于描述人工智能规划问题的标准化语言。它定义了问题的初始状态、目标状态以及可执行的动作，使规划系统能够自动生成达成目标的动作序列。PDDL广泛应用于自动规划领域，支持复杂问题的建模与求解。"
+      },
+      {
+        "term": "Bayesian adaptive Markov decision processes (BAMDP)",
+        "link": "",
+        "explanation": "一种在环境规律未知时进行学习与决策的框架。智能体用信念分布表示对环境规律的概率判断，并根据交互结果，通过贝叶斯更新修正判断。\n其核心是：决策不仅依据当前环境状态，也依据对环境的认识及其不确定性；动作既能推进任务，也能获取信息，从而统一考虑“利用已有知识”和“探索未知环境”。"
+      }
+    ],
+    "updatedAt": "2026-10-17T13:56:44.356Z",
+    "illustrations": [],
+    "createdAt": "2026-10-17T11:06:53.495Z"
+  },
+  {
     "id": "1764ed0b-17dd-4e20-8ec5-fa5515ce1c73",
     "title": "MOSS-Image Technical Report",
     "authors": "MOSI.AI, MOSI Intelligence, SII, Fudan University, Shanghai Jiao Tong University",
