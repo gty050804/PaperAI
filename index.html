@@ -268,7 +268,7 @@
         </div>
 
         <div id="chat-api-setup" class="chat-api-setup">
-          <p class="chat-api-setup-title">首次使用请配置 DeepSeek API Key（仅保存在本浏览器）</p>
+          <p class="chat-api-setup-title">首次使用请配置硅基流动 API Key（与站主设置共用，仅保存在本浏览器）</p>
           <div class="chat-api-setup-row">
             <input type="password" id="chat-api-key-input" placeholder="sk-..." autocomplete="off">
             <button type="button" class="btn btn-secondary btn-sm" id="btn-chat-save-key">保存 Key</button>
@@ -327,12 +327,8 @@
             <input type="text" id="sf-model" placeholder="deepseek-ai/DeepSeek-V3">
           </div>
           <div class="form-group">
-            <label for="ds-api-key">DeepSeek API Key（AI 问答）</label>
-            <input type="password" id="ds-api-key" placeholder="sk-..." autocomplete="off">
-          </div>
-          <div class="form-group">
-            <label for="ds-model">DeepSeek 模型</label>
-            <input type="text" id="ds-model" placeholder="deepseek-chat">
+            <label for="sf-chat-model">AI 问答模型</label>
+            <input type="text" id="sf-chat-model" placeholder="Qwen/Qwen2.5-72B-Instruct">
           </div>
           <div class="form-group">
             <label for="github-token">GitHub Token</label>
@@ -407,12 +403,12 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="js/config.js?v=26"></script>
+  <script src="js/config.js?v=27"></script>
   <script src="js/pdf-store.js?v=14"></script>
   <script src="js/illustration-store.js?v=25"></script>
-  <script src="js/ai.js?v=14"></script>
+  <script src="js/ai.js?v=15"></script>
   <script src="js/export-image.js?v=5"></script>
-  <script src="js/chat.js?v=1"></script>
-  <script src="js/app.js?v=49"></script>
+  <script src="js/chat.js?v=2"></script>
+  <script src="js/app.js?v=50"></script>
 </body>
 </html>

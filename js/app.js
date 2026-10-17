@@ -114,7 +114,6 @@ function saveGithubToken(token) {
 
 function loadAdminSettingsIntoForm() {
   window.PaperAI?.loadSiliconFlowSettingsIntoForm();
-  window.PaperAIChat?.loadDeepSeekSettingsIntoForm();
   const tokenEl = document.getElementById('github-token');
   if (tokenEl) tokenEl.value = getGithubToken();
 }
@@ -1496,11 +1495,10 @@ function saveAdminSettings() {
   if (!requireAdmin()) return;
   const apiKey = document.getElementById('sf-api-key').value.trim();
   const model = document.getElementById('sf-model').value.trim();
-  const dsApiKey = document.getElementById('ds-api-key').value.trim();
-  const dsModel = document.getElementById('ds-model').value.trim();
+  const chatModel = document.getElementById('sf-chat-model').value.trim();
   const githubToken = document.getElementById('github-token').value.trim();
-  window.PaperAI.saveSiliconFlowSettings(apiKey, model || undefined);
-  window.PaperAIChat?.saveDeepSeekSettings(dsApiKey, dsModel || undefined);
+  window.PaperAI.saveSiliconFlowSettings(apiKey, model || undefined, chatModel || undefined);
+  window.PaperAIChat?.syncApiSetup?.();
   saveGithubToken(githubToken);
   alert('设置已保存');
 }

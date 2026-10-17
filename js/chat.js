@@ -1,6 +1,3 @@
-const DS_KEY_STORAGE = 'paperai-deepseek-key';
-const DS_MODEL_STORAGE = 'paperai-deepseek-model';
-
 const CHAT_SYSTEM_PROMPT = `你是 PaperAI 网站的论文阅读助手。请根据用户问题，基于下方「本站论文库」中的信息作答。
 
 规则：
@@ -10,36 +7,6 @@ const CHAT_SYSTEM_PROMPT = `你是 PaperAI 网站的论文阅读助手。请根�
 - 用清晰、友好的中文回答，适当使用列表`;
 
 let chatHistory = [];
-
-function getDeepSeekConfig() {
-  const cfg = window.PaperAIConfig?.deepseek || {};
-  return {
-    baseUrl: (cfg.baseUrl || 'https://api.deepseek.com/v1').replace(/\/$/, ''),
-    model: localStorage.getItem(DS_MODEL_STORAGE) || cfg.model || 'deepseek-chat',
-  };
-}
-
-function getDeepSeekApiKey() {
-  return localStorage.getItem(DS_KEY_STORAGE) || '';
-}
-
-function saveDeepSeekSettings(apiKey, model) {
-  if (apiKey) localStorage.setItem(DS_KEY_STORAGE, apiKey);
-  else localStorage.removeItem(DS_KEY_STORAGE);
-  if (model) localStorage.setItem(DS_MODEL_STORAGE, model);
-  else localStorage.removeItem(DS_MODEL_STORAGE);
-  syncChatApiSetupVisibility();
-}
-
-function loadDeepSeekSettingsIntoForm() {
-  const keyEl = document.getElementById('ds-api-key');
-  const modelEl = document.getElementById('ds-model');
-  const chatKeyEl = document.getElementById('chat-api-key-input');
-  const key = getDeepSeekApiKey();
-  if (keyEl) keyEl.value = key;
-  if (chatKeyEl) chatKeyEl.value = key;
-  if (modelEl) modelEl.value = getDeepSeekConfig().model;
-}
 
 function getChatContext() {
   return window.PaperAIChatContext || {};
@@ -146,42 +113,7 @@ function setChatStatus(message, type = '') {
 function syncChatApiSetupVisibility() {
   const setup = document.getElementById('chat-api-setup');
   if (!setup) return;
-  setup.classList.toggle('hidden', !!getDeepSeekApiKey());
-}
-
-async function callDeepSeekChat(messages) {
-  const apiKey = getDeepSeekApiKey();
-  if (!apiKey) throw new Error('请先配置 DeepSeek API Key');
-
-  const { baseUrl, model } = getDeepSeekConfig();
-  let res;
-  try {
-    res = await fetch(`${baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        stream: false,
-        max_tokens: 4096,
-        temperature: 0.35,
-      }),
-    });
-  } catch {
-    throw new Error('无法连接 DeepSeek API，请检查网络');
-  }
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(data.error?.message || data.message || `API 错误 (${res.status})`);
-  }
-
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error('API 未返回有效内容');
-  return content.trim();
+  setup.classList.toggle('hidden', !!window.PaperAI?.getSiliconFlowApiKey());
 }
 
 async function sendChatMessage(text) {
@@ -207,7 +139,7 @@ async function sendChatMessage(text) {
       ...chatHistory.map(m => ({ role: m.role, content: m.content })),
     ];
 
-    const reply = await callDeepSeekChat(messages);
+    const reply = await window.PaperAI.callSiliconFlowChat(messages);
     chatHistory.push({ role: 'assistant', content: reply });
     renderChatMessages();
     setChatStatus('');
@@ -231,13 +163,14 @@ function clearChatHistory() {
 }
 
 function onChatViewOpen() {
+  window.PaperAI?.loadSiliconFlowSettingsIntoForm();
   syncChatApiSetupVisibility();
   renderChatMessages();
   document.getElementById('chat-input')?.focus();
 }
 
 function initChat() {
-  loadDeepSeekSettingsIntoForm();
+  window.PaperAI?.loadSiliconFlowSettingsIntoForm();
   syncChatApiSetupVisibility();
   renderChatMessages();
 
@@ -262,8 +195,9 @@ function initChat() {
       setChatStatus('请输入 API Key', 'error');
       return;
     }
-    saveDeepSeekSettings(key);
-    loadDeepSeekSettingsIntoForm();
+    window.PaperAI.saveSiliconFlowSettings(key);
+    window.PaperAI.loadSiliconFlowSettingsIntoForm();
+    syncChatApiSetupVisibility();
     setChatStatus('API Key 已保存', 'success');
   });
 
@@ -277,7 +211,5 @@ document.addEventListener('DOMContentLoaded', initChat);
 
 window.PaperAIChat = {
   onViewOpen: onChatViewOpen,
-  saveDeepSeekSettings,
-  loadDeepSeekSettingsIntoForm,
-  getDeepSeekApiKey,
+  syncApiSetup: syncChatApiSetupVisibility,
 };

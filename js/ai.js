@@ -1,5 +1,6 @@
 const SF_KEY_STORAGE = 'paperai-siliconflow-key';
 const SF_MODEL_STORAGE = 'paperai-siliconflow-model';
+const SF_CHAT_MODEL_STORAGE = 'paperai-siliconflow-chat-model';
 
 function getSiliconFlowConfig() {
   const cfg = window.PaperAIConfig?.siliconflow || {};
@@ -9,25 +10,42 @@ function getSiliconFlowConfig() {
   };
 }
 
+function getSiliconFlowChatConfig() {
+  const cfg = window.PaperAIConfig?.siliconflow || {};
+  return {
+    baseUrl: (cfg.baseUrl || 'https://api.siliconflow.cn/v1').replace(/\/$/, ''),
+    model: localStorage.getItem(SF_CHAT_MODEL_STORAGE)
+      || cfg.chatModel
+      || 'Qwen/Qwen2.5-72B-Instruct',
+  };
+}
+
 function getSiliconFlowApiKey() {
   return localStorage.getItem(SF_KEY_STORAGE) || '';
 }
 
-function saveSiliconFlowSettings(apiKey, model) {
+function saveSiliconFlowSettings(apiKey, model, chatModel) {
   if (apiKey) localStorage.setItem(SF_KEY_STORAGE, apiKey);
   else localStorage.removeItem(SF_KEY_STORAGE);
 
   if (model) localStorage.setItem(SF_MODEL_STORAGE, model);
-  else localStorage.removeItem(SF_MODEL_STORAGE);
+  else if (model === '') localStorage.removeItem(SF_MODEL_STORAGE);
+
+  if (chatModel) localStorage.setItem(SF_CHAT_MODEL_STORAGE, chatModel);
+  else if (chatModel === '') localStorage.removeItem(SF_CHAT_MODEL_STORAGE);
 }
 
 function loadSiliconFlowSettingsIntoForm() {
   const keyEl = document.getElementById('sf-api-key');
   const modelEl = document.getElementById('sf-model');
-  if (!keyEl || !modelEl) return;
+  const chatModelEl = document.getElementById('sf-chat-model');
+  const chatKeyEl = document.getElementById('chat-api-key-input');
 
-  keyEl.value = getSiliconFlowApiKey();
-  modelEl.value = getSiliconFlowConfig().model;
+  const apiKey = getSiliconFlowApiKey();
+  if (keyEl) keyEl.value = apiKey;
+  if (chatKeyEl) chatKeyEl.value = apiKey;
+  if (modelEl) modelEl.value = getSiliconFlowConfig().model;
+  if (chatModelEl) chatModelEl.value = getSiliconFlowChatConfig().model;
 }
 
 function ensurePdfJsReady() {
@@ -107,6 +125,43 @@ async function callSiliconFlow(messages, options = {}) {
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error('API 未返回有效内容');
   return content;
+}
+
+async function callSiliconFlowChat(messages, options = {}) {
+  const apiKey = getSiliconFlowApiKey();
+  if (!apiKey) throw new Error('请先在「统计 → 站主设置」或 AI 问答页配置硅基流动 API Key');
+
+  const { baseUrl, model } = getSiliconFlowChatConfig();
+  const maxTokens = options.maxTokens ?? 4096;
+
+  let res;
+  try {
+    res = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        stream: false,
+        max_tokens: maxTokens,
+        temperature: options.temperature ?? 0.35,
+      }),
+    });
+  } catch {
+    throw new Error('无法连接硅基流动 API，请检查网络或 API 地址');
+  }
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.message || data.error?.message || `API 错误 (${res.status})`);
+  }
+
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('API 未返回有效内容');
+  return content.trim();
 }
 
 async function explainKnowledgeTerms(terms, context = {}) {
@@ -193,6 +248,7 @@ window.PaperAI = {
   getSiliconFlowApiKey,
   saveSiliconFlowSettings,
   loadSiliconFlowSettingsIntoForm,
+  callSiliconFlowChat,
   extractPaperMetadataFromPdf,
   explainKnowledgeTerms,
 };
