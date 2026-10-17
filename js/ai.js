@@ -164,6 +164,77 @@ async function callSiliconFlowChat(messages, options = {}) {
   return content.trim();
 }
 
+async function streamSiliconFlowChat(messages, options = {}) {
+  const apiKey = getSiliconFlowApiKey();
+  if (!apiKey) throw new Error('请先在「统计 → 站主设置」或 AI 问答页配置硅基流动 API Key');
+
+  const { baseUrl, model } = getSiliconFlowChatConfig();
+  const maxTokens = options.maxTokens ?? 4096;
+
+  let res;
+  try {
+    res = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        stream: true,
+        max_tokens: maxTokens,
+        temperature: options.temperature ?? 0.35,
+      }),
+    });
+  } catch {
+    throw new Error('无法连接硅基流动 API，请检查网络或 API 地址');
+  }
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || data.error?.message || `API 错误 (${res.status})`);
+  }
+
+  if (!res.body) throw new Error('API 未返回流式数据');
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullText = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('data:')) continue;
+      const payload = trimmed.slice(5).trim();
+      if (!payload || payload === '[DONE]') continue;
+
+      let parsed;
+      try {
+        parsed = JSON.parse(payload);
+      } catch {
+        continue;
+      }
+
+      const delta = parsed.choices?.[0]?.delta?.content;
+      if (!delta) continue;
+      fullText += delta;
+      options.onDelta?.(fullText, delta);
+    }
+  }
+
+  if (!fullText.trim()) throw new Error('API 未返回有效内容');
+  return fullText.trim();
+}
+
 async function explainKnowledgeTerms(terms, context = {}) {
   const termList = terms.map(t => (t.term || '').trim()).filter(Boolean);
   if (!termList.length) throw new Error('请先填写至少一个名词');
@@ -249,6 +320,7 @@ window.PaperAI = {
   saveSiliconFlowSettings,
   loadSiliconFlowSettingsIntoForm,
   callSiliconFlowChat,
+  streamSiliconFlowChat,
   extractPaperMetadataFromPdf,
   explainKnowledgeTerms,
 };

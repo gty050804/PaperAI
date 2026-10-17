@@ -7,6 +7,7 @@ const CHAT_SYSTEM_PROMPT = `你是 PaperAI 网站的论文阅读助手。请根�
 - 用清晰、友好的中文回答，适当使用列表`;
 
 let chatHistory = [];
+let chatStreaming = false;
 
 function getChatContext() {
   return window.PaperAIChatContext || {};
@@ -67,40 +68,80 @@ function escapeChatHtml(str) {
   return div.innerHTML;
 }
 
+function renderChatMarkdown(text) {
+  let html = escapeChatHtml(text);
+  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/(^|[\s(])_([^_\n]+)_/g, '$1<em>$2</em>');
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  html = html.replace(/\n/g, '<br>');
+  return html;
+}
+
+function formatMessageBody(msg) {
+  if (msg.role === 'assistant') {
+    return renderChatMarkdown(msg.content || '');
+  }
+  return escapeChatHtml(msg.content || '');
+}
+
+function scrollChatToBottom() {
+  const container = document.getElementById('chat-messages');
+  if (container) container.scrollTop = container.scrollHeight;
+}
+
+function bindChatExampleButtons(container) {
+  container.querySelectorAll('.chat-example-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById('chat-input');
+      if (input) {
+        input.value = btn.dataset.prompt || '';
+        input.focus();
+      }
+    });
+  });
+}
+
+function renderChatEmpty(container) {
+  container.innerHTML = `
+    <div class="chat-empty">
+      <p>可以问我关于本站论文的问题，例如：</p>
+      <ul class="chat-examples">
+        <li><button type="button" class="chat-example-btn" data-prompt="接下来我想阅读一些关于教师学生蒸馏的文章，请你告诉我网站里有哪些论文和这个相关。">有哪些教师-学生蒸馏相关的论文？</button></li>
+        <li><button type="button" class="chat-example-btn" data-prompt="现在世界模型究竟有哪些运用？请结合本站论文库回答。">世界模型有哪些运用？</button></li>
+        <li><button type="button" class="chat-example-btn" data-prompt="请推荐几篇适合入门的 VLA 论文，并说明理由。">推荐几篇 VLA 入门论文</button></li>
+      </ul>
+    </div>`;
+  bindChatExampleButtons(container);
+}
+
 function renderChatMessages() {
   const container = document.getElementById('chat-messages');
   if (!container) return;
 
   if (chatHistory.length === 0) {
-    container.innerHTML = `
-      <div class="chat-empty">
-        <p>可以问我关于本站论文的问题，例如：</p>
-        <ul class="chat-examples">
-          <li><button type="button" class="chat-example-btn" data-prompt="接下来我想阅读一些关于教师学生蒸馏的文章，请你告诉我网站里有哪些论文和这个相关。">有哪些教师-学生蒸馏相关的论文？</button></li>
-          <li><button type="button" class="chat-example-btn" data-prompt="现在世界模型究竟有哪些运用？请结合本站论文库回答。">世界模型有哪些运用？</button></li>
-          <li><button type="button" class="chat-example-btn" data-prompt="请推荐几篇适合入门的 VLA 论文，并说明理由。">推荐几篇 VLA 入门论文</button></li>
-        </ul>
-      </div>`;
-    container.querySelectorAll('.chat-example-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const input = document.getElementById('chat-input');
-        if (input) {
-          input.value = btn.dataset.prompt || '';
-          input.focus();
-        }
-      });
-    });
+    renderChatEmpty(container);
     return;
   }
 
-  container.innerHTML = chatHistory.map(msg => `
-    <div class="chat-message chat-message-${msg.role}">
+  container.innerHTML = chatHistory.map((msg, index) => `
+    <div class="chat-message chat-message-${msg.role}" data-chat-index="${index}">
       <div class="chat-message-label">${msg.role === 'user' ? '你' : 'AI'}</div>
-      <div class="chat-message-body">${escapeChatHtml(msg.content)}</div>
+      <div class="chat-message-body">${formatMessageBody(msg)}</div>
     </div>
   `).join('');
 
-  container.scrollTop = container.scrollHeight;
+  scrollChatToBottom();
+}
+
+function updateAssistantMessage(index) {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+  const body = container.querySelector(`.chat-message[data-chat-index="${index}"] .chat-message-body`);
+  if (!body) return;
+  body.innerHTML = renderChatMarkdown(chatHistory[index].content || '');
+  scrollChatToBottom();
 }
 
 function setChatStatus(message, type = '') {
@@ -116,18 +157,25 @@ function syncChatApiSetupVisibility() {
   setup.classList.toggle('hidden', !!window.PaperAI?.getSiliconFlowApiKey());
 }
 
-async function sendChatMessage(text) {
-  const trimmed = text.trim();
-  if (!trimmed) return;
-
+function setChatInputEnabled(enabled) {
   const submitBtn = document.querySelector('#chat-form button[type="submit"]');
   const input = document.getElementById('chat-input');
-  if (submitBtn) submitBtn.disabled = true;
-  if (input) input.disabled = true;
+  if (submitBtn) submitBtn.disabled = !enabled;
+  if (input) input.disabled = !enabled;
+}
+
+async function sendChatMessage(text) {
+  const trimmed = text.trim();
+  if (!trimmed || chatStreaming) return;
+
+  setChatInputEnabled(false);
+  chatStreaming = true;
 
   chatHistory.push({ role: 'user', content: trimmed });
+  chatHistory.push({ role: 'assistant', content: '' });
+  const assistantIndex = chatHistory.length - 1;
   renderChatMessages();
-  setChatStatus('思考中…');
+  setChatStatus('生成中…');
 
   try {
     const catalog = buildPaperCatalog();
@@ -136,23 +184,26 @@ async function sendChatMessage(text) {
         role: 'system',
         content: `${CHAT_SYSTEM_PROMPT}\n\n【本站论文库】\n${catalog}`,
       },
-      ...chatHistory.map(m => ({ role: m.role, content: m.content })),
+      ...chatHistory.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
     ];
 
-    const reply = await window.PaperAI.callSiliconFlowChat(messages);
-    chatHistory.push({ role: 'assistant', content: reply });
-    renderChatMessages();
+    const reply = await window.PaperAI.streamSiliconFlowChat(messages, {
+      onDelta(fullText) {
+        chatHistory[assistantIndex].content = fullText;
+        updateAssistantMessage(assistantIndex);
+      },
+    });
+    chatHistory[assistantIndex].content = reply;
+    updateAssistantMessage(assistantIndex);
     setChatStatus('');
   } catch (err) {
-    chatHistory.pop();
+    chatHistory.splice(-2);
     renderChatMessages();
     setChatStatus(err.message || '发送失败', 'error');
   } finally {
-    if (submitBtn) submitBtn.disabled = false;
-    if (input) {
-      input.disabled = false;
-      input.focus();
-    }
+    chatStreaming = false;
+    setChatInputEnabled(true);
+    document.getElementById('chat-input')?.focus();
   }
 }
 
