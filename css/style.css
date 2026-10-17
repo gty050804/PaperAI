@@ -1862,7 +1862,14 @@ html.immersive .theme-icon-immersive {
 }
 
 /* AI Chat */
+#view-chat.view.active {
+  width: 100%;
+}
+
 .chat-card {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -1926,8 +1933,11 @@ html.immersive .theme-icon-immersive {
 
 .chat-messages {
   flex: 1;
+  width: 100%;
+  min-width: 0;
   min-height: 280px;
   max-height: min(58vh, 640px);
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 0.75rem;
   border: 1px solid var(--border);
@@ -1969,6 +1979,8 @@ html.immersive .theme-icon-immersive {
 }
 
 .chat-message {
+  width: 100%;
+  min-width: 0;
   margin-bottom: 1rem;
 }
 
@@ -1988,15 +2000,19 @@ html.immersive .theme-icon-immersive {
 }
 
 .chat-message-body {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 0.75rem 0.875rem;
   border-radius: var(--radius);
   font-size: 0.9375rem;
   line-height: 1.65;
-  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 
 .chat-message-user .chat-message-body {
+  white-space: pre-wrap;
   background: color-mix(in srgb, var(--primary) 12%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border));
 }
@@ -2031,6 +2047,8 @@ html.immersive .theme-icon-immersive {
   display: flex;
   gap: 0.75rem;
   align-items: flex-end;
+  width: 100%;
+  min-width: 0;
 }
 
 .chat-input-row textarea {
