@@ -3,6 +3,7 @@ const CHAT_SYSTEM_PROMPT = `你是 PaperAI 网站的论文阅读助手。请根�
 规则：
 - 只能引用本站论文库中已有的论文与笔记内容，不要使用 PDF 原文，不要编造本站不存在的论文
 - 推荐论文时说明标题、分类、阅读状态，并简要说明为何相关
+- 提到本站某篇论文时，标题必须写成可点击链接：[论文标题](paper:论文ID)，ID 为论文库条目中第一行的 uuid
 - 可以进行主题归纳、对比、阅读建议；信息不足时请如实说明
 - 用清晰、友好的中文回答，适当使用列表`;
 
@@ -73,10 +74,23 @@ function renderChatMarkdown(text) {
   html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/(^|[\s(])_([^_\n]+)_/g, '$1<em>$2</em>');
+  html = html.replace(/\[([^\]]+)\]\((paper:[^)\s]+)\)/gi, (_match, label, href) => {
+    const paperId = href.replace(/^paper:/i, '').trim();
+    return `<a href="#" class="chat-paper-link" data-paper-id="${paperId}">${label}</a>`;
+  });
   html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="chat-external-link">$1</a>');
   html = html.replace(/\n/g, '<br>');
   return html;
+}
+
+function handleChatMessageClick(event) {
+  const link = event.target.closest('.chat-paper-link');
+  if (!link) return;
+  event.preventDefault();
+  const paperId = link.dataset.paperId;
+  if (!paperId) return;
+  window.PaperAIChatContext?.openPaper?.(paperId);
 }
 
 function formatMessageBody(msg) {
@@ -224,6 +238,8 @@ function initChat() {
   window.PaperAI?.loadSiliconFlowSettingsIntoForm();
   syncChatApiSetupVisibility();
   renderChatMessages();
+
+  document.getElementById('chat-messages')?.addEventListener('click', handleChatMessageClick);
 
   document.getElementById('chat-form')?.addEventListener('submit', (e) => {
     e.preventDefault();

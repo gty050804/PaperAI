@@ -2043,6 +2043,15 @@ html.immersive .theme-icon-immersive {
   text-underline-offset: 2px;
 }
 
+.chat-paper-link {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-paper-link:hover {
+  color: var(--primary-hover);
+}
+
 .chat-input-row {
   display: flex;
   gap: 0.75rem;

@@ -2478,6 +2478,7 @@ window.PaperAIChatContext = {
   getFolders: () => folders,
   getFolderPathLabel,
   statusLabels: STATUS_LABELS,
+  openPaper: (id) => openReader(id),
 };
 
 window.switchView = switchView;
