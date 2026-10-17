@@ -1,0 +1,283 @@
+const DS_KEY_STORAGE = 'paperai-deepseek-key';
+const DS_MODEL_STORAGE = 'paperai-deepseek-model';
+
+const CHAT_SYSTEM_PROMPT = `你是 PaperAI 网站的论文阅读助手。请根据用户问题，基于下方「本站论文库」中的信息作答。
+
+规则：
+- 只能引用本站论文库中已有的论文与笔记内容，不要使用 PDF 原文，不要编造本站不存在的论文
+- 推荐论文时说明标题、分类、阅读状态，并简要说明为何相关
+- 可以进行主题归纳、对比、阅读建议；信息不足时请如实说明
+- 用清晰、友好的中文回答，适当使用列表`;
+
+let chatHistory = [];
+
+function getDeepSeekConfig() {
+  const cfg = window.PaperAIConfig?.deepseek || {};
+  return {
+    baseUrl: (cfg.baseUrl || 'https://api.deepseek.com/v1').replace(/\/$/, ''),
+    model: localStorage.getItem(DS_MODEL_STORAGE) || cfg.model || 'deepseek-chat',
+  };
+}
+
+function getDeepSeekApiKey() {
+  return localStorage.getItem(DS_KEY_STORAGE) || '';
+}
+
+function saveDeepSeekSettings(apiKey, model) {
+  if (apiKey) localStorage.setItem(DS_KEY_STORAGE, apiKey);
+  else localStorage.removeItem(DS_KEY_STORAGE);
+  if (model) localStorage.setItem(DS_MODEL_STORAGE, model);
+  else localStorage.removeItem(DS_MODEL_STORAGE);
+  syncChatApiSetupVisibility();
+}
+
+function loadDeepSeekSettingsIntoForm() {
+  const keyEl = document.getElementById('ds-api-key');
+  const modelEl = document.getElementById('ds-model');
+  const chatKeyEl = document.getElementById('chat-api-key-input');
+  const key = getDeepSeekApiKey();
+  if (keyEl) keyEl.value = key;
+  if (chatKeyEl) chatKeyEl.value = key;
+  if (modelEl) modelEl.value = getDeepSeekConfig().model;
+}
+
+function getChatContext() {
+  return window.PaperAIChatContext || {};
+}
+
+function formatPaperBlock(paper, noteLimit) {
+  const ctx = getChatContext();
+  const folder = ctx.getFolderPathLabel?.(paper.folderId) || '未分类';
+  const status = ctx.statusLabels?.[paper.status] || paper.status || '未知';
+  const tags = (paper.tags || []).join('、') || '无';
+  const notes = (paper.notes || '').slice(0, noteLimit);
+  const knowledge = (paper.knowledgePoints || [])
+    .map(kp => {
+      const term = (kp.term || '').trim();
+      if (!term) return '';
+      const exp = (kp.explanation || '').trim();
+      return exp ? `${term}：${exp}` : term;
+    })
+    .filter(Boolean)
+    .join('；') || '无';
+
+  return `[${paper.id}]
+标题：${paper.title || '未命名'}
+作者：${paper.authors || '未知'}
+年份：${paper.year || '未知'}
+发表：${paper.venue || '未知'}
+分类：${folder}
+阅读状态：${status}
+标签：${tags}
+摘要：${paper.summary || '无'}
+详细笔记：${notes || '无'}
+知识点：${knowledge}
+链接：${paper.url || '无'}`;
+}
+
+function buildPaperCatalog() {
+  const ctx = getChatContext();
+  const papers = ctx.getPapers?.() || [];
+  if (papers.length === 0) return '（本站暂无论文记录）';
+
+  let noteLimit = 2500;
+  const MAX_CATALOG = 90000;
+
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const blocks = papers.map(p => formatPaperBlock(p, noteLimit));
+    const catalog = blocks.join('\n\n---\n\n');
+    if (catalog.length <= MAX_CATALOG || noteLimit <= 400) return catalog;
+    noteLimit = Math.floor(noteLimit * 0.55);
+  }
+
+  return papers.map(p => formatPaperBlock(p, 400)).join('\n\n---\n\n');
+}
+
+function escapeChatHtml(str) {
+  if (str == null) return '';
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
+function renderChatMessages() {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+
+  if (chatHistory.length === 0) {
+    container.innerHTML = `
+      <div class="chat-empty">
+        <p>可以问我关于本站论文的问题，例如：</p>
+        <ul class="chat-examples">
+          <li><button type="button" class="chat-example-btn" data-prompt="接下来我想阅读一些关于教师学生蒸馏的文章，请你告诉我网站里有哪些论文和这个相关。">有哪些教师-学生蒸馏相关的论文？</button></li>
+          <li><button type="button" class="chat-example-btn" data-prompt="现在世界模型究竟有哪些运用？请结合本站论文库回答。">世界模型有哪些运用？</button></li>
+          <li><button type="button" class="chat-example-btn" data-prompt="请推荐几篇适合入门的 VLA 论文，并说明理由。">推荐几篇 VLA 入门论文</button></li>
+        </ul>
+      </div>`;
+    container.querySelectorAll('.chat-example-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById('chat-input');
+        if (input) {
+          input.value = btn.dataset.prompt || '';
+          input.focus();
+        }
+      });
+    });
+    return;
+  }
+
+  container.innerHTML = chatHistory.map(msg => `
+    <div class="chat-message chat-message-${msg.role}">
+      <div class="chat-message-label">${msg.role === 'user' ? '你' : 'AI'}</div>
+      <div class="chat-message-body">${escapeChatHtml(msg.content)}</div>
+    </div>
+  `).join('');
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function setChatStatus(message, type = '') {
+  const el = document.getElementById('chat-status');
+  if (!el) return;
+  el.textContent = message || '';
+  el.className = 'chat-status' + (type ? ` chat-status-${type}` : '');
+}
+
+function syncChatApiSetupVisibility() {
+  const setup = document.getElementById('chat-api-setup');
+  if (!setup) return;
+  setup.classList.toggle('hidden', !!getDeepSeekApiKey());
+}
+
+async function callDeepSeekChat(messages) {
+  const apiKey = getDeepSeekApiKey();
+  if (!apiKey) throw new Error('请先配置 DeepSeek API Key');
+
+  const { baseUrl, model } = getDeepSeekConfig();
+  let res;
+  try {
+    res = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        stream: false,
+        max_tokens: 4096,
+        temperature: 0.35,
+      }),
+    });
+  } catch {
+    throw new Error('无法连接 DeepSeek API，请检查网络');
+  }
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error?.message || data.message || `API 错误 (${res.status})`);
+  }
+
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('API 未返回有效内容');
+  return content.trim();
+}
+
+async function sendChatMessage(text) {
+  const trimmed = text.trim();
+  if (!trimmed) return;
+
+  const submitBtn = document.querySelector('#chat-form button[type="submit"]');
+  const input = document.getElementById('chat-input');
+  if (submitBtn) submitBtn.disabled = true;
+  if (input) input.disabled = true;
+
+  chatHistory.push({ role: 'user', content: trimmed });
+  renderChatMessages();
+  setChatStatus('思考中…');
+
+  try {
+    const catalog = buildPaperCatalog();
+    const messages = [
+      {
+        role: 'system',
+        content: `${CHAT_SYSTEM_PROMPT}\n\n【本站论文库】\n${catalog}`,
+      },
+      ...chatHistory.map(m => ({ role: m.role, content: m.content })),
+    ];
+
+    const reply = await callDeepSeekChat(messages);
+    chatHistory.push({ role: 'assistant', content: reply });
+    renderChatMessages();
+    setChatStatus('');
+  } catch (err) {
+    chatHistory.pop();
+    renderChatMessages();
+    setChatStatus(err.message || '发送失败', 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+    if (input) {
+      input.disabled = false;
+      input.focus();
+    }
+  }
+}
+
+function clearChatHistory() {
+  chatHistory = [];
+  renderChatMessages();
+  setChatStatus('');
+}
+
+function onChatViewOpen() {
+  syncChatApiSetupVisibility();
+  renderChatMessages();
+  document.getElementById('chat-input')?.focus();
+}
+
+function initChat() {
+  loadDeepSeekSettingsIntoForm();
+  syncChatApiSetupVisibility();
+  renderChatMessages();
+
+  document.getElementById('chat-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const text = input?.value || '';
+    if (input) input.value = '';
+    sendChatMessage(text);
+  });
+
+  document.getElementById('chat-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      document.getElementById('chat-form')?.requestSubmit();
+    }
+  });
+
+  document.getElementById('btn-chat-save-key')?.addEventListener('click', () => {
+    const key = document.getElementById('chat-api-key-input')?.value.trim() || '';
+    if (!key) {
+      setChatStatus('请输入 API Key', 'error');
+      return;
+    }
+    saveDeepSeekSettings(key);
+    loadDeepSeekSettingsIntoForm();
+    setChatStatus('API Key 已保存', 'success');
+  });
+
+  document.getElementById('btn-chat-clear')?.addEventListener('click', () => {
+    if (chatHistory.length === 0) return;
+    if (confirm('确定清空当前对话？')) clearChatHistory();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initChat);
+
+window.PaperAIChat = {
+  onViewOpen: onChatViewOpen,
+  saveDeepSeekSettings,
+  loadDeepSeekSettingsIntoForm,
+  getDeepSeekApiKey,
+};

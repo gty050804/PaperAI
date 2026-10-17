@@ -15,7 +15,7 @@
       }
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=51">
+  <link rel="stylesheet" href="css/style.css?v=52">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,6 +32,7 @@
       </div>
       <nav class="nav">
         <button class="nav-btn active" data-view="list">阅读列表</button>
+        <button class="nav-btn" data-view="chat">AI问答</button>
         <button class="nav-btn admin-only hidden" data-view="add">添加论文</button>
         <button class="nav-btn" data-view="stats">统计</button>
         <button type="button" class="nav-btn theme-toggle" id="btn-theme-toggle" title="浅色模式" aria-label="切换显示模式">
@@ -255,6 +256,35 @@
       </div>
     </section>
 
+    <!-- AI 问答视图 -->
+    <section id="view-chat" class="view">
+      <div class="chat-card">
+        <div class="chat-header">
+          <div>
+            <h2>AI 问答</h2>
+            <p class="chat-desc">基于本站论文的摘要、详细笔记、标签与知识点回答，不使用 PDF 原文。</p>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-chat-clear">清空对话</button>
+        </div>
+
+        <div id="chat-api-setup" class="chat-api-setup">
+          <p class="chat-api-setup-title">首次使用请配置 DeepSeek API Key（仅保存在本浏览器）</p>
+          <div class="chat-api-setup-row">
+            <input type="password" id="chat-api-key-input" placeholder="sk-..." autocomplete="off">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-chat-save-key">保存 Key</button>
+          </div>
+        </div>
+
+        <div id="chat-messages" class="chat-messages"></div>
+
+        <form id="chat-form" class="chat-input-row">
+          <textarea id="chat-input" rows="3" placeholder="输入问题，例如：网站里有哪些世界模型相关的论文？" autocomplete="off"></textarea>
+          <button type="submit" class="btn btn-primary">发送</button>
+        </form>
+        <p id="chat-status" class="chat-status"></p>
+      </div>
+    </section>
+
     <!-- 统计视图 -->
     <section id="view-stats" class="view">
       <h2>阅读统计</h2>
@@ -295,6 +325,14 @@
           <div class="form-group">
             <label for="sf-model">文本模型（PDF 识别）</label>
             <input type="text" id="sf-model" placeholder="deepseek-ai/DeepSeek-V3">
+          </div>
+          <div class="form-group">
+            <label for="ds-api-key">DeepSeek API Key（AI 问答）</label>
+            <input type="password" id="ds-api-key" placeholder="sk-..." autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="ds-model">DeepSeek 模型</label>
+            <input type="text" id="ds-model" placeholder="deepseek-chat">
           </div>
           <div class="form-group">
             <label for="github-token">GitHub Token</label>
@@ -369,11 +407,12 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="js/config.js?v=25"></script>
+  <script src="js/config.js?v=26"></script>
   <script src="js/pdf-store.js?v=14"></script>
   <script src="js/illustration-store.js?v=25"></script>
   <script src="js/ai.js?v=14"></script>
   <script src="js/export-image.js?v=5"></script>
-  <script src="js/app.js?v=48"></script>
+  <script src="js/chat.js?v=1"></script>
+  <script src="js/app.js?v=49"></script>
 </body>
 </html>

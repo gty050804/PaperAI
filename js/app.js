@@ -114,6 +114,7 @@ function saveGithubToken(token) {
 
 function loadAdminSettingsIntoForm() {
   window.PaperAI?.loadSiliconFlowSettingsIntoForm();
+  window.PaperAIChat?.loadDeepSeekSettingsIntoForm();
   const tokenEl = document.getElementById('github-token');
   if (tokenEl) tokenEl.value = getGithubToken();
 }
@@ -594,6 +595,7 @@ function switchView(viewName) {
     }
   }
   if (viewName === 'stats') renderStats();
+  if (viewName === 'chat') window.PaperAIChat?.onViewOpen?.();
 }
 
 function getFolderById(id) {
@@ -1494,8 +1496,11 @@ function saveAdminSettings() {
   if (!requireAdmin()) return;
   const apiKey = document.getElementById('sf-api-key').value.trim();
   const model = document.getElementById('sf-model').value.trim();
+  const dsApiKey = document.getElementById('ds-api-key').value.trim();
+  const dsModel = document.getElementById('ds-model').value.trim();
   const githubToken = document.getElementById('github-token').value.trim();
   window.PaperAI.saveSiliconFlowSettings(apiKey, model || undefined);
+  window.PaperAIChat?.saveDeepSeekSettings(dsApiKey, dsModel || undefined);
   saveGithubToken(githubToken);
   alert('设置已保存');
 }
@@ -2469,6 +2474,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderFolders();
   updatePapersPanelVisibility();
 });
+
+window.PaperAIChatContext = {
+  getPapers: () => papers,
+  getFolders: () => folders,
+  getFolderPathLabel,
+  statusLabels: STATUS_LABELS,
+};
 
 window.switchView = switchView;
 window.hashPassword = hashPassword;
