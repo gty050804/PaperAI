@@ -1,5 +1,45 @@
 [
   {
+    "id": "d227a1ff-8e41-400a-af0a-fb6dc415b99b",
+    "title": "Programmable World Model",
+    "authors": "Zheng-Hui Huang, Guixu Lin, Jiacheng Lin, Yi-Chuan Huang, Ruihan Yu, Muyao Niu, Siqi Yang, Yu-Lun Liu, Yung-Yu Chuang, Kaipeng Zhang, Zhixiang Wang",
+    "year": 2026,
+    "venue": "Technical Report",
+    "url": "https://arxiv.org/abs/2609.10540",
+    "pdfUrl": "https://arxiv.org/pdf/2609.10540.pdf",
+    "sourceCodeUrl": "https://github.com/AlayaLab/pwm",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
+    "status": "finished",
+    "readDate": "2026-10-19",
+    "tags": [
+      "world model",
+      "benchmark",
+      "motion control",
+      "rendering",
+      "interactive",
+      "programmable",
+      "technical report"
+    ],
+    "summary": "该论文提出了Programmable World Model框架，通过将世界状态演化与视觉观察生成解耦，实现了对个体实体的直接控制和持久世界状态管理。框架采用状态增强的3D定向边界框(OBB)作为中间表示，并通过确定性状态编译器将其转换为生成渲染器的条件信号。此外，论文还引入了Combat-State Bench基准，用于评估可编程世界模型的性能。",
+    "notes": "省流：\n1、 引入了一种可编程的方式控制视频生成。用户输入的自然语言指令由 coding agent 转化为引擎可执行的世界程序，用于定义实体状态、关系和状态转移规则。\n\n2、 将结构化控制信号引入视频生成，具体包括 identity、semantic、direction 三类控制图。在预训练视频生成主干（LingBot-World-v1）上附加可学习的 Structured Spatial ControlNet；其输入为带噪视频潜表示和控制信号，输出逐层控制特征 r(l)r(l)，以残差相加方式注入主干各层。训练时主干冻结，只优化 ControlNet。\n\n3、 提出了 CombatStateBench，一个用于衡量生成视频与引擎维护的世界状态一致性的 benchmark。",
+    "knowledgePoints": [
+      {
+        "term": "z-buffer",
+        "link": "",
+        "explanation": "z-buffer 是一种用于判断“谁在前面、谁被挡住”的深度缓冲机制。为画面中每个像素记录一个深度值，表示这个位置离相机有多远。当多个物体投影到同一个像素时，只保留深度最小、也就是离相机最近的物体。"
+      }
+    ],
+    "updatedAt": "2026-10-19T14:54:26.464Z",
+    "illustrations": [
+      {
+        "id": "72f91774-ab3d-4e06-90e9-88a2ad7523d0",
+        "title": "Architecture",
+        "imagePath": "data/illustrations/d227a1ff-8e41-400a-af0a-fb6dc415b99b/72f91774-ab3d-4e06-90e9-88a2ad7523d0.png"
+      }
+    ],
+    "createdAt": "2026-10-19T14:51:03.041Z"
+  },
+  {
     "id": "6d13fb4f-3c3d-4339-a8a9-b84c5645eb7c",
     "title": "Understanding World or Predicting Future? A Comprehensive Survey of World Models",
     "authors": "JINGTAO DING, YUNKE ZHANG, YU SHANG, JIE FENG, YUHENG ZHANG, ZEFANG ZONG, YUAN YUAN, HONGYUAN SU, NIAN LI, JINGHUA PIAO, YUCHENG DENG, NICHOLAS SUKIENNIK, CHEN GAO, FENGLI XU, YONG LI",
