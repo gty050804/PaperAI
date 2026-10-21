@@ -1,5 +1,31 @@
 [
   {
+    "id": "277073e8-a3b5-4fa2-9cfc-df0b29753ff4",
+    "title": "V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning",
+    "authors": "Mahmoud Assran, Adrien Bardes, David Fan, Quentin Garrido, Russell Howes, Mojtaba Komeili, Matthew Muckley, Ammar Rizvi, Claire Roberts, Koustuv Sinha, Artem Zholus, Sergio Arnaud, Abha Gejji, Ada Martin, Francois Robert Hogan, Daniel Dugas, Piotr Bojanowski, Vasil Khalidov, Patrick Labatut, Francisco Massa, Marc Szafraniec, Kapil Krishnakumar, Yong Li, Xiaodong Ma, Sarath Chandar, Franziska Meier, Yann LeCun, Michael Rabbat, Nicolas Ballas",
+    "year": 2025,
+    "venue": "arXiv",
+    "url": "https://arxiv.org/abs/2506.09985",
+    "pdfUrl": "https://arxiv.org/pdf/2506.09985.pdf",
+    "sourceCodeUrl": "https://github.com/facebookresearch/vjepa2",
+    "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
+    "status": "to-read",
+    "readDate": "",
+    "tags": [],
+    "summary": "该论文提出了V-JEPA 2，一种通过自监督学习从大规模互联网视频和少量机器人交互数据中训练的视频模型，能够理解物理世界、预测未来状态并进行规划。模型在视频理解任务（如动作识别和视频问答）上达到最先进性能，并展示了如何将学习到的表示应用于机器人操作任务，实现零样本规划。",
+    "notes": "",
+    "knowledgePoints": [
+      {
+        "term": "EMA encoder",
+        "link": "",
+        "explanation": "EMA 编码器的权重不是通过反向传播直接更新的，而是由在线编码器权重的指数移动平均得到。如果在线编码器权重是 θ，EMA 编码器权重是 θˉ，则每一步大致按：\nθˉ←λθˉ+(1−λ)θ更新，其中 λ接近 1，因此 EMA 编码器变化更慢、更稳定。\nEMA编码器可以防止表征坍缩。如果预测器和目标编码器完全相同，并且一起快速更新，模型可能学会输出恒定的、没有信息量的表征，从而让损失变得很小，却没有学到有用特征。使用一个缓慢更新的 EMA 编码器来提供预测目标，可以让训练更稳定，避免这种退化。"
+      }
+    ],
+    "updatedAt": "2026-10-21T14:11:49.406Z",
+    "illustrations": [],
+    "createdAt": "2026-10-19T15:01:01.258Z"
+  },
+  {
     "id": "d227a1ff-8e41-400a-af0a-fb6dc415b99b",
     "title": "Programmable World Model",
     "authors": "Zheng-Hui Huang, Guixu Lin, Jiacheng Lin, Yi-Chuan Huang, Ruihan Yu, Muyao Niu, Siqi Yang, Yu-Lun Liu, Yung-Yu Chuang, Kaipeng Zhang, Zhixiang Wang",
@@ -133,6 +159,76 @@
       }
     ],
     "createdAt": "2026-10-16T10:34:13.752Z"
+  },
+  {
+    "id": "14572a86-0c42-478e-8053-cf5391b40c53",
+    "title": "Alaya-EVOKE: From Linear-Scaling Supervision to Endless World",
+    "authors": "Yuanyang Yin, Gongxuan Wang, Yifan Zhan, Chuanhao Li, Kaipeng Zhang, Feng Zhao",
+    "year": 2026,
+    "venue": "Technical Report",
+    "url": "https://arxiv.org/abs/2608.13546",
+    "pdfUrl": "https://arxiv.org/pdf/2608.13546.pdf",
+    "sourceCodeUrl": "https://github.com/SII-YuanyangYin/Evoke",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
+    "status": "finished",
+    "readDate": "2026-09-20",
+    "tags": [
+      "world model",
+      "interactive",
+      "teacher-student distillation",
+      "world state bank",
+      "linear attention",
+      "dynamic conditioning",
+      "technical report"
+    ],
+    "summary": "Alaya-EVOKE (Evoke) 提出了一种新的交互式世界模型，通过将持久世界状态外部化并重新设计教师模型来实现长时程交互生成。该方法使用外部相机索引的世界状态库维护场景几何，保持去噪器上下文在会话增长时有界，同时教师模型采用稀疏注意力机制和线性增长的内存计算，支持长时程监督。最终的三步学生模型在单H200上实现了2.11秒生成1.5秒片段，并在WBench上达到最先进性能。",
+    "notes": "省流：核心贡献：1、 world state bank，在外部存储场景几何信息作为生成条件，维护内容一致性；  2、 长程蒸馏教师，作为注意力来源的帧包括全局第一帧，附近帧，精选远程帧和线性注意力的summary tokens，该机制在保留远程监督能力的同时将原来O(n^2)的注意力复杂度变成了O(n)，降低了计算量；  3、有界循环，迭代生成，推理时chunk-wise generation，训练时长程监督，但梯度回传时chunk之间有detach，减少计算开销。",
+    "knowledgePoints": [
+      {
+        "term": "KL散度",
+        "link": "",
+        "explanation": "KL散度（Kullback-Leibler Divergence），又称相对熵，是衡量两个概率分布差异的非对称性度量。给定真实分布P和近似分布Q，KL散度定义为P相对于Q的期望对数差，数学表达式为D_KL(P||Q)=∑P(x)log(P(x)/Q(x))。其值非负，当且仅当P=Q时为零。常用于机器学习中的变分推断、生成模型优化（如VAE）及信息论中的编码效率分析。"
+      },
+      {
+        "term": "DMD loss",
+        "link": "",
+        "explanation": "DMD损失（Dynamic Mode Decomposition loss）的核心目标是让一个高效的学生生成器，学会一个预训练扩散模型（教师）所代表的数据分布，是一种用于动态模式分解的损失函数，常用于时间序列预测和动态系统建模。它通过最小化预测模式与实际模式之间的差异，帮助模型学习系统的动态特性。DMD损失通常结合线性代数方法，如奇异值分解（SVD），以提取系统的主要动态模式。"
+      },
+      {
+        "term": "fidelity measure",
+        "link": "",
+        "explanation": "保真度度量是评估生成内容与真实数据之间相似程度的量化指标。在计算机视觉和生成模型中，常用于衡量生成图像、视频或场景与目标分布的接近程度，通常基于像素级差异（如PSNR）、特征空间距离（如LPIPS）或人类感知相似性。高保真度表示生成结果在视觉或语义上与参考数据高度一致。（其他指标包括coverage recall（内容一致性），stability（性质一致性）等）"
+      },
+      {
+        "term": "CFG-free (Classifier-free guidance)",
+        "link": "",
+        "explanation": "CFG-free（无分类器引导）是扩散模型里常用的一种引导技术，通过把\"无条件生成\"和\"有条件生成\"的结果做加权组合，来增强对文本、相机姿态等条件的遵循程度。\n但 CFG 有个代价：每次去噪需要跑两次模型（一次有条件、一次无条件），计算量翻倍。Evoke 这里用的是 CFG-free，也就是不用 CFG。这样每一步去噪只需要一次模型前向传播，进一步降低推理成本。"
+      }
+    ],
+    "updatedAt": "2026-10-09T10:12:53.545Z",
+    "illustrations": [
+      {
+        "id": "f5079a9c-0066-41c2-bd7a-2e6f3ec99a69",
+        "title": "Pipeline",
+        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/f5079a9c-0066-41c2-bd7a-2e6f3ec99a69.png"
+      },
+      {
+        "id": "9f7fd66a-a55e-4490-ac31-ab6b7ae4acc1",
+        "title": "Architecture",
+        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/9f7fd66a-a55e-4490-ac31-ab6b7ae4acc1.png"
+      },
+      {
+        "id": "06a84888-a44c-436c-bf50-9d1ae8041915",
+        "title": "Effect of World State Bank",
+        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/06a84888-a44c-436c-bf50-9d1ae8041915.png"
+      },
+      {
+        "id": "0126550f-e20d-426d-bff4-dbdd1b77631a",
+        "title": "Prompt Switching",
+        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/0126550f-e20d-426d-bff4-dbdd1b77631a.png"
+      }
+    ],
+    "createdAt": "2026-09-19T13:41:46.900Z"
   },
   {
     "id": "dbb62ede-c0ef-4fd3-8302-548585fcb0f9",
@@ -328,76 +424,6 @@
       }
     ],
     "createdAt": "2026-09-26T12:14:36.228Z"
-  },
-  {
-    "id": "14572a86-0c42-478e-8053-cf5391b40c53",
-    "title": "Alaya-EVOKE: From Linear-Scaling Supervision to Endless World",
-    "authors": "Yuanyang Yin, Gongxuan Wang, Yifan Zhan, Chuanhao Li, Kaipeng Zhang, Feng Zhao",
-    "year": 2026,
-    "venue": "Technical Report",
-    "url": "https://arxiv.org/abs/2608.13546",
-    "pdfUrl": "https://arxiv.org/pdf/2608.13546.pdf",
-    "sourceCodeUrl": "https://github.com/SII-YuanyangYin/Evoke",
-    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
-    "status": "finished",
-    "readDate": "2026-09-20",
-    "tags": [
-      "world model",
-      "interactive",
-      "teacher-student distillation",
-      "world state bank",
-      "linear attention",
-      "dynamic conditioning",
-      "technical report"
-    ],
-    "summary": "Alaya-EVOKE (Evoke) 提出了一种新的交互式世界模型，通过将持久世界状态外部化并重新设计教师模型来实现长时程交互生成。该方法使用外部相机索引的世界状态库维护场景几何，保持去噪器上下文在会话增长时有界，同时教师模型采用稀疏注意力机制和线性增长的内存计算，支持长时程监督。最终的三步学生模型在单H200上实现了2.11秒生成1.5秒片段，并在WBench上达到最先进性能。",
-    "notes": "省流：核心贡献：1、 world state bank，在外部存储场景几何信息作为生成条件，维护内容一致性；  2、 长程蒸馏教师，作为注意力来源的帧包括全局第一帧，附近帧，精选远程帧和线性注意力的summary tokens，该机制在保留远程监督能力的同时将原来O(n^2)的注意力复杂度变成了O(n)，降低了计算量；  3、有界循环，迭代生成，推理时chunk-wise generation，训练时长程监督，但梯度回传时chunk之间有detach，减少计算开销。",
-    "knowledgePoints": [
-      {
-        "term": "KL散度",
-        "link": "",
-        "explanation": "KL散度（Kullback-Leibler Divergence），又称相对熵，是衡量两个概率分布差异的非对称性度量。给定真实分布P和近似分布Q，KL散度定义为P相对于Q的期望对数差，数学表达式为D_KL(P||Q)=∑P(x)log(P(x)/Q(x))。其值非负，当且仅当P=Q时为零。常用于机器学习中的变分推断、生成模型优化（如VAE）及信息论中的编码效率分析。"
-      },
-      {
-        "term": "DMD loss",
-        "link": "",
-        "explanation": "DMD损失（Dynamic Mode Decomposition loss）的核心目标是让一个高效的学生生成器，学会一个预训练扩散模型（教师）所代表的数据分布，是一种用于动态模式分解的损失函数，常用于时间序列预测和动态系统建模。它通过最小化预测模式与实际模式之间的差异，帮助模型学习系统的动态特性。DMD损失通常结合线性代数方法，如奇异值分解（SVD），以提取系统的主要动态模式。"
-      },
-      {
-        "term": "fidelity measure",
-        "link": "",
-        "explanation": "保真度度量是评估生成内容与真实数据之间相似程度的量化指标。在计算机视觉和生成模型中，常用于衡量生成图像、视频或场景与目标分布的接近程度，通常基于像素级差异（如PSNR）、特征空间距离（如LPIPS）或人类感知相似性。高保真度表示生成结果在视觉或语义上与参考数据高度一致。（其他指标包括coverage recall（内容一致性），stability（性质一致性）等）"
-      },
-      {
-        "term": "CFG-free (Classifier-free guidance)",
-        "link": "",
-        "explanation": "CFG-free（无分类器引导）是扩散模型里常用的一种引导技术，通过把\"无条件生成\"和\"有条件生成\"的结果做加权组合，来增强对文本、相机姿态等条件的遵循程度。\n但 CFG 有个代价：每次去噪需要跑两次模型（一次有条件、一次无条件），计算量翻倍。Evoke 这里用的是 CFG-free，也就是不用 CFG。这样每一步去噪只需要一次模型前向传播，进一步降低推理成本。"
-      }
-    ],
-    "updatedAt": "2026-10-09T10:12:53.545Z",
-    "illustrations": [
-      {
-        "id": "f5079a9c-0066-41c2-bd7a-2e6f3ec99a69",
-        "title": "Pipeline",
-        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/f5079a9c-0066-41c2-bd7a-2e6f3ec99a69.png"
-      },
-      {
-        "id": "9f7fd66a-a55e-4490-ac31-ab6b7ae4acc1",
-        "title": "Architecture",
-        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/9f7fd66a-a55e-4490-ac31-ab6b7ae4acc1.png"
-      },
-      {
-        "id": "06a84888-a44c-436c-bf50-9d1ae8041915",
-        "title": "Effect of World State Bank",
-        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/06a84888-a44c-436c-bf50-9d1ae8041915.png"
-      },
-      {
-        "id": "0126550f-e20d-426d-bff4-dbdd1b77631a",
-        "title": "Prompt Switching",
-        "imagePath": "data/illustrations/14572a86-0c42-478e-8053-cf5391b40c53/0126550f-e20d-426d-bff4-dbdd1b77631a.png"
-      }
-    ],
-    "createdAt": "2026-09-19T13:41:46.900Z"
   },
   {
     "id": "03d772f4-d698-4b08-8784-9e68de567c91",
