@@ -9,7 +9,7 @@
     "pdfUrl": "https://arxiv.org/pdf/2506.09985.pdf",
     "sourceCodeUrl": "https://github.com/facebookresearch/vjepa2",
     "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
-    "status": "to-read",
+    "status": "reading",
     "readDate": "",
     "tags": [],
     "summary": "该论文提出了V-JEPA 2，一种通过自监督学习从大规模互联网视频和少量机器人交互数据中训练的视频模型，能够理解物理世界、预测未来状态并进行规划。模型在视频理解任务（如动作识别和视频问答）上达到最先进性能，并展示了如何将学习到的表示应用于机器人操作任务，实现零样本规划。",
@@ -26,7 +26,7 @@
         "explanation": "一种学习率调度策略，意思是学习率先经过一个短暂的线性上升阶段，然后保持恒定，最后再线性衰减到接近零。目的是在稳定训练的同时，方便扩展训练时长和分辨率。"
       }
     ],
-    "updatedAt": "2026-10-21T14:36:04.475Z",
+    "updatedAt": "2026-10-21T14:45:25.030Z",
     "illustrations": [],
     "createdAt": "2026-10-19T15:01:01.258Z"
   },
