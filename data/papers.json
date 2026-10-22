@@ -9,11 +9,18 @@
     "pdfUrl": "https://arxiv.org/pdf/2506.09985.pdf",
     "sourceCodeUrl": "https://github.com/facebookresearch/vjepa2",
     "folderId": "f7c8a901-2b3d-4e5f-a678-901234567890",
-    "status": "reading",
-    "readDate": "",
-    "tags": [],
+    "status": "finished",
+    "readDate": "2026-10-22",
+    "tags": [
+      "WAM",
+      "model predictive control",
+      "probe",
+      "pre-training",
+      "post-training",
+      "data curation"
+    ],
     "summary": "该论文提出了V-JEPA 2，一种通过自监督学习从大规模互联网视频和少量机器人交互数据中训练的视频模型，能够理解物理世界、预测未来状态并进行规划。模型在视频理解任务（如动作识别和视频问答）上达到最先进性能，并展示了如何将学习到的表示应用于机器人操作任务，实现零样本规划。",
-    "notes": "",
+    "notes": "省流：\n1、预训练了一个编码器，用probe验证发现表征能力很好。 \n2、把这个编码器对齐到LLM，在视频问答上验证，发现无语言监督的表征也能达到SOTA。 3、然后用interactive video去训练predictor，也就是世界模型，然后用MPC在下游任务中验证，发现表现也很好。",
     "knowledgePoints": [
       {
         "term": "EMA encoder",
@@ -33,11 +40,27 @@
       {
         "term": "Probe (探针)",
         "link": "",
-        "explanation": "在冻结的编码器之上训练的一个轻量级分类头，用编码器输出的表征作为输入、输出任务标签，通过其在下游任务上的准确率来评估该表征本身包含多少任务相关信息，而不改动编码器权重。"
+        "explanation": "在冻结的编码器之上训练的一个轻量级分类头，用编码器输出的表征作为输入、输出任务标签，通过其在下游任务上的准确率来评估该表征本身包含多少任务相关信息，而不改动编码器权重。（用来测试编码器的）"
       }
     ],
-    "updatedAt": "2026-10-22T15:18:52.994Z",
-    "illustrations": [],
+    "updatedAt": "2026-10-22T15:48:09.222Z",
+    "illustrations": [
+      {
+        "id": "5a268557-8ed9-44e6-a8a8-9065c6a27b7f",
+        "title": "multistage training",
+        "imagePath": "data/illustrations/277073e8-a3b5-4fa2-9cfc-df0b29753ff4/5a268557-8ed9-44e6-a8a8-9065c6a27b7f.png"
+      },
+      {
+        "id": "bd2d2aa4-526c-4fd6-873a-308adecf32ff",
+        "title": "V-JEPA 2-AC training",
+        "imagePath": "data/illustrations/277073e8-a3b5-4fa2-9cfc-df0b29753ff4/bd2d2aa4-526c-4fd6-873a-308adecf32ff.png"
+      },
+      {
+        "id": "508ce83b-badc-4f8c-baf6-e6a2970c5c41",
+        "title": "VJEPA 2-AC Model Predictive Control",
+        "imagePath": "data/illustrations/277073e8-a3b5-4fa2-9cfc-df0b29753ff4/508ce83b-badc-4f8c-baf6-e6a2970c5c41.png"
+      }
+    ],
     "createdAt": "2026-10-19T15:01:01.258Z"
   },
   {
