@@ -1,5 +1,31 @@
 [
   {
+    "id": "d2f0bd38-983a-43e1-8f41-1d7d7a8fcafc",
+    "title": "Revisiting Feature Prediction for Learning Visual Representations from Video",
+    "authors": "Adrien Bardes, Quentin Garrido, Jean Ponce, Xinlei Chen, Michael Rabbat, Yann LeCun, Mahmoud Assran, Nicolas Ballas",
+    "year": 2024,
+    "venue": "",
+    "url": "https://arxiv.org/abs/2404.08471",
+    "pdfUrl": "https://arxiv.org/pdf/2404.08471.pdf",
+    "sourceCodeUrl": "https://github.com/facebookresearch/jepa",
+    "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
+    "status": "reading",
+    "readDate": "",
+    "tags": [],
+    "summary": "本文提出V-JEPA，一种仅通过特征预测目标进行无监督视频学习的视觉模型，无需预训练图像编码器或其他监督来源。实验表明，该方法在多种下游图像和视频任务中表现优异，尤其在运动理解任务上优于现有方法。",
+    "notes": "",
+    "knowledgePoints": [
+      {
+        "term": "siamese encoder",
+        "link": "",
+        "explanation": "两个结构相同、通常共享参数的编码器，分别处理两个不同的输入，然后把各自的输出用于比较或预测。(本文中两个encoder初始化相同，但是更新策略不同，x-encoder 通过梯度更新，y-encoder 通过 EMA 缓慢跟随 x-encoder 。)"
+      }
+    ],
+    "updatedAt": "2026-10-23T11:25:55.314Z",
+    "illustrations": [],
+    "createdAt": "2026-10-23T11:25:48.020Z"
+  },
+  {
     "id": "ee48f05a-f1d8-44ac-8ddb-5f1f099a39af",
     "title": "Mixture-of-Top-k Attention: Efficient Attention via Scalable Fast Weights",
     "authors": "Qishuai Wen, Zhiyuan Huang, Wei He, Xianghan Meng, Chun-Guang Li",
