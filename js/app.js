@@ -26,6 +26,7 @@ const FOLDER_COVER_LABELS = [
   'assets/label2.png',
   'assets/label3.png',
   'assets/label4.png',
+  'assets/label5.png',
 ];
 
 const FOLDER_COVER_LABELS_THUMB = [
@@ -33,6 +34,7 @@ const FOLDER_COVER_LABELS_THUMB = [
   'assets/label2-thumb.jpg',
   'assets/label3-thumb.jpg',
   'assets/label4-thumb.jpg',
+  'assets/label5_thumb.png',
 ];
 
 function getFolderCoverLabelUrl(coverIndex, { thumb = false } = {}) {
