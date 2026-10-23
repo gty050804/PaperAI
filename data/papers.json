@@ -1,5 +1,25 @@
 [
   {
+    "id": "ee48f05a-f1d8-44ac-8ddb-5f1f099a39af",
+    "title": "Mixture-of-Top-k Attention: Efficient Attention via Scalable Fast Weights",
+    "authors": "Qishuai Wen, Zhiyuan Huang, Wei He, Xianghan Meng, Chun-Guang Li",
+    "year": 2026,
+    "venue": "NeurlPS",
+    "url": "https://arxiv.org/abs/2602.01219v6",
+    "pdfUrl": "https://arxiv.org/pdf/2602.01219v6.pdf",
+    "sourceCodeUrl": "https://github.com/QishuaiWen/MiTA",
+    "folderId": "adc436fb-918d-4484-92c8-ec4a37450b74",
+    "status": "to-read",
+    "readDate": "",
+    "tags": [],
+    "summary": "本文提出了Mixture-of-Top-k Attention (MiTA)机制，通过将注意力视为可扩展的快速权重问题，结合路由和压缩两种策略来提升效率。MiTA使用少量地标查询来收集top-k关注的关键值对作为可变形路由专家，同时将N宽度的MLP压缩为更窄的共享专家，从而在视觉任务中展现出优越的有效性和效率。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-10-23T10:31:39.045Z",
+    "illustrations": [],
+    "createdAt": "2026-10-23T10:31:26.113Z"
+  },
+  {
     "id": "277073e8-a3b5-4fa2-9cfc-df0b29753ff4",
     "title": "V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning",
     "authors": "Mahmoud Assran, Adrien Bardes, David Fan, Quentin Garrido, Russell Howes, Mojtaba Komeili, Matthew Muckley, Ammar Rizvi, Claire Roberts, Koustuv Sinha, Artem Zholus, Sergio Arnaud, Abha Gejji, Ada Martin, Francois Robert Hogan, Daniel Dugas, Piotr Bojanowski, Vasil Khalidov, Patrick Labatut, Francisco Massa, Marc Szafraniec, Kapil Krishnakumar, Yong Li, Xiaodong Ma, Sarath Chandar, Franziska Meier, Yann LeCun, Michael Rabbat, Nicolas Ballas",
