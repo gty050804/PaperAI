@@ -4,25 +4,53 @@
     "title": "Revisiting Feature Prediction for Learning Visual Representations from Video",
     "authors": "Adrien Bardes, Quentin Garrido, Jean Ponce, Xinlei Chen, Michael Rabbat, Yann LeCun, Mahmoud Assran, Nicolas Ballas",
     "year": 2024,
-    "venue": "",
+    "venue": "TMLR",
     "url": "https://arxiv.org/abs/2404.08471",
     "pdfUrl": "https://arxiv.org/pdf/2404.08471.pdf",
     "sourceCodeUrl": "https://github.com/facebookresearch/jepa",
     "folderId": "8d9c8d21-d261-463b-8a07-a0f4865902e3",
-    "status": "reading",
-    "readDate": "",
-    "tags": [],
+    "status": "finished",
+    "readDate": "2026-10-23",
+    "tags": [
+      "AIGC",
+      "video understanding",
+      "video representation",
+      "EMA",
+      "self-supervised learning",
+      "feature prediction"
+    ],
     "summary": "本文提出V-JEPA，一种仅通过特征预测目标进行无监督视频学习的视觉模型，无需预训练图像编码器或其他监督来源。实验表明，该方法在多种下游图像和视频任务中表现优异，尤其在运动理解任务上优于现有方法。",
-    "notes": "",
+    "notes": "省流：\nJEPA2的基础版。核心是在表征空间而非像素空间做自监督预测：用 JEPA 架构让视频一部分的表征去预测另一部分的表征，靠 stop-gradient 加 EMA 目标编码器防止表征坍缩。相比像素重建方法，它省去了拟合低层细节的负担，因此用更少的样本和更短的训练时间就学到了更通用的表征。",
     "knowledgePoints": [
       {
         "term": "siamese encoder",
         "link": "",
         "explanation": "两个结构相同、通常共享参数的编码器，分别处理两个不同的输入，然后把各自的输出用于比较或预测。(本文中两个encoder初始化相同，但是更新策略不同，x-encoder 通过梯度更新，y-encoder 通过 EMA 缓慢跟随 x-encoder 。)"
+      },
+      {
+        "term": "ViT-H/16_384",
+        "link": "",
+        "explanation": "ViT-H/16_384 这种写法由三部分组成：架构规模（H）+ patch 大小（16）+ 输入分辨率（384）。"
       }
     ],
-    "updatedAt": "2026-10-23T11:25:55.314Z",
-    "illustrations": [],
+    "updatedAt": "2026-10-23T13:42:22.197Z",
+    "illustrations": [
+      {
+        "id": "754f746c-3b2b-4e4d-9749-7bd3e1744a1f",
+        "title": "V-JEPA Architecture",
+        "imagePath": "data/illustrations/d2f0bd38-983a-43e1-8f41-1d7d7a8fcafc/754f746c-3b2b-4e4d-9749-7bd3e1744a1f.png"
+      },
+      {
+        "id": "ebbc6d14-5953-4524-9882-c925677f4871",
+        "title": "V-JEPA",
+        "imagePath": "data/illustrations/d2f0bd38-983a-43e1-8f41-1d7d7a8fcafc/ebbc6d14-5953-4524-9882-c925677f4871.png"
+      },
+      {
+        "id": "4a408a86-b36c-4f4a-9dfe-e680a6d36448",
+        "title": "Qualitative Analysis",
+        "imagePath": "data/illustrations/d2f0bd38-983a-43e1-8f41-1d7d7a8fcafc/4a408a86-b36c-4f4a-9dfe-e680a6d36448.png"
+      }
+    ],
     "createdAt": "2026-10-23T11:25:48.020Z"
   },
   {
