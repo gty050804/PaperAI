@@ -63,14 +63,32 @@
     "pdfUrl": "https://arxiv.org/pdf/2602.01219v6.pdf",
     "sourceCodeUrl": "https://github.com/QishuaiWen/MiTA",
     "folderId": "adc436fb-918d-4484-92c8-ec4a37450b74",
-    "status": "to-read",
-    "readDate": "",
-    "tags": [],
+    "status": "finished",
+    "readDate": "2026-10-25",
+    "tags": [
+      "Transformer",
+      "MLP",
+      "efficient attention",
+      "fast-weight scaling",
+      "compression",
+      "routing"
+    ],
     "summary": "本文提出了Mixture-of-Top-k Attention (MiTA)机制，通过将注意力视为可扩展的快速权重问题，结合路由和压缩两种策略来提升效率。MiTA使用少量地标查询来收集top-k关注的关键值对作为可变形路由专家，同时将N宽度的MLP压缩为更窄的共享专家，从而在视觉任务中展现出优越的有效性和效率。",
-    "notes": "",
+    "notes": "省流：\nTransformer本质是fast-weight MLP这一块。查询 q是输入，key 矩阵 K^ 是第一层权重，value 矩阵 V^ 是第二层权重，exp⁡是激活函数，隐藏层宽度等于序列长度 N。区别在于普通 MLP 的权重是训练后固定的慢权重，而这里的 K^,V^ 由输入动态生成，是快权重。\n这篇文章把高效注意力统一成\"快权重缩放\"问题，并据此提出 MiTA：用少量 landmark query 同时做两件事——压缩出全局摘要（共享专家）+ 路由出语义相关的 top-k 专家（可变形专家），让每个查询只访问 m+ks 个 key-value 对而非全部 N 个，从而在视觉任务上以接近全注意力的精度实现线性复杂度。",
     "knowledgePoints": [],
-    "updatedAt": "2026-10-23T10:31:39.045Z",
-    "illustrations": [],
+    "updatedAt": "2026-10-25T14:02:28.577Z",
+    "illustrations": [
+      {
+        "id": "7038f601-fbfc-41f2-9410-059f6200a80b",
+        "title": "MiTA",
+        "imagePath": "data/illustrations/ee48f05a-f1d8-44ac-8ddb-5f1f099a39af/7038f601-fbfc-41f2-9410-059f6200a80b.png"
+      },
+      {
+        "id": "e59ee14a-b75b-439a-9cba-0061e0ff3d9b",
+        "title": "Full attention is equivalent to the N-width, fast-weight, two-layer MLP.",
+        "imagePath": "data/illustrations/ee48f05a-f1d8-44ac-8ddb-5f1f099a39af/e59ee14a-b75b-439a-9cba-0061e0ff3d9b.png"
+      }
+    ],
     "createdAt": "2026-10-23T10:31:26.113Z"
   },
   {
