@@ -14,8 +14,19 @@
     "tags": [],
     "summary": "该综述论文以世界建模为统一视角，系统梳理了视频基础模型的发展现状。论文提出将观测视频视为潜在时序世界的部分、有损且时序有序的投影，并围绕四个互补操作（读取、写入、共享、交互）组织文献，强调从片段级识别向持续状态、可控演化、物理因果有效性及交互评估的范式转变。",
     "notes": "",
-    "knowledgePoints": [],
-    "updatedAt": "2026-10-26T15:25:44.710Z",
+    "knowledgePoints": [
+      {
+        "term": "Supervised fine-tuning (SFT)",
+        "link": "",
+        "explanation": "SFT 就是用带标注的问答、对话、定位数据教 Video-LLM 按指令输出正确答案，其中 grounding 数据专门训练模型输出时间戳（时间定位）和坐标（空间定位），让回答可定位、可核查。"
+      },
+      {
+        "term": "Alignment pretraining",
+        "link": "",
+        "explanation": "编码器和 LLM 通常冻结，只训练连接器，用 caption 对、视频-文本匹配、grounding 数据。"
+      }
+    ],
+    "updatedAt": "2026-10-28T12:57:22.199Z",
     "illustrations": [],
     "createdAt": "2026-10-26T15:25:44.710Z"
   },
