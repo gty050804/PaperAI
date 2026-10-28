@@ -1,5 +1,25 @@
 [
   {
+    "id": "cf1e8403-4acc-4f60-9e72-22eaf2a1e723",
+    "title": "JAVISDIT: JOINT AUDIO-VIDEO DIFFUSION TRANSFORMER WITH HIERARCHICAL SPATIO-TEMPORAL PRIOR SYNCHRONIZATION",
+    "authors": "Kai Liu, Wei Li, Lai Chen, Shengqiong Wu, Yanhao Zheng, Jiayi Ji, Fan Zhou, Jiebo Luo, Ziwei Liu, Hao Fei, Tat-Seng Chua",
+    "year": 2026,
+    "venue": "ICLR",
+    "url": "https://arxiv.org/abs/2503.23377",
+    "pdfUrl": "https://arxiv.org/pdf/2503.23377.pdf",
+    "sourceCodeUrl": "https://javisverse.github.io/JavisDiT-page/",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
+    "status": "to-read",
+    "readDate": "",
+    "tags": [],
+    "summary": "本文提出了JavisDiT，一种新颖的联合音频-视频扩散变换器，通过分层时空同步先验估计器实现高质量的音频视频同步生成。同时，作者还提出了一个新的基准测试JavisBench，包含10,140个高质量带文本描述的音频视频对，用于评估复杂场景下的同步性能。",
+    "notes": "",
+    "knowledgePoints": [],
+    "updatedAt": "2026-10-28T14:13:57.489Z",
+    "illustrations": [],
+    "createdAt": "2026-10-28T14:13:57.489Z"
+  },
+  {
     "id": "b24a8ef6-4826-4cb5-85b6-2d3b51b7e182",
     "title": "Reading, Writing, Sharing, and Interacting with the World through Video: A Survey Toward Unified Video World Models",
     "authors": "Shengqiong Wu, Meng Luo, Bobo Li, Ziwei Liu, Shuicheng Yan, Ming-Hsuan Yang, Philip Torr, Hao Fei",
@@ -29,9 +49,14 @@
         "term": "Group relative policy optimization (GRPO)",
         "link": "",
         "explanation": "GRPO 是去掉 critic 的强化学习：对同一问题采样一组回答，用组内相对好坏（标准化奖励）作为优势信号来更新模型，特别适合有可验证奖励的视频推理任务。"
+      },
+      {
+        "term": "Test-time scaling",
+        "link": "",
+        "explanation": "Test-time scaling 是推理阶段用计算换质量的三条路：多模态思维链（多想，但必须锚定帧）、查询感知帧选择（多看对的地方）、搜索聚合（多试几条路再选）。代价是延迟和重复计算，而它与 agentic modeling 的边界是渐进的——从\"重访帧\"到\"主动取新信息\"就跨入了 agent 范畴。"
       }
     ],
-    "updatedAt": "2026-10-28T13:06:06.836Z",
+    "updatedAt": "2026-10-28T14:13:18.776Z",
     "illustrations": [],
     "createdAt": "2026-10-26T15:25:44.710Z"
   },
