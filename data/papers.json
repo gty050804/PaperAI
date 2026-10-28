@@ -24,9 +24,14 @@
         "term": "Alignment pretraining",
         "link": "",
         "explanation": "编码器和 LLM 通常冻结，只训练连接器，用 caption 对、视频-文本匹配、grounding 数据。"
+      },
+      {
+        "term": "Group relative policy optimization (GRPO)",
+        "link": "",
+        "explanation": "GRPO 是去掉 critic 的强化学习：对同一问题采样一组回答，用组内相对好坏（标准化奖励）作为优势信号来更新模型，特别适合有可验证奖励的视频推理任务。"
       }
     ],
-    "updatedAt": "2026-10-28T12:57:22.199Z",
+    "updatedAt": "2026-10-28T13:06:06.836Z",
     "illustrations": [],
     "createdAt": "2026-10-26T15:25:44.710Z"
   },
