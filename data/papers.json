@@ -136,8 +136,29 @@
         "explanation": "Test-time scaling 是推理阶段用计算换质量的三条路：多模态思维链（多想，但必须锚定帧）、查询感知帧选择（多看对的地方）、搜索聚合（多试几条路再选）。代价是延迟和重复计算，而它与 agentic modeling 的边界是渐进的——从\"重访帧\"到\"主动取新信息\"就跨入了 agent 范畴。"
       }
     ],
-    "updatedAt": "2026-10-28T14:13:18.776Z",
-    "illustrations": [],
+    "updatedAt": "2026-10-30T14:24:43.649Z",
+    "illustrations": [
+      {
+        "id": "e5499815-ab3a-4d14-9194-3354faa7ebbb",
+        "title": "Reading the world",
+        "imagePath": "data/illustrations/b24a8ef6-4826-4cb5-85b6-2d3b51b7e182/e5499815-ab3a-4d14-9194-3354faa7ebbb.png"
+      },
+      {
+        "id": "20e5c4e5-45cc-4ccc-ad17-f3562ed205dd",
+        "title": "Writing the world",
+        "imagePath": "data/illustrations/b24a8ef6-4826-4cb5-85b6-2d3b51b7e182/20e5c4e5-45cc-4ccc-ad17-f3562ed205dd.png"
+      },
+      {
+        "id": "2f59738b-abcc-4480-a5e1-01e256e3f523",
+        "title": "Latent representations for video generation",
+        "imagePath": "data/illustrations/b24a8ef6-4826-4cb5-85b6-2d3b51b7e182/2f59738b-abcc-4480-a5e1-01e256e3f523.png"
+      },
+      {
+        "id": "43ed6bd5-e7c2-460e-8406-1b651f4d9e16",
+        "title": "Control mechanisms by intervention site",
+        "imagePath": "data/illustrations/b24a8ef6-4826-4cb5-85b6-2d3b51b7e182/43ed6bd5-e7c2-460e-8406-1b651f4d9e16.png"
+      }
+    ],
     "createdAt": "2026-10-26T15:25:44.710Z"
   },
   {
