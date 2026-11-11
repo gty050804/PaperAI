@@ -89,14 +89,31 @@
     "pdfUrl": "https://arxiv.org/pdf/2503.23377.pdf",
     "sourceCodeUrl": "https://javisverse.github.io/JavisDiT-page/",
     "folderId": "2c657fec-269c-4686-9926-71cecd167750",
-    "status": "to-read",
-    "readDate": "",
-    "tags": [],
+    "status": "finished",
+    "readDate": "2026-11-11",
+    "tags": [
+      "world model",
+      "audio",
+      "contrastive learning",
+      "cross attention",
+      "self attention"
+    ],
     "summary": "本文提出了JavisDiT，一种新颖的联合音频-视频扩散变换器，通过分层时空同步先验估计器实现高质量的音频视频同步生成。同时，作者还提出了一个新的基准测试JavisBench，包含10,140个高质量带文本描述的音频视频对，用于评估复杂场景下的同步性能。",
-    "notes": "",
+    "notes": "1、 先用预训练提升 Audio 生成能力。\n2、 然后，用 contrastive training 训练 ST-Prior Estimator，使其能够从文本中估计有效的空间和时间先验。\n3、 最后，训练 ST-CrossAttn 和 Bi-CrossAttn，让视频和音频生成既受时空先验指导，又能相互参考，从而生成音画内容一致、时序同步的 Sounding Video。",
     "knowledgePoints": [],
-    "updatedAt": "2026-10-28T14:13:57.489Z",
-    "illustrations": [],
+    "updatedAt": "2026-11-11T15:42:47.664Z",
+    "illustrations": [
+      {
+        "id": "9da84eb0-f744-42bc-a75d-3d8ee7bdf2ed",
+        "title": "Architecture",
+        "imagePath": "data/illustrations/cf1e8403-4acc-4f60-9e72-22eaf2a1e723/9da84eb0-f744-42bc-a75d-3d8ee7bdf2ed.png"
+      },
+      {
+        "id": "687c86bf-c508-426b-b436-3d4c770762af",
+        "title": "The framework of Spatio-temporal Prior Estimator",
+        "imagePath": "data/illustrations/cf1e8403-4acc-4f60-9e72-22eaf2a1e723/687c86bf-c508-426b-b436-3d4c770762af.png"
+      }
+    ],
     "createdAt": "2026-10-28T14:13:57.489Z"
   },
   {
