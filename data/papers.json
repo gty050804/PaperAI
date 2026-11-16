@@ -69,14 +69,50 @@
     "pdfUrl": "https://arxiv.org/pdf/2602.19163.pdf",
     "sourceCodeUrl": "https://JavisVerse.github.io/JavisDiT2-page",
     "folderId": "2c657fec-269c-4686-9926-71cecd167750",
-    "status": "to-read",
+    "status": "finished",
     "readDate": "",
-    "tags": [],
+    "tags": [
+      "world model",
+      "Transformer",
+      "DPO",
+      "RoPE",
+      "SFT",
+      "self attention",
+      "MoE",
+      "ICLR"
+    ],
     "summary": "本文提出了JavisDiT++框架，通过模态特定的混合专家设计（MS-MoE）和时间对齐的RoPE策略（TA-RoPE），实现了高质量的音视频联合生成与精确同步。此外，作者首次将人类偏好对齐引入音视频生成任务，提出了AV-DPO方法，显著提升了生成内容的质量、一致性和同步性。",
-    "notes": "",
-    "knowledgePoints": [],
-    "updatedAt": "2026-10-28T14:15:22.099Z",
-    "illustrations": [],
+    "notes": "省流：\n1. TA-RoPE：一种用于 JAVG 的音视频时间对齐位置编码方式。将 audio tokens 和 video tokens concatenate 后一起做 self-attention，在 Q、K 上应用 RoPE，通过共享时间轴对齐音视频，并用其他轴的 offset 避免位置 ID 重叠。\n2. Modality-specific MoE：Audio 和 Video 共享 attention，分别使用各自的 FFN；按模态固定分配 token，而不是动态路由。\n3. AV-DPO：先做音频预训练和音视频 SFT，再用 preference data（win–lose pairs）做 DPO。偏好对通过奖励模型筛选，要求赢家在音频、视频、音视频配合三个评分组上都优于输家。",
+    "knowledgePoints": [
+      {
+        "term": "SFT",
+        "link": "",
+        "explanation": "SFT（Supervised Fine-Tuning，监督微调）就是：用“输入 + 标准示例”继续训练一个已有模型，让它学会目标任务。"
+      },
+      {
+        "term": "DPO",
+        "link": "",
+        "explanation": "DPO（Direct Preference Optimization）就是用“哪个结果更好”的成对数据，直接优化生成模型的偏好。"
+      }
+    ],
+    "updatedAt": "2026-11-16T12:21:08.437Z",
+    "illustrations": [
+      {
+        "id": "685b8ba1-9333-48f8-ad9d-10f20ba68d98",
+        "title": "Architecture",
+        "imagePath": "data/illustrations/6ac95d65-3b5e-444f-b7d3-6e655d0aaf76/685b8ba1-9333-48f8-ad9d-10f20ba68d98.png"
+      },
+      {
+        "id": "0107f0ba-31f5-4346-b601-5028712454e1",
+        "title": "TA-RoPE",
+        "imagePath": "data/illustrations/6ac95d65-3b5e-444f-b7d3-6e655d0aaf76/0107f0ba-31f5-4346-b601-5028712454e1.png"
+      },
+      {
+        "id": "e443cb09-ea20-497f-9820-452d82c01621",
+        "title": "AV-DPO",
+        "imagePath": "data/illustrations/6ac95d65-3b5e-444f-b7d3-6e655d0aaf76/e443cb09-ea20-497f-9820-452d82c01621.png"
+      }
+    ],
     "createdAt": "2026-10-28T14:15:22.099Z"
   },
   {
