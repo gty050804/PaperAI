@@ -29,14 +29,27 @@
     "pdfUrl": "https://arxiv.org/pdf/2512.21094v3.pdf",
     "sourceCodeUrl": "NJU-LINK/T2AV-Compass",
     "folderId": "2c657fec-269c-4686-9926-71cecd167750",
-    "status": "to-read",
-    "readDate": "",
-    "tags": [],
+    "status": "finished",
+    "readDate": "2026-11-18",
+    "tags": [
+      "benchmark",
+      "audio",
+      "video",
+      "AIGC",
+      "world model",
+      "JAVG"
+    ],
     "summary": "本文提出了T2AV-Compass，一个用于全面评估文本到音视频生成系统的统一基准，包含500个多样化和复杂的提示，通过分类驱动的流程构建以确保语义丰富性和物理合理性。T2AV-Compass引入了双级评估框架，结合了视频质量、音频质量和跨模态对齐的客观信号级指标，以及基于评判的诊断方法用于指令跟随和真实感评估。对15个代表性T2AV系统的广泛评估显示，即使是最强的模型在人类级真实感和跨模态一致性方面也显著不足，存在音频真实感、细粒度同步和指令跟随等方面的持续失败。",
-    "notes": "",
+    "notes": "衡量指标（对 JAVG 的评估）\n\n客观层：视频质量（VT、VA）、音频质量（AA、SQ）、跨模态对齐（T–A、T–V、A–V、DS、LS）\n\n主观层：Instruction Following（7 大类 17 子维 QA checklist）+ Realism（视频 MSS/OIS/TCS，音频 AAS/MTC）\n\n创新点\n\n1. Taxonomy-driven 的 500 个高复杂度 prompt（平均 154 tokens），覆盖 off-screen sound、physical causality 等细粒度视听约束\n2. Dual-level 框架：客观信号指标 + MLLM-as-a-Judge，兼顾低层保真与高层语义逻辑\n3. 揭示 \"Audio Realism Bottleneck\"：即使最强模型也远未达到人类水平的 realism 与跨模态一致性",
     "knowledgePoints": [],
-    "updatedAt": "2026-10-28T15:22:16.872Z",
-    "illustrations": [],
+    "updatedAt": "2026-11-18T12:44:46.489Z",
+    "illustrations": [
+      {
+        "id": "331e4b86-34e5-43d3-b6f8-1c80170366a1",
+        "title": "Illustration of the subjective evaluation framework",
+        "imagePath": "data/illustrations/25826ccc-c6b6-4874-a631-3f7511b86304/331e4b86-34e5-43d3-b6f8-1c80170366a1.png"
+      }
+    ],
     "createdAt": "2026-10-28T15:22:16.873Z"
   },
   {
