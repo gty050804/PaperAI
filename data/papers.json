@@ -9,14 +9,31 @@
     "pdfUrl": "https://arxiv.org/pdf/2601.16210.pdf",
     "sourceCodeUrl": "https://plan-lab.github.io/pyratok",
     "folderId": "2c657fec-269c-4686-9926-71cecd167750",
-    "status": "to-read",
-    "readDate": "",
-    "tags": [],
+    "status": "finished",
+    "readDate": "2026-11-19",
+    "tags": [
+      "world model",
+      "AIGC",
+      "discrete VAE",
+      "codebook"
+    ],
     "summary": "PyraTok是一种语言对齐的金字塔式视频标记器，通过多尺度时空分辨率学习语义结构化的离散潜在表示，显著提升了视频重建质量和跨模态对齐能力。该方法在视频分割、时序动作定位和视频理解等任务上实现了零样本(state-of-the-art)性能，并支持高达4K/8K分辨率的视频处理。",
-    "notes": "",
-    "knowledgePoints": [],
-    "updatedAt": "2026-10-28T15:22:41.306Z",
-    "illustrations": [],
+    "notes": "在视频编码器的多个尺度进行文本引导量化，共享无需查表的二进制码本，并结合局部文本对齐与全局自回归预测，学习兼顾重建和理解的视频 token。\n\n各损失的计算方式：\n\n   1、 重建损失：比较原视频与重建视频，结合 L1、SSIM 和 LPIPS。\n   2、 码本损失：结合量化表示与二进制码字的平方误差、分配熵、相邻层 KL，以及 token–文本和码字–文本 KL；论文未充分定义这些 KL 所需的概率转换与对应关系。\n   3、 自回归损失：根据文本及已有 token 预测后续 token，对正确 token 的预测概率取负对数并累加。\n   4、 漂移损失：计算适配视觉表示与冻结参考表示之间的 KL，限制特征偏离；具体概率化方式未明确。\n（Summarized by GPT）",
+    "knowledgePoints": [
+      {
+        "term": "LFQ (Lookup Free Quantization)",
+        "link": "",
+        "explanation": "核心是：直接把连续特征变成二进制码，不用在码本里搜索最近的向量。\n\n    传统 VQ：拿特征向量与码本中的向量比较，选择最接近的码字。\n    LFQ：通常对特征逐维取符号，正数变为 +1，负数变为 −1。例如 [0.8, −0.3, 1.2] → [+1, −1, +1]。\n    隐式码本：如果有 d 个二进制位，就有 2 的 d 次方种可能编码，无需显式存储全部码字向量。\n    训练学什么：主要学习如何把输入映射到合适的二进制编码，而不是像传统 VQ 那样自由更新一张码字向量表。\n\n优点是省去大码本的向量搜索和存储开销；但符号操作不可直接常规求导，训练时需要梯度近似等处理。"
+      }
+    ],
+    "updatedAt": "2026-11-19T15:16:25.952Z",
+    "illustrations": [
+      {
+        "id": "ef5f1d09-a7a3-4393-b483-e5fbc52a6d38",
+        "title": "Overview of the proposed PyraTok architecture",
+        "imagePath": "data/illustrations/026244c1-6873-4268-8fd3-ac493b676ffa/ef5f1d09-a7a3-4393-b483-e5fbc52a6d38.png"
+      }
+    ],
     "createdAt": "2026-10-28T15:22:41.306Z"
   },
   {
