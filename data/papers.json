@@ -1,5 +1,46 @@
 [
   {
+    "id": "58b84223-89ef-4781-8c06-a5e9a70f7c4c",
+    "title": "Code World Model 2.0: Towards Infinite Controllable Video Generation",
+    "authors": "Ruoyu Wang, Hao Zhong, Yanming Yang, Jiahao Tian, Lin Liu, Biao Gong, Guoshan Lu, Yiding Tian, Chunhua Shen, Zhenzhong Lan, Chi Zhang",
+    "year": 2026,
+    "venue": "arXiv",
+    "url": "https://arxiv.org/abs/2611.22925",
+    "pdfUrl": "https://arxiv.org/pdf/2611.22925.pdf",
+    "sourceCodeUrl": "https://github.com/",
+    "folderId": "2c657fec-269c-4686-9926-71cecd167750",
+    "status": "reading",
+    "readDate": "",
+    "tags": [],
+    "summary": "该论文提出了Invoker-Render框架，通过双向创建模型和因果四步流模型实现可控视频生成，支持多粒度结构代理和语言条件输入。通过渐进强制训练方法(ProForcing)，模型能够在保持场景和主体外观的同时，实现30分钟的稳定赛车滚动生成。",
+    "notes": "",
+    "knowledgePoints": [
+      {
+        "term": "GFT (Guidance-Free Training)",
+        "link": "",
+        "explanation": "训练时混合强、弱条件分支的预测，把推理时的引导效果内化到训练中。"
+      },
+      {
+        "term": "TF (Teacher Forcing)",
+        "link": "",
+        "explanation": "用干净真实视频作为历史条件训练块因果预测。"
+      },
+      {
+        "term": "RF (Resampling Forcing)",
+        "link": "",
+        "explanation": "对真实历史块加噪再用当前模型重建，构造带误差的历史条件。"
+      },
+      {
+        "term": "DMD (Distribution Matching Distillation)",
+        "link": "",
+        "explanation": "让学生生成分布匹配教师/真实分布，而非逐步模仿采样轨迹。"
+      }
+    ],
+    "updatedAt": "2026-11-20T15:19:20.590Z",
+    "illustrations": [],
+    "createdAt": "2026-11-20T15:19:20.590Z"
+  },
+  {
     "id": "026244c1-6873-4268-8fd3-ac493b676ffa",
     "title": "PyraTok: Language-Aligned Pyramidal Tokenizer for Video Understanding and Generation",
     "authors": "Onkar Susladkar, Tushar Prakash, Adheesh Juvekar, Kiet A. Nguyen, Dong-Hwan Jang, Inderjit S Dhillon, Ismini Lourentzou",
