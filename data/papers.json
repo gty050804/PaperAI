@@ -7,13 +7,23 @@
     "venue": "arXiv",
     "url": "https://arxiv.org/abs/2611.22925",
     "pdfUrl": "https://arxiv.org/pdf/2611.22925.pdf",
-    "sourceCodeUrl": "https://github.com/",
+    "sourceCodeUrl": "https://github.com/inclusionAI/CodeWorldModel",
     "folderId": "2c657fec-269c-4686-9926-71cecd167750",
-    "status": "reading",
-    "readDate": "",
-    "tags": [],
+    "status": "finished",
+    "readDate": "2026-11-21",
+    "tags": [
+      "AIGC",
+      "world model",
+      "few-step diffusion distillation",
+      "proxy-conditioned video generation",
+      "multi-granularity control",
+      "progressive forcing",
+      "few-step diffusion distillation",
+      "long-horizon autoregressive generation",
+      "efficient streaming inference"
+    ],
     "summary": "该论文提出了Invoker-Render框架，通过双向创建模型和因果四步流模型实现可控视频生成，支持多粒度结构代理和语言条件输入。通过渐进强制训练方法(ProForcing)，模型能够在保持场景和主体外观的同时，实现30分钟的稳定赛车滚动生成。",
-    "notes": "",
+    "notes": "1、 多粒度代理控制\n同一模型既能接受粗粒度代理，控制布局、位置与朝向，并补全局部动作；也能接受细粒度代理，更严格地遵循关节姿态和局部几何。共享条件接口同时服务于双向离线创作与因果流式生成。\n\n2、 渐进式训练 ProForcing\n按 TF → RF → RF-DMD → SF-DMD 逐步训练：先适应因果生成，再在真实数据锚定的历史上学会四步采样，最后用连续自生成历史训练长期稳定性。关键是分开处理“少步压缩”和“自回归误差累积”，并在最后阶段延续学生、监督模型及优化器状态。\n\n3、 面向持续生成的推理系统优化（时间管理大师）\n结合轻量代理编码、KV 与计算结果复用、历史／条件／首步去噪融合，以及跨块流水线，减少在线生成的计算和等待开销。论文报告在八卡、1344 × 768 设置下达到 18 FPS。\n\n(Summarized by GPT, edited by GTY)",
     "knowledgePoints": [
       {
         "term": "GFT (Guidance-Free Training)",
@@ -36,8 +46,29 @@
         "explanation": "让学生生成分布匹配教师/真实分布，而非逐步模仿采样轨迹。"
       }
     ],
-    "updatedAt": "2026-11-20T15:19:20.590Z",
-    "illustrations": [],
+    "updatedAt": "2026-11-21T15:06:20.688Z",
+    "illustrations": [
+      {
+        "id": "afaa764b-1ad6-40cd-85c9-1628c7231eab",
+        "title": "Capture and multi-granularity proxy construction pipeline",
+        "imagePath": "data/illustrations/58b84223-89ef-4781-8c06-a5e9a70f7c4c/afaa764b-1ad6-40cd-85c9-1628c7231eab.png"
+      },
+      {
+        "id": "29399d93-98f0-47c5-a2c4-2888fa490ff1",
+        "title": "Comparison of ProForcing with representative causal video training recipes",
+        "imagePath": "data/illustrations/58b84223-89ef-4781-8c06-a5e9a70f7c4c/29399d93-98f0-47c5-a2c4-2888fa490ff1.png"
+      },
+      {
+        "id": "d996f76c-fe53-4751-b059-7c62e439b787",
+        "title": "Streaming inference schedule on an eight-GPU colocated pool",
+        "imagePath": "data/illustrations/58b84223-89ef-4781-8c06-a5e9a70f7c4c/d996f76c-fe53-4751-b059-7c62e439b787.png"
+      },
+      {
+        "id": "9f0087b0-bd8c-43cd-b48c-66dd174315e5",
+        "title": "Streaming inference performance",
+        "imagePath": "data/illustrations/58b84223-89ef-4781-8c06-a5e9a70f7c4c/9f0087b0-bd8c-43cd-b48c-66dd174315e5.png"
+      }
+    ],
     "createdAt": "2026-11-20T15:19:20.590Z"
   },
   {
