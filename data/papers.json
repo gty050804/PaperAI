@@ -1,5 +1,39 @@
 [
   {
+    "id": "7785ab92-c827-46bc-b11a-0e39711f5d9a",
+    "title": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models",
+    "authors": "Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Mingchuan Zhang, Y.K. Li, Y. Wu, Daya Guo",
+    "year": 2024,
+    "venue": "arXiv",
+    "url": "https://arxiv.org/abs/2402.03300",
+    "pdfUrl": "https://arxiv.org/pdf/2402.03300.pdf",
+    "sourceCodeUrl": "https://github.com/deepseek-ai/DeepSeek-Math",
+    "folderId": "846b3a50-9610-4086-bacb-22d371e0954f",
+    "status": "reading",
+    "readDate": "",
+    "tags": [
+      "GRPO",
+      "LLM"
+    ],
+    "summary": "本文提出了DeepSeekMath 7B模型，通过120B数学相关token的预训练和创新的Group Relative Policy Optimization (GRPO)算法，在MATH基准测试上达到了51.7%的准确率，接近GPT-4和Gemini-Ultra的水平。研究还发现代码预训练能显著提升数学推理能力，并构建了高质量的多语言数学预训练语料库DeepSeekMath Corpus。",
+    "notes": "",
+    "knowledgePoints": [
+      {
+        "term": "Program-of-Thought（PoT）",
+        "link": "",
+        "explanation": "Program-of-Thought（PoT）是一种让语言模型通过编写程序来解题的推理方式。在 DeepSeekMath 的指令微调阶段，训练数据中的数学题会配以三种格式的解答：思维链（CoT）、思维程序（PoT）和工具集成推理（tool-integrated reasoning）。\n\n具体来说，在评估模型用工具解题的能力时，模型会被提示为每道题编写一个 Python 程序，并可以利用 math、sympy 等库进行复杂计算，程序的执行结果即作为答案。这种做法的核心思想是把计算过程从语言模型的推理中分离出来，交给程序执行，从而提高数值计算的准确性。"
+      },
+      {
+        "term": "广义优势估计（GAE）",
+        "link": "",
+        "explanation": "广义优势估计（GAE）是一种利用采样轨迹来估计动作优势的方法。优势指的是，在同一个状态下，这次选中的动作预计比当前策略的平均选择好多少。\n\n价值预测是智能体对从某个状态出发、按当前策略继续行动所能获得的累计回报的估计。TD 误差表示，看到这一步的实际结果后，这个回报估计比原先上升或下降了多少。\n\n1. 逐步计算 TD 误差。对每一步，把实际收到的即时奖励和打过折扣的下一状态价值加在一起，得到更新后的回报估计。再减去当前状态原先的价值预测。任务真正结束时，下一状态的价值取零。\n2. 从轨迹末尾倒着算优势。最后一步的优势就是它的 TD 误差。往前每走一步，都把该步自己的 TD 误差与下一步优势中按比例保留的部分加起来。后续反馈传得越远，通常保留得越少。GAE 的衰减参数越大，当前动作的优势就越受后续反馈影响。\n\n例如，机器人伸手时可能没有即时奖励，但最后成功抓稳物体带来的超预期反馈，仍然能影响前面伸手和调整夹爪的动作评分。"
+      }
+    ],
+    "updatedAt": "2026-11-23T14:54:18.125Z",
+    "illustrations": [],
+    "createdAt": "2026-11-23T14:02:15.249Z"
+  },
+  {
     "id": "58b84223-89ef-4781-8c06-a5e9a70f7c4c",
     "title": "Code World Model 2.0: Towards Infinite Controllable Video Generation",
     "authors": "Ruoyu Wang, Hao Zhong, Yanming Yang, Jiahao Tian, Lin Liu, Biao Gong, Guoshan Lu, Yiding Tian, Chunhua Shen, Zhenzhong Lan, Chi Zhang",
